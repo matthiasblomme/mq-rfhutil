@@ -18,6 +18,7 @@ Jim MacNair - Initial Contribution
 
 #include "stdafx.h"
 #include "rfhutil.h"
+#include "ThemeManager.h"
 
 #include "MainFrm.h"
 #include "rfhutilDoc.h"
@@ -539,6 +540,9 @@ BOOL CRfhutilApp::InitInstance()
 
 	LoadStdProfileSettings(6);  // Load standard INI file options (including MRU)
 
+	// Initialize theme manager and load saved theme preference
+	ThemeManager::GetInstance().LoadThemePreference();
+
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views.
 
@@ -578,6 +582,9 @@ BOOL CRfhutilApp::InitInstance()
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
 	m_pMainWnd->DragAcceptFiles();
+	
+	// Apply dark title bar if in dark mode
+	ThemeManager::GetInstance().ApplyDarkTitleBar(m_pMainWnd);
 
 	// get the audit file name if present
 	auditFileName = getenv(RFHUTIL_AUDIT_FILE);

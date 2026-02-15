@@ -40,6 +40,7 @@ Contributors:
 #include "dlq.h"
 #include "Props.h"
 #include "PS.h"
+#include "ConnSettings.h"
 #include "HexFind.h"
 
 class CRfhutilView : public CCtrlView
@@ -248,6 +249,7 @@ protected:
 	CDlq		m_dlq;
 	CProps		m_props;
 	CPS			m_ps;
+	ConnSettings m_conn_settings;
 	void OnSelchangingSampletab (NMHDR* pNMHDR, LRESULT* pResult);
 	void OnSelchangeSampletab (NMHDR* pNMHDR, LRESULT* pResult);
 };

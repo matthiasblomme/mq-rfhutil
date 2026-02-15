@@ -205,6 +205,7 @@ CRfhutilView::CRfhutilView()
 	m_cics.pDoc = &app->pDocument;
 	m_ims.pDoc = &app->pDocument;
 	m_dlq.pDoc = &app->pDocument;
+	m_conn_settings.pDoc = &app->pDocument;
 
 	// set a pointer to some dialog objects in the dataarea object
 	app->pDocument.cicsData = ((CObject *)&m_cics);
@@ -572,6 +573,7 @@ void CRfhutilView::OnInitialUpdate()
 	m_cics.Create(IDD_CICS, this);
 	m_ims.Create(IDD_IMS, this);
 	m_dlq.Create(IDD_DLQ, this);
+	m_conn_settings.Create(IDD_CONN_SETTINGS, this);
 
 	// try to set the font for the data display
 	m_data.SetFont(&(app->m_fixed_font));
@@ -641,6 +643,10 @@ void CRfhutilView::OnInitialUpdate()
 	TabItem.lParam = (long) &m_dlq;
 	result = GetTabCtrl().InsertItem (13, &TabItem);
 
+	TabItem.pszText = "Conn";
+	TabItem.lParam = (long) &m_conn_settings;
+	result = GetTabCtrl().InsertItem (14, &TabItem);
+
 	GetTabCtrl().SetCurSel(0);
 	GetTabCtrl().ShowWindow (SW_NORMAL);
 
@@ -662,6 +668,7 @@ void CRfhutilView::OnInitialUpdate()
 	m_cics.MoveWindow (rc, FALSE);
 	m_ims.MoveWindow (rc, FALSE);
 	m_dlq.MoveWindow (rc, FALSE);
+	m_conn_settings.MoveWindow (rc, FALSE);
 
 	EnableToolTips(TRUE);   // enable tool tips for view
 
@@ -720,6 +727,9 @@ void CRfhutilView::OnSize(UINT nType, int cx, int cy)
 
 	if (m_dlq.m_hWnd != 0)
 		m_dlq.MoveWindow (rc, FALSE);
+
+	if (m_conn_settings.m_hWnd != 0)
+		m_conn_settings.MoveWindow (rc, FALSE);
 }
 
 void CRfhutilView::OnSelchangingSampletab (NMHDR* pNMHDR, LRESULT* pResult)
@@ -3123,6 +3133,11 @@ void CRfhutilView::SetActive(int sel)
 	case PAGE_DLQ:
 		{
 			m_dlq.OnSetActive();
+			break;
+		}
+	case PAGE_CONN:
+		{
+			m_conn_settings.OnSetActive();
 			break;
 		}
 	}

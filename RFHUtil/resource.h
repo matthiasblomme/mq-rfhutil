@@ -752,13 +752,30 @@
 #define ID_INDICATOR_FILE               59142
 #define ID_INDICATOR_ERR                59143
 
+// P0.3: Connection Settings Dialog
+#define IDD_CONN_SETTINGS               168
+#define IDC_HEARTBEAT_INTERVAL          1662
+#define IDC_ENABLE_HEARTBEAT            1663
+#define IDC_KEEPALIVE_INTERVAL          1664
+#define IDC_ENABLE_KEEPALIVE            1665
+#define IDC_ENABLE_AUTO_RECONNECT       1666
+#define IDC_RECONNECT_MAX_ATTEMPTS      1667
+#define IDC_RECONNECT_INTERVAL          1668
+#define IDC_RECONNECT_BACKOFF           1669
+#define IDC_RECONNECT_MAX_INTERVAL      1670
+
+// P1.2: Dark Mode Theme Menu
+#define ID_VIEW_THEME_LIGHT             2000
+#define ID_VIEW_THEME_DARK              2001
+#define ID_VIEW_THEME_SYSTEM            2002
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        173
+#define _APS_NEXT_RESOURCE_VALUE        174
 #define _APS_NEXT_COMMAND_VALUE         32897
-#define _APS_NEXT_CONTROL_VALUE         1662
+#define _APS_NEXT_CONTROL_VALUE         1671
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

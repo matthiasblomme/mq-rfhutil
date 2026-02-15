@@ -20,6 +20,7 @@ Jim MacNair - Initial Contribution
 
 #include "stdafx.h"
 #include "rfhutil.h"
+#include "ThemeManager.h"
 #include "comsubs.h"
 #include "xmlsubs.h"
 #include "jms.h"
@@ -120,6 +121,8 @@ void jms::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(jms, CPropertyPage)
 	//{{AFX_MSG_MAP(jms)
+	ON_WM_CTLCOLOR()
+	ON_WM_ERASEBKGND()
 	ON_EN_CHANGE(IDC_JMS_DST, OnChangeJmsDst)
 	ON_EN_CHANGE(IDC_JMS_CORREL_ID, OnChangeJmsCorrelId)
 	ON_EN_CHANGE(IDC_JMS_DELIVERY_MODE, OnChangeJmsDeliveryMode)
@@ -308,6 +311,10 @@ BOOL jms::OnInitDialog()
 	EnableToolTips(TRUE);
 	
 	
+	
+	// Apply theme to dialog
+	ThemeManager::GetInstance().ApplyThemeToDialog(this);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -1075,4 +1082,50 @@ BOOL jms::wasDataChanged()
 
 {
 	return jmsDataChanged;
+}
+
+HBRUSH jms::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		pDC->SetTextColor(theme.GetTextColor());
+		
+		switch (nCtlColor) {
+			case CTLCOLOR_EDIT:
+			case CTLCOLOR_LISTBOX:
+				// Dark grey background for edit controls and combo boxes
+				pDC->SetBkColor(theme.GetControlBackgroundColor());
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_STATIC:
+				// Dialog background for static text
+				pDC->SetBkColor(theme.GetBackgroundColor());
+				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_BTN:
+				// Button background
+				pDC->SetBkColor(theme.GetButtonBackgroundColor());
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_DLG:
+				// Dialog background
+				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
+		}
+BOOL jms::OnEraseBkgnd(CDC* pDC)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		CRect rect;
+		GetClientRect(&rect);
+		theme.DrawGradientBackground(pDC, rect);
+		return TRUE;
+	}
+	
+	return CPropertyPage::OnEraseBkgnd(pDC);
+}
+	}
+	
+	return CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
 }

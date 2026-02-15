@@ -118,6 +118,13 @@ BEGIN
     BEGIN
         MENUITEM "System Queues",               IDM_VIEW_SYSTEM_QUEUES
         MENUITEM "Cluster Queues",              IDM_VIEW_CLUSTER
+        MENUITEM SEPARATOR
+        POPUP "&Theme"
+        BEGIN
+            MENUITEM "&Light Mode",             ID_VIEW_THEME_LIGHT
+            MENUITEM "&Dark Mode",              ID_VIEW_THEME_DARK
+            MENUITEM "&System Default",         ID_VIEW_THEME_SYSTEM
+        END
     END
     POPUP "&Ids"
     BEGIN
@@ -1055,6 +1062,37 @@ BEGIN
     LTEXT           "Local Address",IDC_CONN_LOCAL_ADDRESS_LABEL,23,136,46,8
 END
 
+IDD_CONN_SETTINGS DIALOGEX 0, 0, 530, 380
+STYLE DS_SETFONT | DS_CONTROL | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    GROUPBOX        "HeartBeat Settings",IDC_STATIC,7,7,516,60
+    LTEXT           "HeartBeat Interval (seconds):",IDC_STATIC,14,22,100,8
+    EDITTEXT        IDC_HEARTBEAT_INTERVAL,120,20,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "0 = Use QM default (300s)",IDC_STATIC,165,22,140,8
+    CONTROL         "Enable HeartBeat",IDC_ENABLE_HEARTBEAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,40,80,10
+    LTEXT           "Recommended: 60 seconds for better connection monitoring",IDC_STATIC,14,52,280,8
+    
+    GROUPBOX        "KeepAlive Settings",IDC_STATIC,7,72,516,60
+    LTEXT           "KeepAlive Interval:",IDC_STATIC,14,87,100,8
+    COMBOBOX        IDC_KEEPALIVE_INTERVAL,120,85,100,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable KeepAlive",IDC_ENABLE_KEEPALIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,105,80,10
+    LTEXT           "AUTO = Use OS TCP/IP defaults (recommended)",IDC_STATIC,14,117,280,8
+    
+    GROUPBOX        "Automatic Reconnection",IDC_STATIC,7,137,516,96
+    CONTROL         "Enable Automatic Reconnection",IDC_ENABLE_AUTO_RECONNECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,152,120,10
+    LTEXT           "Maximum Attempts:",IDC_STATIC,14,170,80,8
+    EDITTEXT        IDC_RECONNECT_MAX_ATTEMPTS,100,168,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "(0 = infinite)",IDC_STATIC,145,170,60,8
+    LTEXT           "Initial Interval (seconds):",IDC_STATIC,14,188,80,8
+    EDITTEXT        IDC_RECONNECT_INTERVAL,100,186,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Backoff Multiplier:",IDC_STATIC,14,206,80,8
+    EDITTEXT        IDC_RECONNECT_BACKOFF,100,204,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "(1 = no backoff, 2 = double)",IDC_STATIC,145,206,150,8
+    LTEXT           "Maximum Interval (seconds):",IDC_STATIC,14,224,90,8
+    EDITTEXT        IDC_RECONNECT_MAX_INTERVAL,110,222,40,14,ES_AUTOHSCROLL | ES_NUMBER
+END
+
 IDD_MOVEQ DIALOG 0, 0, 373, 194
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Move Messages to Another Queue"
@@ -1236,8 +1274,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 9,1,6,233
- PRODUCTVERSION 9,1,6,233
+ FILEVERSION 9,4,0,0
+ PRODUCTVERSION 9,4,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1254,12 +1292,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "IBM Corporation"
             VALUE "FileDescription", "RFHUtil: IBM MQ Message test and display utility"
-            VALUE "FileVersion", "9.1.6.233"
-            VALUE "InternalName", "rfhutil V9.1.5"
-            VALUE "LegalCopyright", "Copyright (C) IBM Corporation 2000-2021"
+            VALUE "FileVersion", "9.4.0.0"
+            VALUE "InternalName", "rfhutil V9.4.0"
+            VALUE "LegalCopyright", "Copyright (C) IBM Corporation 2000-2026"
             VALUE "OriginalFilename", "rfhutil.exe"
             VALUE "ProductName", "IBM MQ Message Test and Display Utility"
-            VALUE "ProductVersion", "9.1.6.233"
+            VALUE "ProductVersion", "9.4.0.0"
         END
     END
     BLOCK "VarFileInfo"

@@ -136,6 +136,8 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CCICS)
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnCihNone();
 	afx_msg void OnCihV1();
 	afx_msg void OnCihV2();

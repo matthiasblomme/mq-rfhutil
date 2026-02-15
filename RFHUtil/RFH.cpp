@@ -20,6 +20,7 @@ Jim MacNair - Initial Contribution
 
 #include "stdafx.h"
 #include "rfhutil.h"
+#include "ThemeManager.h"
 #include "comsubs.h"
 #include "mqsubs.h"
 #include "xmlsubs.h"
@@ -164,6 +165,8 @@ void RFH::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(RFH, CPropertyPage)
 	//{{AFX_MSG_MAP(RFH)
+	ON_WM_CTLCOLOR()
+	ON_WM_ERASEBKGND()
 	ON_EN_CHANGE(IDC_MSG_DOMAIN, OnChangeMsgDomain)
 	ON_EN_CHANGE(IDC_RFH_CHARSET, OnChangeRfhCharset)
 	ON_EN_CHANGE(IDD_MSG_FMT, OnChangeMsgFmt)
@@ -687,6 +690,10 @@ BOOL RFH::OnInitDialog()
 	// Enable tool tips for this dialog
 	EnableToolTips(TRUE);
 	
+	
+	// Apply theme to dialog
+	ThemeManager::GetInstance().ApplyThemeToDialog(this);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -3706,4 +3713,50 @@ void RFH::selectUsrFolder(BOOL selectUsr)
 
 	// update the dialog controls from the instance variables
 	UpdateData(FALSE);
+}
+
+HBRUSH RFH::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		pDC->SetTextColor(theme.GetTextColor());
+		
+		switch (nCtlColor) {
+			case CTLCOLOR_EDIT:
+			case CTLCOLOR_LISTBOX:
+				// Dark grey background for edit controls and combo boxes
+				pDC->SetBkColor(theme.GetControlBackgroundColor());
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_STATIC:
+				// Dialog background for static text
+				pDC->SetBkColor(theme.GetBackgroundColor());
+				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_BTN:
+				// Button background
+				pDC->SetBkColor(theme.GetButtonBackgroundColor());
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_DLG:
+				// Dialog background
+				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
+		}
+BOOL RFH::OnEraseBkgnd(CDC* pDC)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		CRect rect;
+		GetClientRect(&rect);
+		theme.DrawGradientBackground(pDC, rect);
+		return TRUE;
+	}
+	
+	return CPropertyPage::OnEraseBkgnd(pDC);
+}
+	}
+	
+	return CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
 }

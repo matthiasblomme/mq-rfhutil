@@ -19,6 +19,7 @@ Jim MacNair - Initial Contribution
 
 #include "stdafx.h"
 #include "rfhutil.h"
+#include "ThemeManager.h"
 #include "comsubs.h"
 #include "mqsubs.h"
 #include "CICS.h"
@@ -161,6 +162,7 @@ void CCICS::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CCICS, CPropertyPage)
 	//{{AFX_MSG_MAP(CCICS)
+	ON_WM_CTLCOLOR()
 	ON_BN_CLICKED(IDC_CIH_NONE, OnCihNone)
 	ON_BN_CLICKED(IDC_CIH_V1, OnCihV1)
 	ON_BN_CLICKED(IDC_CIH_V2, OnCihV2)
@@ -240,7 +242,7 @@ BOOL CCICS::PreCreateWindow(CREATESTRUCT& cs)
 	return CPropertyPage::PreCreateWindow(cs);
 }
 
-BOOL CCICS::OnInitDialog() 
+BOOL CCICS::OnInitDialog()
 
 {
 	CPropertyPage::OnInitDialog();
@@ -248,7 +250,58 @@ BOOL CCICS::OnInitDialog()
 	// tool tips are used and must be enabled
 	EnableToolTips(TRUE);
 
+	
+	// Apply theme to dialog
+	ThemeManager::GetInstance().ApplyThemeToDialog(this);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
+}
+
+HBRUSH CCICS::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		pDC->SetTextColor(theme.GetTextColor());
+		
+		switch (nCtlColor) {
+			case CTLCOLOR_EDIT:
+			case CTLCOLOR_LISTBOX:
+				// Dark grey background for edit controls and combo boxes
+				pDC->SetBkColor(theme.GetControlBackgroundColor());
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_STATIC:
+				// Dialog background for static text
+				pDC->SetBkColor(theme.GetBackgroundColor());
+				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_BTN:
+				// Button background
+				pDC->SetBkColor(theme.GetButtonBackgroundColor());
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_DLG:
+				// Dialog background
+				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
+		}
+	}
+	
+	return CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
+
+BOOL CCICS::OnEraseBkgnd(CDC* pDC)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		CRect rect;
+		GetClientRect(&rect);
+		theme.DrawGradientBackground(pDC, rect);
+		return TRUE;
+	}
+	
+	return CPropertyPage::OnEraseBkgnd(pDC);
+}
 }
 
 BOOL CCICS::GetToolTipText(UINT id, NMHDR *pTTTStruct, LRESULT *pResult)
@@ -2320,3 +2373,4 @@ int CCICS::conv2EBCDIC(char *data, int len)
 	// return the number of characters that were translated
 	return count;
 }
+

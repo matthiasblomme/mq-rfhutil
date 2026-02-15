@@ -19,6 +19,7 @@ Jim MacNair - Initial Contribution
 
 #include "stdafx.h"
 #include "rfhutil.h"
+#include "ThemeManager.h"
 #include "comsubs.h"
 #include "Props.h"
 #ifdef _DEBUG
@@ -67,6 +68,8 @@ void CProps::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CProps, CPropertyPage)
 	//{{AFX_MSG_MAP(CProps)
+	ON_WM_CTLCOLOR()
+	ON_WM_ERASEBKGND()
 	ON_EN_CHANGE(IDC_PROPS_USER_PROPERTIES, OnChangePropsUserProperties)
 	ON_BN_CLICKED(IDC_PROPS_MOVE_RFH_USR, OnPropsMoveRfhUsr)
 	//}}AFX_MSG_MAP
@@ -146,6 +149,10 @@ BOOL CProps::OnInitDialog()
 		
 	// use the special MyEdit subclass for the usr data edit box control
 	m_PropertiesEditBox.SubclassDlgItem(IDC_PROPS_USER_PROPERTIES, this);
+
+	
+	// Apply theme to dialog
+	ThemeManager::GetInstance().ApplyThemeToDialog(this);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 }
@@ -1342,4 +1349,35 @@ int CProps::propTypeToInt(const char * ptr)
 	}
 
 	return type;
+}
+
+HBRUSH CProps::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
+	
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode())
+	{
+		pDC->SetTextColor(theme.GetTextColor());
+		pDC->SetBkColor(theme.GetBackgroundColor());
+		return (HBRUSH)theme.GetDialogBackgroundBrush()->GetSafeHandle();
+	}
+	
+	return hbr;
+}
+
+BOOL CProps::OnEraseBkgnd(CDC* pDC)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode())
+	{
+		CRect rect;
+		GetClientRect(&rect);
+		theme.DrawGradientBackground(pDC, rect);
+		return TRUE;
+	}
+	
+	return CPropertyPage::OnEraseBkgnd(pDC);
 }

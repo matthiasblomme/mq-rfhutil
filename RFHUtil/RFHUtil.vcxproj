@@ -14,7 +14,7 @@
     <ProjectGuid>{319ADF71-EED6-401E-B2AF-AA9F2373D1A2}</ProjectGuid>
     <RootNamespace>RFHUtil</RootNamespace>
     <Keyword>MFCProj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -22,7 +22,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -30,7 +30,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -49,8 +49,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\Release\</OutDir>
-    <IncludePath>c:\program files\ibm\mq v900\tools\c\include;$(IncludePath)</IncludePath>
-    <LibraryPath>c:\program files\ibm\MQ V900\bin64;$(LibraryPath)</LibraryPath>
+    <IncludePath>d:\apps\mq\tools\c\include;$(IncludePath)</IncludePath>
+    <LibraryPath>d:\apps\mq\bin64;$(LibraryPath)</LibraryPath>
     <TargetName>rfhutil</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -59,7 +59,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;_WINDOWS;_DEBUG;_WIN32_WINNT 0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\IBM\MQ\tools\c\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\apps\mq\tools\c\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -86,7 +86,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\IBM\MQ\tools\c\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>d:\apps\mq\tools\c\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -118,6 +118,7 @@
     <ClInclude Include="CapPubs.h" />
     <ClInclude Include="CICS.h" />
     <ClInclude Include="comsubs.h" />
+    <ClInclude Include="ConnSettings.h" />
     <ClInclude Include="ConnUser.h" />
     <ClInclude Include="Copybook.h" />
     <ClInclude Include="DataArea.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="Savemsgs.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="ThemeManager.h" />
     <ClInclude Include="Usr.h" />
     <ClInclude Include="WritePubs.h" />
     <ClInclude Include="XMLParse.h" />
@@ -162,6 +164,7 @@
     <ClCompile Include="CapPubs.cpp" />
     <ClCompile Include="CICS.cpp" />
     <ClCompile Include="comsubs.cpp" />
+    <ClCompile Include="ConnSettings.cpp" />
     <ClCompile Include="ConnUser.cpp" />
     <ClCompile Include="Copybook.cpp" />
     <ClCompile Include="DataArea.cpp" />
@@ -195,6 +198,7 @@
     <ClCompile Include="rfhutilView.cpp" />
     <ClCompile Include="Savemsgs.cpp" />
     <ClCompile Include="StdAfx.cpp" />
+    <ClCompile Include="ThemeManager.cpp" />
     <ClCompile Include="Usr.cpp" />
     <ClCompile Include="WritePubs.cpp" />
     <ClCompile Include="XMLParse.cpp" />

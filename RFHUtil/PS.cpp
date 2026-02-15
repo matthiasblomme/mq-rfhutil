@@ -19,6 +19,7 @@ Jim MacNair - Initial Contribution
 
 #include "stdafx.h"
 #include "rfhutil.h"
+#include "ThemeManager.h"
 #include "PS.h"
 #include "comsubs.h"
 #include "CapPubs.h"
@@ -148,6 +149,8 @@ void CPS::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CPS, CPropertyPage)
 	//{{AFX_MSG_MAP(CPS)
+	ON_WM_CTLCOLOR()
+	ON_WM_ERASEBKGND()
 	ON_CBN_DROPDOWN(IDC_PS_SUBNAME, OnDropdownPsSubname)
 	ON_CBN_DROPDOWN(IDC_PS_QM, OnDropdownPsQm)
 	ON_BN_CLICKED(IDC_PS_GET, OnPsGet)
@@ -1264,6 +1267,10 @@ BOOL CPS::OnInitDialog()
 
 	// initialize the id fields to overtype
 	m_SubCorrelIdEdit.SetOvertype(TRUE);
+
+	
+	// Apply theme to dialog
+	ThemeManager::GetInstance().ApplyThemeToDialog(this);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 }
@@ -2420,4 +2427,35 @@ void CPS::WriteMsgs()
 	{
 		OnPsWriteMsgs();
 	}
+}
+
+HBRUSH CPS::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
+	
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode())
+	{
+		pDC->SetTextColor(theme.GetTextColor());
+		pDC->SetBkColor(theme.GetBackgroundColor());
+		return (HBRUSH)theme.GetDialogBackgroundBrush()->GetSafeHandle();
+	}
+	
+	return hbr;
+}
+
+BOOL CPS::OnEraseBkgnd(CDC* pDC)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode())
+	{
+		CRect rect;
+		GetClientRect(&rect);
+		theme.DrawGradientBackground(pDC, rect);
+		return TRUE;
+	}
+	
+	return CPropertyPage::OnEraseBkgnd(pDC);
 }

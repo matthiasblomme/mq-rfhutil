@@ -475,6 +475,27 @@ public:
 	int m_mq_props;
 	int m_close_option;
 	int m_file_codepage;				// code page of data within a file
+	
+	// P0.1: HeartBeat and KeepAlive settings
+	BOOL m_heartbeat_enabled;           // Enable/disable HeartBeat
+	int m_heartbeat_interval;           // HeartBeat interval in seconds (0 = use QM default)
+	BOOL m_keepalive_enabled;           // Enable/disable KeepAlive
+	int m_keepalive_interval;           // KeepAlive interval (MQKAI_AUTO or seconds)
+	
+	// P0.2: Automatic reconnection settings
+	BOOL m_auto_reconnect;              // Enable/disable auto-reconnect
+	int m_reconnect_max_attempts;       // Maximum reconnection attempts (0 = infinite)
+	int m_reconnect_interval;           // Seconds between reconnection attempts
+	int m_reconnect_backoff_multiplier; // Backoff multiplier (1 = no backoff, 2 = double)
+	int m_reconnect_max_interval;       // Maximum interval between attempts (seconds)
+	
+	// P0.2: Reconnection state tracking
+	int m_reconnect_attempt_count;      // Current reconnection attempt number
+	DWORD m_last_reconnect_time;        // Timestamp of last reconnection attempt
+	BOOL m_reconnecting;                // Flag indicating reconnection in progress
+	CString m_last_qm_name;             // Last connected QM name for reconnection
+	CString m_last_channel_name;        // Last used channel name
+	CString m_last_conn_name;           // Last used connection name
 	MQLONG			m_q_depth;			// depth of the last queue that was accessed
 	MQLONG			level;				// queue manager level
 	MQLONG			platform;			// queue manager platform type
@@ -619,6 +640,13 @@ public:
 	void setErrorMsg(MQLONG cc, MQLONG rc, const char * operation);
 	bool				connected;
 	MQLONG				characterSet;
+	
+	// P0.2: Automatic reconnection methods
+	bool attemptReconnection(LPCTSTR qmName, MQLONG failureReason);
+	void resetReconnectionState();
+	bool shouldAttemptReconnect(MQLONG rc);
+	int calculateReconnectDelay();
+	
 	int readFirstMessage(bool silent, LPCTSTR qName, int line);
 	int startBrowse(LPCTSTR QMname, LPCTSTR Queue, bool silent, int line);
 	int browseNext(bool silent);

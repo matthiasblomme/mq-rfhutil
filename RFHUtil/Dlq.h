@@ -87,6 +87,8 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CDlq)
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnChangeDlqCodepage();
 	afx_msg void OnChangeDlqDateTime();
 	afx_msg void OnChangeDlqFormat();

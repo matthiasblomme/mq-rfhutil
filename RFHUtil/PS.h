@@ -114,6 +114,8 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CPS)
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnDropdownPsSubname();
 	afx_msg void OnDropdownPsQm();
 	afx_msg void OnPsGet();

@@ -277,6 +277,27 @@ DataArea::DataArea()
 	// clear the real queue manager name of a client queue manager
 	memset(QueueManagerRealName, 0, sizeof(QueueManagerRealName));
 
+	// P0.1: Initialize HeartBeat and KeepAlive settings with defaults
+	m_heartbeat_enabled = TRUE;                 // Enabled by default
+	m_heartbeat_interval = 60;                  // 60 seconds (recommended)
+	m_keepalive_enabled = TRUE;                 // Enabled by default
+	m_keepalive_interval = -1;                  // MQKAI_AUTO (use OS defaults)
+
+	// P0.2: Initialize reconnection settings with defaults
+	m_auto_reconnect = TRUE;                    // Enabled by default
+	m_reconnect_max_attempts = 3;               // Try 3 times
+	m_reconnect_interval = 5;                   // Start with 5 seconds
+	m_reconnect_backoff_multiplier = 2;         // Double each time
+	m_reconnect_max_interval = 60;              // Cap at 60 seconds
+	
+	// P0.2: Initialize reconnection state
+	m_reconnect_attempt_count = 0;
+	m_last_reconnect_time = 0;
+	m_reconnecting = FALSE;
+	m_last_qm_name = "";
+	m_last_channel_name = "";
+	m_last_conn_name = "";
+
 	// initialize storage freed indicator
 	storageFreed = FALSE;
 
@@ -7564,6 +7585,17 @@ int DataArea::processMQGet(const char * getType, MQHOBJ handle, int options, int
 				{
 					// the connection is gone - make sure everything gets cleaned up
 					discQM();
+					
+					// P0.2: Attempt automatic reconnection
+					if (shouldAttemptReconnect(*rc))
+					{
+						if (attemptReconnection(m_QM_name, *rc))
+						{
+							// Reconnection successful - caller should retry the operation
+							// Return a special code to indicate retry is possible
+							return MQCC_WARNING;
+						}
+					}
 				}
 
 				// unable to create the message handle - report the error
@@ -7643,6 +7675,13 @@ int DataArea::processMQGet(const char * getType, MQHOBJ handle, int options, int
 			{
 				// the connection is gone - make sure everything gets cleaned up
 				discQM();
+				
+				// P0.2: Attempt automatic reconnection
+				if (shouldAttemptReconnect(*rc))
+				{
+					attemptReconnection(m_QM_name, *rc);
+					// Note: Caller will need to handle retry logic
+				}
 			}
 
 			// allocate the buffer to use for the message
@@ -9017,6 +9056,18 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 			// clean up the handles and indicators
 			connectionLostCleanup();
 
+			// Attempt automatic reconnection if enabled
+			if (m_auto_reconnect && !m_last_qm_name.IsEmpty())
+			{
+				if (attemptReconnection(m_last_qm_name, MQRC_CONNECTION_BROKEN))
+				{
+					if (traceEnabled)
+					{
+						logTraceEntry("setErrorMsg() - Reconnection successful after MQRC_CONNECTION_BROKEN");
+					}
+				}
+			}
+
 			break;
 		}
 	case MQRC_DATA_LENGTH_ERROR:
@@ -9178,6 +9229,19 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 	case MQRC_Q_MGR_NOT_AVAILABLE:
 		{
 			sprintf(errtxt, "2059 Queue manager not available (%s) - may not be started", operation);
+			
+			// Attempt automatic reconnection if enabled
+			if (m_auto_reconnect && !m_last_qm_name.IsEmpty())
+			{
+				if (attemptReconnection(m_last_qm_name, MQRC_Q_MGR_NOT_AVAILABLE))
+				{
+					if (traceEnabled)
+					{
+						logTraceEntry("setErrorMsg() - Reconnection successful after MQRC_Q_MGR_NOT_AVAILABLE");
+					}
+				}
+			}
+			
 			break;
 		}
 	case MQRC_REPORT_OPTIONS_ERROR:
@@ -9288,6 +9352,19 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 	case MQRC_CONNECTION_QUIESCING:
 		{
 			strcpy(errtxt, "2202 Connection is quiescing");
+			
+			// Attempt automatic reconnection if enabled
+			if (m_auto_reconnect && !m_last_qm_name.IsEmpty())
+			{
+				if (attemptReconnection(m_last_qm_name, MQRC_CONNECTION_QUIESCING))
+				{
+					if (traceEnabled)
+					{
+						logTraceEntry("setErrorMsg() - Reconnection successful after MQRC_CONNECTION_QUIESCING");
+					}
+				}
+			}
+			
 			break;
 		}
 	case MQRC_CONNECTION_STOPPING:
@@ -9473,6 +9550,19 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 	case MQRC_CONNECTION_STOPPED:
 		{
 			strcpy(errtxt, "2528 Connection stopped");
+			
+			// Attempt automatic reconnection if enabled
+			if (m_auto_reconnect && !m_last_qm_name.IsEmpty())
+			{
+				if (attemptReconnection(m_last_qm_name, MQRC_CONNECTION_STOPPED))
+				{
+					if (traceEnabled)
+					{
+						logTraceEntry("setErrorMsg() - Reconnection successful after MQRC_CONNECTION_STOPPED");
+					}
+				}
+			}
+			
 			break;
 		}
 	case MQRC_PUBSUB_INHIBITED:
@@ -10406,6 +10496,33 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 	// set the maximum message length
 	cd.MaxMsgLength = 104857600;
 
+	// ============================================================
+	// P0.1: Add HeartBeat and KeepAlive configuration
+	// ============================================================
+	
+	// Ensure we're using MQCD Version 6+ for KeepAliveInterval support
+	// HeartbeatInterval is in V3, KeepAliveInterval is in V6
+	if (cd.Version < MQCD_VERSION_6) {
+		cd.Version = MQCD_VERSION_6;
+	}
+	
+	// Set HeartBeat interval for fast MQ-level failure detection
+	// This detects queue manager crashes, process failures, and keeps
+	// the connection active to prevent firewall timeouts
+	cd.HeartbeatInterval = 60;  // 60 seconds (vs default 300s)
+	
+	// Set KeepAlive interval for network-level failure detection
+	// This detects network cable unplugs, router failures, and
+	// "half-open" TCP connections
+	cd.KeepAliveInterval = MQKAI_AUTO;  // Use OS defaults
+	
+	// Add trace logging
+	if (traceEnabled) {
+		sprintf(traceInfo, "P0.1: HeartBeat=%d, KeepAlive=AUTO (MQCD v%d)",
+				cd.HeartbeatInterval, cd.Version);
+		logTraceEntry(traceInfo);
+	}
+
 	// check if the client version is V6 or above
 	// do not try to use SSL if the client is V5.3 or less
 	clientVersion = ((CRfhutilApp *)AfxGetApp())->MQServerVersion;
@@ -10822,6 +10939,32 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 	currentQM = QMname;
 	connected = true;
 
+	// P0.2: Save connection parameters for potential reconnection
+	m_last_qm_name = QMname;
+	
+	// Extract channel name from cd structure (trim trailing spaces)
+	char tempChannel[MQ_CHANNEL_NAME_LENGTH + 1];
+	memcpy(tempChannel, cd.ChannelName, MQ_CHANNEL_NAME_LENGTH);
+	tempChannel[MQ_CHANNEL_NAME_LENGTH] = 0;
+	Rtrim(tempChannel);
+	if (strlen(tempChannel) > 0)
+	{
+		m_last_channel_name = tempChannel;
+	}
+	
+	// Extract connection name from cd structure (trim trailing spaces)
+	char tempConnName[MQ_CONN_NAME_LENGTH + 1];
+	memcpy(tempConnName, cd.ConnectionName, MQ_CONN_NAME_LENGTH);
+	tempConnName[MQ_CONN_NAME_LENGTH] = 0;
+	Rtrim(tempConnName);
+	if (strlen(tempConnName) > 0)
+	{
+		m_last_conn_name = tempConnName;
+	}
+	
+	// P0.2: Reset reconnection state on successful connection
+	resetReconnectionState();
+
 	// remember the last QM that we connected to as well as the user id and password that were used
 	app = (CRfhutilApp *)AfxGetApp();
 	app->initQMname = QMname;
@@ -11001,16 +11144,180 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 		}
 	}
 
+	return true;
+}
+
+///////////////////////////////////////////////////////
+//
+// P0.2: Attempt automatic reconnection to queue manager
+//
+// This method implements exponential backoff retry logic
+// with configurable maximum attempts and intervals.
+//
+///////////////////////////////////////////////////////
+
+bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
+{
+	char traceInfo[512];
+	
+	// Check if auto-reconnect is enabled
+	if (!m_auto_reconnect)
+	{
+		if (traceEnabled)
+		{
+			logTraceEntry("P0.2: Auto-reconnect disabled, not attempting reconnection");
+		}
+		return false;
+	}
+	
+	// Check if we've exceeded maximum attempts
+	if (m_reconnect_max_attempts > 0 && m_reconnect_attempt_count >= m_reconnect_max_attempts)
+	{
+		if (traceEnabled)
+		{
+			sprintf(traceInfo, "P0.2: Maximum reconnection attempts (%d) reached", m_reconnect_max_attempts);
+			logTraceEntry(traceInfo);
+		}
+		m_reconnecting = false;
+		return false;
+	}
+	
+	// Calculate delay with exponential backoff
+	int delay = calculateReconnectDelay();
+	
+	// Check if enough time has passed since last attempt
+	DWORD currentTime = GetTickCount();
+	DWORD timeSinceLastAttempt = currentTime - m_last_reconnect_time;
+	
+	if (timeSinceLastAttempt < (DWORD)(delay * 1000))
+	{
+		// Not enough time has passed, wait
+		if (traceEnabled)
+		{
+			sprintf(traceInfo, "P0.2: Waiting %d ms before next reconnection attempt", 
+					(delay * 1000) - timeSinceLastAttempt);
+			logTraceEntry(traceInfo);
+		}
+		Sleep((delay * 1000) - timeSinceLastAttempt);
+	}
+	
+	// Increment attempt counter
+	m_reconnect_attempt_count++;
+	m_last_reconnect_time = GetTickCount();
+	m_reconnecting = true;
+	
 	if (traceEnabled)
 	{
-		// trace exit from connect2QM
-		sprintf(traceInfo, "Exiting DataArea::connect2QM() returned true cc=%d QMname=%s initQMname=%s", cc, QMname, (LPCTSTR)app->initQMname);
-
-		// trace entry to connect2QM
+		sprintf(traceInfo, "P0.2: Reconnection attempt %d of %d (delay: %ds, reason: %d)", 
+				m_reconnect_attempt_count, 
+				m_reconnect_max_attempts > 0 ? m_reconnect_max_attempts : 999,
+				delay,
+				failureReason);
 		logTraceEntry(traceInfo);
 	}
+	
+	// Ensure clean state before reconnecting
+	if (connected)
+	{
+		discQM();
+	}
+	
+	// Attempt to reconnect
+	bool success = connect2QM(qmName);
+	
+	if (success)
+	{
+		if (traceEnabled)
+		{
+			sprintf(traceInfo, "P0.2: Reconnection successful after %d attempts", m_reconnect_attempt_count);
+			logTraceEntry(traceInfo);
+		}
+		
+		// Reset reconnection state on success
+		resetReconnectionState();
+		
+		// Show success message to user
+		CString msg;
+		msg.Format("Reconnected to queue manager '%s' after %d attempt(s)", 
+				   qmName, m_reconnect_attempt_count);
+		AfxMessageBox(msg, MB_OK | MB_ICONINFORMATION);
+	}
+	else
+	{
+		if (traceEnabled)
+		{
+			sprintf(traceInfo, "P0.2: Reconnection attempt %d failed", m_reconnect_attempt_count);
+			logTraceEntry(traceInfo);
+		}
+	}
+	
+	m_reconnecting = false;
+	return success;
+}
 
-	return true;
+///////////////////////////////////////////////////////
+//
+// P0.2: Calculate reconnection delay with exponential backoff
+//
+///////////////////////////////////////////////////////
+
+int DataArea::calculateReconnectDelay()
+{
+	int delay = m_reconnect_interval;
+	
+	// Apply exponential backoff
+	if (m_reconnect_backoff_multiplier > 1 && m_reconnect_attempt_count > 0)
+	{
+		for (int i = 1; i < m_reconnect_attempt_count; i++)
+		{
+			delay *= m_reconnect_backoff_multiplier;
+			
+			// Cap at maximum interval
+			if (delay > m_reconnect_max_interval)
+			{
+				delay = m_reconnect_max_interval;
+				break;
+			}
+		}
+	}
+	
+	return delay;
+}
+
+///////////////////////////////////////////////////////
+//
+// P0.2: Reset reconnection state
+//
+///////////////////////////////////////////////////////
+
+void DataArea::resetReconnectionState()
+{
+	m_reconnect_attempt_count = 0;
+	m_last_reconnect_time = 0;
+	m_reconnecting = false;
+}
+
+///////////////////////////////////////////////////////
+//
+// P0.2: Check if reconnection should be attempted for this error
+//
+///////////////////////////////////////////////////////
+
+bool DataArea::shouldAttemptReconnect(MQLONG rc)
+{
+	// Only attempt reconnection for connection-related errors
+	switch (rc)
+	{
+	case MQRC_CONNECTION_BROKEN:
+	case MQRC_Q_MGR_NOT_AVAILABLE:
+	case MQRC_CONNECTION_QUIESCING:
+	case MQRC_CONNECTION_STOPPED:
+	case MQRC_HCONN_ERROR:
+	case MQRC_Q_MGR_STOPPING:
+		return true;
+	default:
+		return false;
+	}
 }
 
 ///////////////////////////////////////////
@@ -19585,6 +19892,18 @@ void DataArea::getPSMessage(const char * subName, int waitTime, BOOL * isRetaine
 		{
 			// get rid of the subscription and other handles which are no longer valid
 			connectionLostCleanup();
+			
+			// Attempt automatic reconnection if enabled
+			if (m_auto_reconnect && !m_last_qm_name.IsEmpty())
+			{
+				if (attemptReconnection(m_last_qm_name, MQRC_CONNECTION_BROKEN))
+				{
+					if (traceEnabled)
+					{
+						logTraceEntry("PSGet - Reconnection successful after MQRC_CONNECTION_BROKEN");
+					}
+				}
+			}
 		}
 
 		// get failed, the reason is in the error message

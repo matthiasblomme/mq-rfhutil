@@ -73,6 +73,8 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CProps)
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnChangePropsUserProperties();
 	afx_msg void OnPropsMoveRfhUsr();

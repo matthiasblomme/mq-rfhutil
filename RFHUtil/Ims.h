@@ -101,6 +101,8 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CIms)
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnIihNoConversation();
 	afx_msg void OnIihNoReplyFormat();

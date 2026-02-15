@@ -24,7 +24,9 @@ Jim MacNair - Initial Contribution
 //#endif
 
 #ifdef WIN32
+#ifndef _STDINT
 typedef unsigned __int64 int64_t;
+#endif
 #endif
 
 static const unsigned char HEX_NUMBERS[] = "0123456789ABCDEF";

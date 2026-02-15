@@ -63,6 +63,12 @@ private:
 // Generated message map functions
 protected:
 	//{{AFX_MSG(CMainFrame)
+	afx_msg void OnViewThemeLight();
+	afx_msg void OnViewThemeDark();
+	afx_msg void OnViewThemeSystem();
+	afx_msg void OnUpdateViewThemeLight(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateViewThemeDark(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateViewThemeSystem(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

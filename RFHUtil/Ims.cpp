@@ -20,6 +20,7 @@ Jim MacNair - Initial Contribution
 
 #include "stdafx.h"
 #include "rfhutil.h"
+#include "ThemeManager.h"
 #include "Ims.h"
 #include "comsubs.h"
 #include "mqsubs.h"
@@ -112,6 +113,8 @@ void CIms::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CIms, CPropertyPage)
 	//{{AFX_MSG_MAP(CIms)
+	ON_WM_CTLCOLOR()
+	ON_WM_ERASEBKGND()
 	ON_BN_CLICKED(IDC_IIH_NO_CONVERSATION, OnIihNoConversation)
 	ON_BN_CLICKED(IDC_IIH_NO_REPLY_FORMAT, OnIihNoReplyFormat)
 	ON_BN_CLICKED(IDC_IIH_PASS_EXPIRATION, OnIihPassExpiration)
@@ -186,6 +189,10 @@ BOOL CIms::OnInitDialog()
 	
 	// enable tool tips for this dialog	
 	EnableToolTips(TRUE);
+
+	
+	// Apply theme to dialog
+	ThemeManager::GetInstance().ApplyThemeToDialog(this);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -1248,4 +1255,35 @@ BOOL CIms::PreCreateWindow(CREATESTRUCT& cs)
 	cs.dwExStyle |= WS_EX_CONTROLPARENT;
 	
 	return CPropertyPage::PreCreateWindow(cs);
+}
+
+HBRUSH CIms::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
+	
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode())
+	{
+		pDC->SetTextColor(theme.GetTextColor());
+		pDC->SetBkColor(theme.GetBackgroundColor());
+		return (HBRUSH)theme.GetDialogBackgroundBrush()->GetSafeHandle();
+	}
+	
+	return hbr;
+}
+
+BOOL CIms::OnEraseBkgnd(CDC* pDC)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode())
+	{
+		CRect rect;
+		GetClientRect(&rect);
+		theme.DrawGradientBackground(pDC, rect);
+		return TRUE;
+	}
+	
+	return CPropertyPage::OnEraseBkgnd(pDC);
 }
