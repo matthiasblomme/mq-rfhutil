@@ -3743,6 +3743,11 @@ HBRUSH RFH::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 				// Dialog background
 				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
 		}
+	}
+	
+	return CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
+}
+
 BOOL RFH::OnEraseBkgnd(CDC* pDC)
 {
 	ThemeManager& theme = ThemeManager::GetInstance();
@@ -3755,8 +3760,4 @@ BOOL RFH::OnEraseBkgnd(CDC* pDC)
 	}
 	
 	return CPropertyPage::OnEraseBkgnd(pDC);
-}
-	}
-	
-	return CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
 }

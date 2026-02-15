@@ -288,6 +288,7 @@ HBRUSH CCICS::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	}
 	
 	return CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
+}
 
 BOOL CCICS::OnEraseBkgnd(CDC* pDC)
 {
@@ -301,7 +302,6 @@ BOOL CCICS::OnEraseBkgnd(CDC* pDC)
 	}
 	
 	return CPropertyPage::OnEraseBkgnd(pDC);
-}
 }
 
 BOOL CCICS::GetToolTipText(UINT id, NMHDR *pTTTStruct, LRESULT *pResult)

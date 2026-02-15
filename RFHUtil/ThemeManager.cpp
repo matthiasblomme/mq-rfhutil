@@ -58,8 +58,8 @@ ThemeManager::ThemeManager()
     m_darkColors.border = RGB(70, 70, 70);                  // Lighter border for visibility
     m_darkColors.highlight = RGB(0, 120, 215);              // Blue (same as light)
     m_darkColors.disabledText = RGB(120, 120, 120);         // Slightly lighter gray
-    m_darkColors.buttonBackground = RGB(55, 55, 55);        // Dark grey for buttons
-    m_darkColors.buttonBorder = RGB(80, 80, 80);            // Lighter border for buttons
+    m_darkColors.buttonBackground = RGB(35, 65, 70);        // Dark teal for buttons (fits color scheme)
+    m_darkColors.buttonBorder = RGB(50, 85, 90);            // Lighter teal border for buttons
     m_darkColors.gradientStart = RGB(35, 35, 35);           // Slightly lighter than background
     m_darkColors.gradientEnd = RGB(25, 25, 25);             // Slightly darker than background
     
@@ -362,6 +362,7 @@ void ThemeManager::DrawThemedButton(CDC* pDC, CRect rect, LPCTSTR text, UINT sta
 	pDC->SetTextColor(textColor);
 	pDC->SetBkMode(TRANSPARENT);
 	pDC->DrawText(text, -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+}
 
 void ThemeManager::ApplyDarkTitleBar(CWnd* pWnd)
 {
@@ -397,5 +398,4 @@ void ThemeManager::ApplyDarkTitleBar(CWnd* pWnd)
 	// Force window to redraw title bar
 	SetWindowPos(pWnd->GetSafeHwnd(), NULL, 0, 0, 0, 0,
 		SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
-}
 }

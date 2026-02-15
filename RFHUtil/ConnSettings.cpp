@@ -308,6 +308,11 @@ HBRUSH ConnSettings::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 				// Dialog background
 				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
 		}
+	}
+	
+	return CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
+}
+
 BOOL ConnSettings::OnEraseBkgnd(CDC* pDC)
 {
 	ThemeManager& theme = ThemeManager::GetInstance();
@@ -320,8 +325,4 @@ BOOL ConnSettings::OnEraseBkgnd(CDC* pDC)
 	}
 	
 	return CPropertyPage::OnEraseBkgnd(pDC);
-}
-	}
-	
-	return CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
 }
