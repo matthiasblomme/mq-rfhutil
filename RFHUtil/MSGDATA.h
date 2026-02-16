@@ -95,6 +95,7 @@ protected:
 	//{{AFX_MSG(MSGDATA)
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	afx_msg void OnAscii();
 	afx_msg void OnCobol();
 	afx_msg void OnHex();

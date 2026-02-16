@@ -86,6 +86,7 @@ BEGIN_MESSAGE_MAP(ConnSettings, CPropertyPage)
 	//{{AFX_MSG_MAP(ConnSettings)
 	ON_WM_CTLCOLOR()
 	ON_WM_ERASEBKGND()
+	ON_WM_DRAWITEM()
 	ON_BN_CLICKED(IDC_ENABLE_HEARTBEAT, &ConnSettings::OnEnableHeartbeat)
 	ON_BN_CLICKED(IDC_ENABLE_KEEPALIVE, &ConnSettings::OnEnableKeepalive)
 	ON_BN_CLICKED(IDC_ENABLE_AUTO_RECONNECT, &ConnSettings::OnEnableAutoReconnect)
@@ -304,6 +305,10 @@ HBRUSH ConnSettings::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 				pDC->SetBkColor(theme.GetButtonBackgroundColor());
 				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
 				
+			case CTLCOLOR_SCROLLBAR:
+				// Scrollbar background
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
 			case CTLCOLOR_DLG:
 				// Dialog background
 				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
@@ -325,4 +330,31 @@ BOOL ConnSettings::OnEraseBkgnd(CDC* pDC)
 	}
 	
 	return CPropertyPage::OnEraseBkgnd(pDC);
+}
+
+void ConnSettings::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	// Only handle buttons
+	if (lpDrawItemStruct->CtlType != ODT_BUTTON) {
+		CPropertyPage::OnDrawItem(nIDCtl, lpDrawItemStruct);
+		return;
+	}
+	
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	// Get button text
+	CWnd* pWnd = GetDlgItem(nIDCtl);
+	if (!pWnd) {
+		CPropertyPage::OnDrawItem(nIDCtl, lpDrawItemStruct);
+		return;
+	}
+	
+	CString buttonText;
+	pWnd->GetWindowText(buttonText);
+	
+	// Use ThemeManager to draw the button
+	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+	CRect rect = lpDrawItemStruct->rcItem;
+	
+	theme.DrawThemedButton(pDC, rect, buttonText, lpDrawItemStruct->itemState);
 }

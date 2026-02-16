@@ -24,6 +24,7 @@ Jim MacNair - Initial Contribution
 #include "rfhutilDoc.h"
 #include "rfhutilView.h"
 #include "DataArea.h"
+#include "ThemeManager.h"
 // goto dialog
 #include "goto.h"
 
@@ -148,6 +149,7 @@ BEGIN_MESSAGE_MAP(CRfhutilView, CCtrlView)
 	ON_NOTIFY_REFLECT(TCN_SELCHANGING, OnSelchangingSampletab)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE1 + 15, OnUpdateRecentFileMenu)
 //	ON_REGISTERED_MESSAGE( findMessage, findHelper)
+	ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -549,6 +551,13 @@ void CRfhutilView::OnInitialUpdate()
 	LONG style2 = GetTabCtrl().GetStyle();
 
 	GetTabCtrl().SetFont(&m_tab_font, 0);
+	
+	// Apply dark title bar to main frame
+	ThemeManager& theme = ThemeManager::GetInstance();
+	CWnd* pMainWnd = AfxGetApp()->m_pMainWnd;
+	if (pMainWnd && pMainWnd->GetSafeHwnd()) {
+		theme.ApplyDarkTitleBar(pMainWnd);
+	}
 	
 	if (m_bInitialized == true)
 	{
@@ -3434,4 +3443,23 @@ void CRfhutilView::OnWriteMsgs()
 		// invoke the proper function for this accelerator
 		m_ps.WriteMsgs();
 	}
+}
+
+HBRUSH CRfhutilView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		pDC->SetTextColor(theme.GetTextColor());
+		pDC->SetBkColor(theme.GetBackgroundColor());
+		
+		if (nCtlColor == CTLCOLOR_DLG || nCtlColor == CTLCOLOR_STATIC) {
+			return *theme.GetBackgroundBrush();
+		}
+		else if (nCtlColor == CTLCOLOR_SCROLLBAR) {
+			return *theme.GetControlBackgroundBrush();
+		}
+	}
+	
+	return CCtrlView::OnCtlColor(pDC, pWnd, nCtlColor);
 }

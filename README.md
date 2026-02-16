@@ -6,6 +6,42 @@ This program can be useful for the development and testing of IBM MQ and
 IBM Integration Bus aka WebSphere Message Broker aka App Connect Enterprise applications.
 Test messages are stored as files, which are then read by the application and written to an MQ queue. The program is GUI based.
 
+## Latest Features (v9.4.0.0)
+
+### 🎨 Dark Mode Support
+RFHUtil now includes full dark mode support with automatic theme detection and manual theme switching.
+
+**Light Mode:**
+<!-- TODO: Add screenshot of light mode interface -->
+![Light Mode](docs/screenshots/light-mode.png)
+
+**Dark Mode:**
+<!-- TODO: Add screenshot of dark mode interface -->
+![Dark Mode](docs/screenshots/dark-mode.png)
+
+**Theme Menu:**
+<!-- TODO: Add screenshot of theme menu -->
+![Theme Selection](docs/screenshots/theme-menu.png)
+
+### 🔄 Enhanced Connection Reliability
+- **HeartBeat/KeepAlive Configuration**: Fine-tune connection monitoring for optimal reliability
+- **Automatic Reconnection**: Seamlessly reconnects to queue managers with configurable retry logic
+- **Browse Operation Recovery**: Automatically restarts browse operations after reconnection
+- **Connection Settings UI**: New dedicated tab for managing all connection parameters
+
+**Connection Settings Tab:**
+<!-- TODO: Add screenshot of connection settings tab -->
+![Connection Settings](docs/screenshots/connection-settings.png)
+
+**Reconnection in Action:**
+<!-- TODO: Add screenshot showing reconnection log messages -->
+![Auto Reconnection](docs/screenshots/auto-reconnection.png)
+
+### 📊 Key Improvements
+- **Non-intrusive notifications**: Reconnection messages appear in the log window instead of blocking popups
+- **Accurate attempt tracking**: Fixed counter display showing correct number of reconnection attempts
+- **Seamless browse recovery**: Browse operations automatically restart from the first message after reconnection
+
 ## Possible Uses
 It allows test messages to be captured and stored in files, and then used to drive Message Flows. Output messages can also be read and displayed in a variety of formats. The formats include two types of XML as well as matched against a COBOL copybook. The data can be in EBCDIC or ASCII. An RFH2 header can be added to the message before the message is sent.
 

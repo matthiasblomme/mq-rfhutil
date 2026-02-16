@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "rfhutil.h"
 #include "MyPropertySheet.h"
+#include "ThemeManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -57,6 +58,8 @@ BEGIN_MESSAGE_MAP(MyPropertySheet, CPropertySheet)
 	ON_WM_KEYDOWN()
     ON_CONTROL_REFLECT(CBN_EDITUPDATE, OnEditUpdate)
 	//}}AFX_MSG_MAP
+	ON_WM_DRAWITEM()
+	ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -134,3 +137,68 @@ void MyPropertySheet::BuildPropPageArray()
     m_dwTemplateSize = GetTemplateSize( pTemplate );
     m_bSystemFont    = false;
 }*/
+
+BOOL MyPropertySheet::OnInitDialog()
+{
+	BOOL result = CPropertySheet::OnInitDialog();
+	
+	// Apply theme to property sheet and tab control
+	ThemeManager::GetInstance().ApplyThemeToPropertySheet(this);
+	
+	return result;
+}
+
+void MyPropertySheet::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	// Check if this is the tab control
+	CTabCtrl* pTab = GetTabControl();
+	if (pTab && pTab->GetSafeHwnd() == lpDrawItemStruct->hwndItem) {
+		ThemeManager& theme = ThemeManager::GetInstance();
+		
+		if (!theme.IsDarkMode()) {
+			CPropertySheet::OnDrawItem(nIDCtl, lpDrawItemStruct);
+			return;
+		}
+		
+		// Get tab text
+		TCITEM tci;
+		char szText[256];
+		tci.mask = TCIF_TEXT;
+		tci.pszText = szText;
+		tci.cchTextMax = sizeof(szText);
+		pTab->GetItem(lpDrawItemStruct->itemID, &tci);
+		
+		// Determine if tab is selected
+		int curSel = pTab->GetCurSel();
+		bool selected = (lpDrawItemStruct->itemID == (UINT)curSel);
+		bool hot = (lpDrawItemStruct->itemState & ODS_HOTLIGHT) != 0;
+		
+		// Draw the tab
+		CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+		CRect rect = lpDrawItemStruct->rcItem;
+		theme.DrawThemedTab(pDC, rect, szText, selected, hot);
+		
+		return;
+	}
+	
+	CPropertySheet::OnDrawItem(nIDCtl, lpDrawItemStruct);
+}
+
+HBRUSH MyPropertySheet::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		pDC->SetTextColor(theme.GetTextColor());
+		pDC->SetBkColor(theme.GetBackgroundColor());
+		
+		if (nCtlColor == CTLCOLOR_DLG || nCtlColor == CTLCOLOR_STATIC) {
+			return *theme.GetBackgroundBrush();
+		}
+		else if (nCtlColor == CTLCOLOR_SCROLLBAR) {
+			return *theme.GetControlBackgroundBrush();
+		}
+	}
+	
+	return CPropertySheet::OnCtlColor(pDC, pWnd, nCtlColor);
+}

@@ -70,6 +70,7 @@ protected:
 	//{{AFX_MSG(other)
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	afx_msg void OnChangeOtherRfhData();
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG

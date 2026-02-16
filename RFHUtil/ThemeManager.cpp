@@ -94,6 +94,9 @@ void ThemeManager::SetTheme(AppTheme theme)
 		// Apply dark title bar
 		ApplyDarkTitleBar(app->m_pMainWnd);
 		
+		// Update all button styles based on new theme
+		UpdateAllControls(app->m_pMainWnd);
+		
 		// Redraw everything
 		app->m_pMainWnd->RedrawWindow(NULL, NULL,
 			RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN | RDW_UPDATENOW);
@@ -212,9 +215,51 @@ void ThemeManager::ApplyThemeToControl(CWnd* pControl)
         return;
     }
     
+    // Check if this is a button control
+    char className[256];
+    ::GetClassName(pControl->GetSafeHwnd(), className, sizeof(className));
+    
+    if (_stricmp(className, "Button") == 0) {
+        // Get current style
+        LONG style = ::GetWindowLong(pControl->GetSafeHwnd(), GWL_STYLE);
+        
+        // Check if it's a push button (not checkbox, radio, etc.)
+        LONG buttonType = style & BS_TYPEMASK;
+        if (buttonType == BS_PUSHBUTTON || buttonType == BS_DEFPUSHBUTTON) {
+            // Only add BS_OWNERDRAW style in dark mode
+            if (IsDarkMode()) {
+                style |= BS_OWNERDRAW;
+            } else {
+                // Remove BS_OWNERDRAW style in light mode to use native Windows buttons
+                style &= ~BS_OWNERDRAW;
+            }
+            ::SetWindowLong(pControl->GetSafeHwnd(), GWL_STYLE, style);
+        }
+    }
+    
     // Force control to repaint
     pControl->Invalidate(TRUE);
     pControl->UpdateWindow();
+}
+
+void ThemeManager::UpdateAllControls(CWnd* pWnd)
+{
+    if (!pWnd || !pWnd->GetSafeHwnd()) {
+        return;
+    }
+    
+    // Update this window's controls
+    CWnd* pChild = pWnd->GetWindow(GW_CHILD);
+    while (pChild) {
+        // Apply theme to this control
+        ApplyThemeToControl(pChild);
+        
+        // Recursively update child controls
+        UpdateAllControls(pChild);
+        
+        // Move to next sibling
+        pChild = pChild->GetWindow(GW_HWNDNEXT);
+    }
 }
 
 void ThemeManager::LoadThemePreference()
@@ -325,27 +370,49 @@ void ThemeManager::DrawControlBorder(CDC* pDC, CRect rect)
 
 void ThemeManager::DrawThemedButton(CDC* pDC, CRect rect, LPCTSTR text, UINT state)
 {
-	if (!IsDarkMode()) {
-		// Use default drawing for light mode
-		return;
-	}
+	COLORREF bgColor, borderColor, textColor;
 	
-	// Dark mode button drawing
-	COLORREF bgColor = GetButtonBackgroundColor();
-	COLORREF borderColor = GetButtonBorderColor();
-	COLORREF textColor = GetTextColor();
-	
-	// Adjust colors based on button state
-	if (state & ODS_SELECTED) {
-		// Button is pressed - darken background
-		bgColor = RGB(
-			max(0, GetRValue(bgColor) - 15),
-			max(0, GetGValue(bgColor) - 15),
-			max(0, GetBValue(bgColor) - 15)
-		);
-	} else if (state & ODS_FOCUS) {
-		// Button has focus - use highlight color for border
-		borderColor = GetHighlightColor();
+	if (IsDarkMode()) {
+		// Dark mode button colors
+		bgColor = GetButtonBackgroundColor();
+		borderColor = GetButtonBorderColor();
+		textColor = GetTextColor();
+		
+		// Adjust colors based on button state
+		if (state & ODS_SELECTED) {
+			// Button is pressed - darken background
+			bgColor = RGB(
+				max(0, GetRValue(bgColor) - 15),
+				max(0, GetGValue(bgColor) - 15),
+				max(0, GetBValue(bgColor) - 15)
+			);
+		} else if (state & ODS_FOCUS) {
+			// Button has focus - use highlight color for border
+			borderColor = GetHighlightColor();
+		}
+	} else {
+		// Light mode button colors - standard Windows button appearance
+		if (state & ODS_SELECTED) {
+			// Button is pressed
+			bgColor = RGB(204, 228, 247);  // Light blue pressed
+			borderColor = RGB(0, 84, 153);  // Dark blue border
+		} else if (state & ODS_FOCUS) {
+			// Button has focus
+			bgColor = RGB(229, 241, 251);  // Very light blue
+			borderColor = RGB(0, 120, 215);  // Blue border
+		} else {
+			// Normal state
+			bgColor = RGB(225, 225, 225);  // Light gray
+			borderColor = RGB(173, 173, 173);  // Gray border
+		}
+		textColor = RGB(0, 0, 0);  // Black text
+		
+		// Disabled state
+		if (state & ODS_DISABLED) {
+			bgColor = RGB(240, 240, 240);  // Very light gray
+			borderColor = RGB(212, 212, 212);  // Light gray border
+			textColor = RGB(160, 160, 160);  // Gray text
+		}
 	}
 	
 	// Draw button background
@@ -398,4 +465,103 @@ void ThemeManager::ApplyDarkTitleBar(CWnd* pWnd)
 	// Force window to redraw title bar
 	SetWindowPos(pWnd->GetSafeHwnd(), NULL, 0, 0, 0, 0,
 		SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+}
+
+void ThemeManager::ApplyThemeToPropertySheet(CPropertySheet* pSheet)
+{
+	if (!pSheet || !pSheet->GetSafeHwnd()) {
+		return;
+	}
+	
+	// Apply dark title bar
+	ApplyDarkTitleBar(pSheet);
+	
+	// Get the tab control
+	CTabCtrl* pTab = pSheet->GetTabControl();
+	if (pTab && pTab->GetSafeHwnd()) {
+		// Set owner draw style for custom tab drawing
+		LONG style = ::GetWindowLong(pTab->GetSafeHwnd(), GWL_STYLE);
+		style |= TCS_OWNERDRAWFIXED;
+		::SetWindowLong(pTab->GetSafeHwnd(), GWL_STYLE, style);
+		
+		// Force redraw
+		pTab->Invalidate(TRUE);
+		pTab->UpdateWindow();
+	}
+	
+	// Apply theme to property sheet itself
+	if (IsDarkMode()) {
+		pSheet->Invalidate(TRUE);
+		pSheet->UpdateWindow();
+	}
+}
+
+void ThemeManager::DrawThemedTab(CDC* pDC, CRect rect, LPCTSTR text, bool selected, bool hot)
+{
+	if (!pDC) {
+		return;
+	}
+	
+	if (!IsDarkMode()) {
+		// In light mode, just draw text with default colors
+		pDC->SetBkMode(TRANSPARENT);
+		pDC->DrawText(text, -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+		return;
+	}
+	
+	const ColorScheme& colors = GetCurrentColors();
+	
+	// Determine colors based on state
+	COLORREF bgColor = colors.controlBackground;
+	COLORREF textColor = RGB(220, 220, 220);  // Light gray for better visibility
+	COLORREF borderColor = colors.border;
+	
+	if (selected) {
+		// Selected tab - use brighter background
+		bgColor = RGB(60, 60, 65);  // Lighter than control background
+		textColor = RGB(255, 255, 255);  // Pure white for selected
+		borderColor = colors.highlight;
+	} else if (hot) {
+		// Hot (hover) tab - slightly lighter
+		bgColor = RGB(
+			min(255, GetRValue(colors.controlBackground) + 15),
+			min(255, GetGValue(colors.controlBackground) + 15),
+			min(255, GetBValue(colors.controlBackground) + 15)
+		);
+	}
+	
+	// Draw tab background
+	CBrush bgBrush(bgColor);
+	pDC->FillRect(rect, &bgBrush);
+	
+	// Draw top and side borders
+	CPen borderPen(PS_SOLID, 1, borderColor);
+	CPen* oldPen = pDC->SelectObject(&borderPen);
+	
+	// Top border
+	pDC->MoveTo(rect.left, rect.top);
+	pDC->LineTo(rect.right, rect.top);
+	
+	// Left border
+	pDC->MoveTo(rect.left, rect.top);
+	pDC->LineTo(rect.left, rect.bottom);
+	
+	// Right border
+	pDC->MoveTo(rect.right - 1, rect.top);
+	pDC->LineTo(rect.right - 1, rect.bottom);
+	
+	// Bottom border only for non-selected tabs
+	if (!selected) {
+		pDC->MoveTo(rect.left, rect.bottom - 1);
+		pDC->LineTo(rect.right, rect.bottom - 1);
+	}
+	
+	pDC->SelectObject(oldPen);
+	
+	// Draw text with explicit font and color
+	pDC->SetTextColor(textColor);
+	pDC->SetBkMode(TRANSPARENT);
+	CRect textRect = rect;
+	textRect.DeflateRect(4, 2);  // Less deflation for more space
+	pDC->DrawText(text, -1, textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 }

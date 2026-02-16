@@ -297,6 +297,10 @@ DataArea::DataArea()
 	m_last_qm_name = "";
 	m_last_channel_name = "";
 	m_last_conn_name = "";
+	
+	// P0.2: Initialize browse state tracking
+	m_browse_active = FALSE;
+	m_browse_queue_name.Empty();
 
 	// initialize storage freed indicator
 	storageFreed = FALSE;
@@ -8193,6 +8197,10 @@ int DataArea::startBrowse(LPCTSTR QMname, LPCTSTR Queue, bool silent, int line)
 		return MQCC_FAILED;
 	}
 
+	// P0.2: Track browse state for potential reconnection
+	m_browse_active = TRUE;
+	m_browse_queue_name = Queue;
+
 	// try to browse the first message in the queue
 	cc = readFirstMessage(silent, Queue, line);
 
@@ -8254,6 +8262,10 @@ void DataArea::endBrowse(bool silent)
 			m_error_msg += "Browse operation ended";
 		}
 	}
+
+	// P0.2: Clear browse state
+	m_browse_active = FALSE;
+	m_browse_queue_name.Empty();
 }
 
 int DataArea::browseNext(bool silent)
@@ -11233,14 +11245,52 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 			logTraceEntry(traceInfo);
 		}
 		
+		// P0.2: Save attempt count before reset (fixes "0 attempts" bug)
+		int attemptCount = m_reconnect_attempt_count;
+		
 		// Reset reconnection state on success
 		resetReconnectionState();
 		
-		// Show success message to user
-		CString msg;
-		msg.Format("Reconnected to queue manager '%s' after %d attempt(s)", 
-				   qmName, m_reconnect_attempt_count);
-		AfxMessageBox(msg, MB_OK | MB_ICONINFORMATION);
+		// P0.2: Auto-restart browse operation if one was active
+		if (m_browse_active && !m_browse_queue_name.IsEmpty())
+		{
+			CString browseQueue = m_browse_queue_name;  // Save before clearing
+			
+			if (traceEnabled)
+			{
+				sprintf(traceInfo, "P0.2: Auto-restarting browse on queue '%s'", (LPCTSTR)browseQueue);
+				logTraceEntry(traceInfo);
+			}
+			
+			// Clear browse state before restarting (startBrowse will set it again)
+			m_browse_active = FALSE;
+			m_browse_queue_name.Empty();
+			
+			// Attempt to restart browse from beginning (silent mode to avoid duplicate messages)
+			int browseResult = startBrowse(qmName, browseQueue, true, -1);
+			
+			if (browseResult == MQCC_OK)
+			{
+				// Log combined reconnection + browse restart message
+				m_error_msg.Format("Reconnected to queue manager '%s' after %d attempt(s) - Browse restarted from first message on queue '%s'",
+								   qmName, attemptCount, (LPCTSTR)browseQueue);
+				updateMsgText();
+			}
+			else
+			{
+				// Log reconnection success but browse restart failure
+				m_error_msg.Format("Reconnected to queue manager '%s' after %d attempt(s) - Failed to restart browse on queue '%s'",
+								   qmName, attemptCount, (LPCTSTR)browseQueue);
+				updateMsgText();
+			}
+		}
+		else
+		{
+			// No browse operation was active - just log reconnection success
+			m_error_msg.Format("Reconnected to queue manager '%s' after %d attempt(s)",
+							   qmName, attemptCount);
+			updateMsgText();
+		}
 	}
 	else
 	{

@@ -81,6 +81,7 @@ protected:
 	//{{AFX_MSG(jms)
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	afx_msg void OnChangeJmsDst();
 	afx_msg void OnChangeJmsCorrelId();
 	afx_msg void OnChangeJmsDeliveryMode();

@@ -83,6 +83,7 @@ protected:
 	//{{AFX_MSG(ConnSettings)
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	afx_msg void OnEnableHeartbeat();
 	afx_msg void OnEnableKeepalive();
 	afx_msg void OnEnableAutoReconnect();

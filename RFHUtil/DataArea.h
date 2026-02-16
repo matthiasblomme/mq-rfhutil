@@ -496,6 +496,10 @@ public:
 	CString m_last_qm_name;             // Last connected QM name for reconnection
 	CString m_last_channel_name;        // Last used channel name
 	CString m_last_conn_name;           // Last used connection name
+	
+	// P0.2: Browse operation state for seamless reconnection
+	CString m_browse_queue_name;        // Queue name for active browse operation
+	BOOL m_browse_active;               // Flag indicating browse operation in progress
 	MQLONG			m_q_depth;			// depth of the last queue that was accessed
 	MQLONG			level;				// queue manager level
 	MQLONG			platform;			// queue manager platform type

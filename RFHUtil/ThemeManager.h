@@ -55,11 +55,14 @@ public:
     void ApplyThemeToDialog(CDialog* pDialog);
     void ApplyThemeToControl(CWnd* pControl);
     void ApplyDarkTitleBar(CWnd* pWnd);
+    void ApplyThemeToPropertySheet(CPropertySheet* pSheet);
+    void UpdateAllControls(CWnd* pWnd);  // Update all child controls recursively
     
     // Gradient and visual effects
     void DrawGradientBackground(CDC* pDC, CRect rect);
     void DrawControlBorder(CDC* pDC, CRect rect);
     void DrawThemedButton(CDC* pDC, CRect rect, LPCTSTR text, UINT state);
+    void DrawThemedTab(CDC* pDC, CRect rect, LPCTSTR text, bool selected, bool hot);
     
     // Persistence
     void LoadThemePreference();

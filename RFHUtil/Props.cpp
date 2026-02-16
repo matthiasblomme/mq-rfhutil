@@ -70,6 +70,7 @@ BEGIN_MESSAGE_MAP(CProps, CPropertyPage)
 	//{{AFX_MSG_MAP(CProps)
 	ON_WM_CTLCOLOR()
 	ON_WM_ERASEBKGND()
+	ON_WM_DRAWITEM()
 	ON_EN_CHANGE(IDC_PROPS_USER_PROPERTIES, OnChangePropsUserProperties)
 	ON_BN_CLICKED(IDC_PROPS_MOVE_RFH_USR, OnPropsMoveRfhUsr)
 	//}}AFX_MSG_MAP
@@ -1353,18 +1354,39 @@ int CProps::propTypeToInt(const char * ptr)
 
 HBRUSH CProps::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-	HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
-	
 	ThemeManager& theme = ThemeManager::GetInstance();
 	
-	if (theme.IsDarkMode())
-	{
+	if (theme.IsDarkMode()) {
 		pDC->SetTextColor(theme.GetTextColor());
-		pDC->SetBkColor(theme.GetBackgroundColor());
-		return (HBRUSH)theme.GetDialogBackgroundBrush()->GetSafeHandle();
+		
+		switch (nCtlColor) {
+			case CTLCOLOR_EDIT:
+			case CTLCOLOR_LISTBOX:
+				// Dark grey background for edit controls and combo boxes
+				pDC->SetBkColor(theme.GetControlBackgroundColor());
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_STATIC:
+				// Dialog background for static text
+				pDC->SetBkColor(theme.GetBackgroundColor());
+				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_BTN:
+				// Button background
+				pDC->SetBkColor(theme.GetButtonBackgroundColor());
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_SCROLLBAR:
+				// Scrollbar background
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_DLG:
+				// Dialog background
+				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
+		}
 	}
 	
-	return hbr;
+	return CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
 }
 
 BOOL CProps::OnEraseBkgnd(CDC* pDC)
@@ -1380,4 +1402,31 @@ BOOL CProps::OnEraseBkgnd(CDC* pDC)
 	}
 	
 	return CPropertyPage::OnEraseBkgnd(pDC);
+}
+
+void CProps::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	// Only handle buttons
+	if (lpDrawItemStruct->CtlType != ODT_BUTTON) {
+		CPropertyPage::OnDrawItem(nIDCtl, lpDrawItemStruct);
+		return;
+	}
+	
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	// Get button text
+	CWnd* pWnd = GetDlgItem(nIDCtl);
+	if (!pWnd) {
+		CPropertyPage::OnDrawItem(nIDCtl, lpDrawItemStruct);
+		return;
+	}
+	
+	CString buttonText;
+	pWnd->GetWindowText(buttonText);
+	
+	// Use ThemeManager to draw the button
+	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+	CRect rect = lpDrawItemStruct->rcItem;
+	
+	theme.DrawThemedButton(pDC, rect, buttonText, lpDrawItemStruct->itemState);
 }

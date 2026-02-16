@@ -119,6 +119,7 @@ protected:
 	//{{AFX_MSG(PubSub)
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	afx_msg void OnRegister();
 	afx_msg void OnReqPub();
 	afx_msg void OnPublish();
