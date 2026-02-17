@@ -300,6 +300,7 @@ DataArea::DataArea()
 	
 	// P0.2: Initialize browse state tracking
 	m_browse_active = FALSE;
+	m_browse_restart_pending = FALSE;
 	m_browse_queue_name.Empty();
 
 	// initialize storage freed indicator
@@ -7683,8 +7684,15 @@ int DataArea::processMQGet(const char * getType, MQHOBJ handle, int options, int
 				// P0.2: Attempt automatic reconnection
 				if (shouldAttemptReconnect(*rc))
 				{
-					attemptReconnection(m_QM_name, *rc);
-					// Note: Caller will need to handle retry logic
+					if (attemptReconnection(m_QM_name, *rc))
+					{
+						// Reconnection successful - return MQCC_WARNING to signal retry needed
+						if (traceEnabled)
+						{
+							logTraceEntry("processMQGet() - Reconnection successful, returning MQCC_WARNING");
+						}
+						return MQCC_WARNING;
+					}
 				}
 			}
 
@@ -7747,6 +7755,34 @@ int DataArea::processMQGet(const char * getType, MQHOBJ handle, int options, int
 	}
 	else
 	{
+		// P0.2: Check for connection broken error BEFORE reporting it
+		if (MQRC_CONNECTION_BROKEN == (*rc))
+		{
+			// the connection is gone - make sure everything gets cleaned up
+			discQM();
+			
+			// P0.2: Attempt automatic reconnection
+			if (shouldAttemptReconnect(*rc))
+			{
+				if (attemptReconnection(m_QM_name, *rc))
+				{
+					// Reconnection successful - return MQCC_WARNING to signal retry needed
+					if (traceEnabled)
+					{
+						logTraceEntry("processMQGet() - Reconnection successful (else block), returning MQCC_WARNING");
+					}
+					
+					// Clean up any allocated storage before returning
+					if (msgData != NULL)
+					{
+						rfhFree(msgData);
+					}
+					
+					return MQCC_WARNING;
+				}
+			}
+		}
+		
 		// check if storage was ever allocated
 		if (msgData != NULL)
 		{
@@ -7907,6 +7943,27 @@ void DataArea::getMessage(LPCTSTR QMname, LPCTSTR Queue, int reqType)
 
 	// try to get a message
 	cc = processMQGet("Get", q, options, matchOptions, 0, &mqmd, &rc);
+
+	// P0.2: Check if reconnection happened (MQCC_WARNING indicates retry needed)
+	if (cc == MQCC_WARNING)
+	{
+		if (traceEnabled)
+		{
+			sprintf(traceInfo, "getMessage() - Reconnection occurred, retrying operation");
+			logTraceEntry(traceInfo);
+		}
+		
+		// Reconnection successful - retry the operation
+		// Need to reopen the queue first
+		if (!openQ(Queue, remoteQM, request, FALSE))
+		{
+			// Failed to reopen queue
+			return;
+		}
+		
+		// Retry the get operation
+		cc = processMQGet("Get", q, options, matchOptions, 0, &mqmd, &rc);
+	}
 
 	// check if it worked
 	if (cc != MQCC_OK)
@@ -8265,6 +8322,7 @@ void DataArea::endBrowse(bool silent)
 
 	// P0.2: Clear browse state
 	m_browse_active = FALSE;
+	m_browse_restart_pending = FALSE;
 	m_browse_queue_name.Empty();
 }
 
@@ -8298,9 +8356,81 @@ int DataArea::browseNext(bool silent)
 	}
 
 	// make sure the q object has been created
+	// P0.2: BUT check for pending browse restart FIRST, before NULL check
+	// This allows reconnection to happen even when q is NULL
+	if (m_browse_restart_pending && !m_browse_queue_name.IsEmpty())
+	{
+		if (traceEnabled)
+		{
+			sprintf(traceInfo, "P0.2: Detected pending browse restart for queue '%s'", (LPCTSTR)m_browse_queue_name);
+			logTraceEntry(traceInfo);
+		}
+		
+		// Save queue name before clearing flag
+		CString queueToRestart = m_browse_queue_name;
+		CString qmToRestart = m_last_qm_name;
+		
+		// Clear the pending flag
+		m_browse_restart_pending = FALSE;
+		
+		// Restart browse from beginning
+		int restartResult = startBrowse(qmToRestart, queueToRestart, false, -1);
+		
+		if (restartResult == MQCC_OK)
+		{
+			// Browse restarted successfully - browseNext will work on next call
+			return MQCC_OK;
+		}
+		else
+		{
+			// Failed to restart - return error
+			return restartResult;
+		}
+	}
+	
+	// Now check if q is NULL (after restart check)
 	if (NULL == q)
 	{
-		// return immediately
+		// P0.2: If browse was active and queue is NULL, try to restart browse
+		// This handles the case where QM restarted and connection was lost
+		if (m_browse_active && !m_browse_queue_name.IsEmpty())
+		{
+			if (traceEnabled)
+			{
+				sprintf(traceInfo, "P0.2: Queue handle is NULL but browse was active - attempting to restart browse on '%s'", (LPCTSTR)m_browse_queue_name);
+				logTraceEntry(traceInfo);
+			}
+			
+			// Save queue name before attempting restart
+			CString queueToRestart = m_browse_queue_name;
+			CString qmToRestart = m_last_qm_name;
+			
+			// Try to restart browse (this will reconnect if needed)
+			int restartResult = startBrowse(qmToRestart, queueToRestart, false, -1);
+			
+			if (restartResult == MQCC_OK)
+			{
+				// Browse restarted successfully
+				if (traceEnabled)
+				{
+					sprintf(traceInfo, "P0.2: Successfully restarted browse on '%s'", (LPCTSTR)queueToRestart);
+					logTraceEntry(traceInfo);
+				}
+				return MQCC_OK;
+			}
+			else
+			{
+				// Failed to restart - log error and return failure
+				if (traceEnabled)
+				{
+					sprintf(traceInfo, "P0.2: Failed to restart browse on '%s', cc=%d", (LPCTSTR)queueToRestart, restartResult);
+					logTraceEntry(traceInfo);
+				}
+				return restartResult;
+			}
+		}
+		
+		// Queue is NULL and browse wasn't active - return error
 		return -1;
 	}
 
@@ -8333,6 +8463,35 @@ int DataArea::browseNext(bool silent)
 
 	// try to get a message
 	cc = processMQGet("BrowseNext", q, options, 0, 0, &mqmd, &rc);
+
+	// P0.2: Check if reconnection happened (MQCC_WARNING indicates retry needed)
+	if (cc == MQCC_WARNING)
+	{
+		if (traceEnabled)
+		{
+			char traceInfo[256];
+			sprintf(traceInfo, "browseNext() - Reconnection occurred, restarting browse immediately");
+			logTraceEntry(traceInfo);
+		}
+		
+		// Reconnection successful - restart browse immediately
+		CString queueToRestart = m_browse_queue_name;
+		CString qmToRestart = m_last_qm_name;
+		
+		// Restart browse from beginning
+		int restartResult = startBrowse(qmToRestart, queueToRestart, false, -1);
+		
+		if (restartResult == MQCC_OK)
+		{
+			// Browse restarted successfully - message already displayed by startBrowse()
+			return MQCC_OK;
+		}
+		else
+		{
+			// Failed to restart
+			return restartResult;
+		}
+	}
 
 	// check if it worked
 	if (cc != MQCC_OK)
@@ -9010,9 +9169,21 @@ void DataArea::connectionLostCleanup()
 	connected = false;
 	qm = NULL;
 
+	// P0.2: Preserve browse state for potential reconnection
+	// Only clear browseActive if browse wasn't active or if we shouldn't preserve it
+	// Save the current browse state before clearing
+	BOOL wasBrowseActive = browseActive;
+	
 	// reset the browse indicators
 	browseActive = 0;
 	browsePrevActive = 0;
+	
+	// P0.2: If browse was active, preserve the state for reconnection
+	if (wasBrowseActive && m_browse_active && !m_browse_queue_name.IsEmpty())
+	{
+		// Keep browseActive set so the UI "Browse Next" button remains enabled
+		browseActive = 1;
+	}
 
 	// get rid of the queue manager name that the connection is made to
 	currentQM.Empty();
@@ -9068,17 +9239,8 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 			// clean up the handles and indicators
 			connectionLostCleanup();
 
-			// Attempt automatic reconnection if enabled
-			if (m_auto_reconnect && !m_last_qm_name.IsEmpty())
-			{
-				if (attemptReconnection(m_last_qm_name, MQRC_CONNECTION_BROKEN))
-				{
-					if (traceEnabled)
-					{
-						logTraceEntry("setErrorMsg() - Reconnection successful after MQRC_CONNECTION_BROKEN");
-					}
-				}
-			}
+			// Note: Reconnection is handled at the operation level (e.g., processMQGet)
+			// not here in setErrorMsg() to avoid duplicate attempts
 
 			break;
 		}
@@ -9242,17 +9404,8 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 		{
 			sprintf(errtxt, "2059 Queue manager not available (%s) - may not be started", operation);
 			
-			// Attempt automatic reconnection if enabled
-			if (m_auto_reconnect && !m_last_qm_name.IsEmpty())
-			{
-				if (attemptReconnection(m_last_qm_name, MQRC_Q_MGR_NOT_AVAILABLE))
-				{
-					if (traceEnabled)
-					{
-						logTraceEntry("setErrorMsg() - Reconnection successful after MQRC_Q_MGR_NOT_AVAILABLE");
-					}
-				}
-			}
+			// Note: Reconnection is handled at the operation level
+			// not here in setErrorMsg() to avoid duplicate attempts
 			
 			break;
 		}
@@ -9365,17 +9518,8 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 		{
 			strcpy(errtxt, "2202 Connection is quiescing");
 			
-			// Attempt automatic reconnection if enabled
-			if (m_auto_reconnect && !m_last_qm_name.IsEmpty())
-			{
-				if (attemptReconnection(m_last_qm_name, MQRC_CONNECTION_QUIESCING))
-				{
-					if (traceEnabled)
-					{
-						logTraceEntry("setErrorMsg() - Reconnection successful after MQRC_CONNECTION_QUIESCING");
-					}
-				}
-			}
+			// Note: Reconnection is handled at the operation level
+			// not here in setErrorMsg() to avoid duplicate attempts
 			
 			break;
 		}
@@ -9563,17 +9707,8 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 		{
 			strcpy(errtxt, "2528 Connection stopped");
 			
-			// Attempt automatic reconnection if enabled
-			if (m_auto_reconnect && !m_last_qm_name.IsEmpty())
-			{
-				if (attemptReconnection(m_last_qm_name, MQRC_CONNECTION_STOPPED))
-				{
-					if (traceEnabled)
-					{
-						logTraceEntry("setErrorMsg() - Reconnection successful after MQRC_CONNECTION_STOPPED");
-					}
-				}
-			}
+			// Note: Reconnection is handled at the operation level
+			// not here in setErrorMsg() to avoid duplicate attempts
 			
 			break;
 		}
@@ -11251,38 +11386,23 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 		// Reset reconnection state on success
 		resetReconnectionState();
 		
-		// P0.2: Auto-restart browse operation if one was active
+		// P0.2: Check if browse operation needs restart
 		if (m_browse_active && !m_browse_queue_name.IsEmpty())
 		{
-			CString browseQueue = m_browse_queue_name;  // Save before clearing
-			
 			if (traceEnabled)
 			{
-				sprintf(traceInfo, "P0.2: Auto-restarting browse on queue '%s'", (LPCTSTR)browseQueue);
+				sprintf(traceInfo, "P0.2: Setting flag to restart browse on queue '%s'", (LPCTSTR)m_browse_queue_name);
 				logTraceEntry(traceInfo);
 			}
 			
-			// Clear browse state before restarting (startBrowse will set it again)
-			m_browse_active = FALSE;
-			m_browse_queue_name.Empty();
+			// Set flag for UI layer to restart browse - don't call startBrowse directly
+			// This ensures proper UI state updates and button enabling
+			m_browse_restart_pending = TRUE;
 			
-			// Attempt to restart browse from beginning (silent mode to avoid duplicate messages)
-			int browseResult = startBrowse(qmName, browseQueue, true, -1);
-			
-			if (browseResult == MQCC_OK)
-			{
-				// Log combined reconnection + browse restart message
-				m_error_msg.Format("Reconnected to queue manager '%s' after %d attempt(s) - Browse restarted from first message on queue '%s'",
-								   qmName, attemptCount, (LPCTSTR)browseQueue);
-				updateMsgText();
-			}
-			else
-			{
-				// Log reconnection success but browse restart failure
-				m_error_msg.Format("Reconnected to queue manager '%s' after %d attempt(s) - Failed to restart browse on queue '%s'",
-								   qmName, attemptCount, (LPCTSTR)browseQueue);
-				updateMsgText();
-			}
+			// Log reconnection success with note about pending browse restart
+			m_error_msg.Format("Reconnected to queue manager '%s' after %d attempt(s) - Browse will restart automatically",
+							   qmName, attemptCount);
+			updateMsgText();
 		}
 		else
 		{

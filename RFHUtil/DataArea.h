@@ -500,6 +500,7 @@ public:
 	// P0.2: Browse operation state for seamless reconnection
 	CString m_browse_queue_name;        // Queue name for active browse operation
 	BOOL m_browse_active;               // Flag indicating browse operation in progress
+	BOOL m_browse_restart_pending;      // Flag indicating browse needs restart after reconnection
 	MQLONG			m_q_depth;			// depth of the last queue that was accessed
 	MQLONG			level;				// queue manager level
 	MQLONG			platform;			// queue manager platform type

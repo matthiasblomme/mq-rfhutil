@@ -24,10 +24,75 @@ RFHUtil now includes full dark mode support with automatic theme detection and m
 ![Theme Selection](docs/screenshots/theme-menu.png)
 
 ### 🔄 Enhanced Connection Reliability
+
+RFHUtil now features intelligent automatic reconnection that seamlessly handles queue manager restarts and connection losses.
+
+#### Key Features
 - **HeartBeat/KeepAlive Configuration**: Fine-tune connection monitoring for optimal reliability
 - **Automatic Reconnection**: Seamlessly reconnects to queue managers with configurable retry logic
+- **Single-Click Recovery**: Operations complete in one click after reconnection - no manual intervention needed
 - **Browse Operation Recovery**: Automatically restarts browse operations after reconnection
 - **Connection Settings UI**: New dedicated tab for managing all connection parameters
+
+#### How It Works
+
+When a connection is lost (e.g., queue manager restart), RFHUtil automatically:
+1. Detects the connection failure
+2. Attempts to reconnect to the queue manager
+3. Reopens the queue
+4. Completes the requested operation
+5. All in a **single button click** - no error dialogs, no manual reconnection needed!
+
+**Read Q Operation Flow:**
+```mermaid
+sequenceDiagram
+    participant User
+    participant RFHUtil
+    participant QM as Queue Manager
+    
+    User->>RFHUtil: Click "Read Q"
+    RFHUtil->>QM: MQGET request
+    Note over QM: Connection Lost!
+    QM-->>RFHUtil: MQRC_CONNECTION_BROKEN (2009)
+    RFHUtil->>RFHUtil: Detect connection loss
+    RFHUtil->>QM: Reconnect to QM
+    QM-->>RFHUtil: Connected
+    RFHUtil->>QM: Reopen queue
+    RFHUtil->>QM: Retry MQGET
+    QM-->>RFHUtil: Message data
+    RFHUtil->>User: Display message
+    Note over User,RFHUtil: All in single click!
+```
+
+**Browse Operation Flow:**
+```mermaid
+sequenceDiagram
+    participant User
+    participant RFHUtil
+    participant QM as Queue Manager
+    
+    User->>RFHUtil: Click "Start Browse"
+    RFHUtil->>QM: Open queue for browse
+    QM-->>RFHUtil: First message
+    Note over QM: QM Restarted
+    User->>RFHUtil: Click "Browse Next"
+    RFHUtil->>QM: MQGET BROWSE_NEXT
+    QM-->>RFHUtil: MQRC_CONNECTION_BROKEN (2009)
+    RFHUtil->>RFHUtil: Detect connection loss
+    RFHUtil->>QM: Reconnect to QM
+    QM-->>RFHUtil: Connected
+    RFHUtil->>QM: Restart browse from first
+    QM-->>RFHUtil: First message
+    RFHUtil->>User: Display message
+    Note over User,RFHUtil: Browse continues seamlessly!
+```
+
+#### Benefits
+- ✅ **No manual reconnection** - Everything happens automatically
+- ✅ **No error popups** - Status messages appear in the log window
+- ✅ **Single click operation** - No need to click twice after reconnection
+- ✅ **Browse state preserved** - Browse operations continue from where they left off
+- ✅ **Configurable retry logic** - Customize reconnection attempts and intervals
 
 **Connection Settings Tab:**
 <!-- TODO: Add screenshot of connection settings tab -->
@@ -36,11 +101,6 @@ RFHUtil now includes full dark mode support with automatic theme detection and m
 **Reconnection in Action:**
 <!-- TODO: Add screenshot showing reconnection log messages -->
 ![Auto Reconnection](docs/screenshots/auto-reconnection.png)
-
-### 📊 Key Improvements
-- **Non-intrusive notifications**: Reconnection messages appear in the log window instead of blocking popups
-- **Accurate attempt tracking**: Fixed counter display showing correct number of reconnection attempts
-- **Seamless browse recovery**: Browse operations automatically restart from the first message after reconnection
 
 ## Possible Uses
 It allows test messages to be captured and stored in files, and then used to drive Message Flows. Output messages can also be read and displayed in a variety of formats. The formats include two types of XML as well as matched against a COBOL copybook. The data can be in EBCDIC or ASCII. An RFH2 header can be added to the message before the message is sent.
