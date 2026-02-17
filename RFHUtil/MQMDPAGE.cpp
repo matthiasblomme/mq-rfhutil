@@ -25,6 +25,7 @@ Jim MacNair - Initial Contribution
 #include "mqsubs.h"
 #include "windows.h"
 #include "cics.h"
+#include "ThemeManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -185,6 +186,9 @@ void MQMDPAGE::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(MQMDPAGE, CPropertyPage)
 	//{{AFX_MSG_MAP(MQMDPAGE)
+	ON_WM_CTLCOLOR()
+	ON_WM_ERASEBKGND()
+	ON_WM_DRAWITEM()
 	ON_BN_CLICKED(IDC_COPY_MSGID, OnCopyMsgid)
 	ON_BN_CLICKED(IDC_RESET_IDS, OnResetIds)
 	ON_BN_CLICKED(IDC_ID_DISP_ASCII, OnIdDispAscii)
@@ -259,9 +263,89 @@ BOOL MQMDPAGE::OnInitDialog()
 	m_mqmd_format_cb.AddString(MQFMT_XMIT_Q_HEADER);
 	m_mqmd_format_cb.AddString(MQFMT_CHANNEL_COMPLETED);
 
-	// try to subclass 
+	// Apply theme to dialog
+	ThemeManager::GetInstance().ApplyThemeToDialog(this);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+HBRUSH MQMDPAGE::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		pDC->SetTextColor(theme.GetTextColor());
+		
+		switch (nCtlColor) {
+			case CTLCOLOR_EDIT:
+			case CTLCOLOR_LISTBOX:
+				// Dark grey background for edit controls and combo boxes
+				pDC->SetBkColor(theme.GetControlBackgroundColor());
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_STATIC:
+				// Dialog background for static text
+				pDC->SetBkColor(theme.GetBackgroundColor());
+				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_BTN:
+				// Button background
+				pDC->SetBkColor(theme.GetButtonBackgroundColor());
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_SCROLLBAR:
+				// Scrollbar background
+				return (HBRUSH)theme.GetControlBackgroundBrush()->GetSafeHandle();
+				
+			case CTLCOLOR_DLG:
+				// Dialog background
+				return (HBRUSH)theme.GetBackgroundBrush()->GetSafeHandle();
+		}
+	}
+	
+	return CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
+}
+
+BOOL MQMDPAGE::OnEraseBkgnd(CDC* pDC)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		CRect rect;
+		GetClientRect(&rect);
+		theme.DrawGradientBackground(pDC, rect);
+		return TRUE;
+	}
+	
+	return CPropertyPage::OnEraseBkgnd(pDC);
+}
+
+void MQMDPAGE::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	// Only handle buttons
+	if (lpDrawItemStruct->CtlType != ODT_BUTTON) {
+		CPropertyPage::OnDrawItem(nIDCtl, lpDrawItemStruct);
+		return;
+	}
+	
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	// Get button text
+	CWnd* pWnd = GetDlgItem(nIDCtl);
+	if (!pWnd) {
+		CPropertyPage::OnDrawItem(nIDCtl, lpDrawItemStruct);
+		return;
+	}
+	
+	CString buttonText;
+	pWnd->GetWindowText(buttonText);
+	
+	// Use ThemeManager to draw the button
+	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+	CRect rect = lpDrawItemStruct->rcItem;
+	
+	theme.DrawThemedButton(pDC, rect, buttonText, lpDrawItemStruct->itemState);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -24,6 +24,7 @@ Jim MacNair - Initial Contribution
 #include "rfhutilDoc.h"
 #include "rfhutilView.h"
 #include "DataArea.h"
+#include "ThemeManager.h"
 // goto dialog
 #include "goto.h"
 
@@ -148,6 +149,7 @@ BEGIN_MESSAGE_MAP(CRfhutilView, CCtrlView)
 	ON_NOTIFY_REFLECT(TCN_SELCHANGING, OnSelchangingSampletab)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE1 + 15, OnUpdateRecentFileMenu)
 //	ON_REGISTERED_MESSAGE( findMessage, findHelper)
+	ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -205,6 +207,7 @@ CRfhutilView::CRfhutilView()
 	m_cics.pDoc = &app->pDocument;
 	m_ims.pDoc = &app->pDocument;
 	m_dlq.pDoc = &app->pDocument;
+	m_conn_settings.pDoc = &app->pDocument;
 
 	// set a pointer to some dialog objects in the dataarea object
 	app->pDocument.cicsData = ((CObject *)&m_cics);
@@ -549,6 +552,13 @@ void CRfhutilView::OnInitialUpdate()
 
 	GetTabCtrl().SetFont(&m_tab_font, 0);
 	
+	// Apply dark title bar to main frame
+	ThemeManager& theme = ThemeManager::GetInstance();
+	CWnd* pMainWnd = AfxGetApp()->m_pMainWnd;
+	if (pMainWnd && pMainWnd->GetSafeHwnd()) {
+		theme.ApplyDarkTitleBar(pMainWnd);
+	}
+	
 	if (m_bInitialized == true)
 	{
 		return;
@@ -572,6 +582,7 @@ void CRfhutilView::OnInitialUpdate()
 	m_cics.Create(IDD_CICS, this);
 	m_ims.Create(IDD_IMS, this);
 	m_dlq.Create(IDD_DLQ, this);
+	m_conn_settings.Create(IDD_CONN_SETTINGS, this);
 
 	// try to set the font for the data display
 	m_data.SetFont(&(app->m_fixed_font));
@@ -641,6 +652,10 @@ void CRfhutilView::OnInitialUpdate()
 	TabItem.lParam = (long) &m_dlq;
 	result = GetTabCtrl().InsertItem (13, &TabItem);
 
+	TabItem.pszText = "Conn";
+	TabItem.lParam = (long) &m_conn_settings;
+	result = GetTabCtrl().InsertItem (14, &TabItem);
+
 	GetTabCtrl().SetCurSel(0);
 	GetTabCtrl().ShowWindow (SW_NORMAL);
 
@@ -662,6 +677,7 @@ void CRfhutilView::OnInitialUpdate()
 	m_cics.MoveWindow (rc, FALSE);
 	m_ims.MoveWindow (rc, FALSE);
 	m_dlq.MoveWindow (rc, FALSE);
+	m_conn_settings.MoveWindow (rc, FALSE);
 
 	EnableToolTips(TRUE);   // enable tool tips for view
 
@@ -720,6 +736,9 @@ void CRfhutilView::OnSize(UINT nType, int cx, int cy)
 
 	if (m_dlq.m_hWnd != 0)
 		m_dlq.MoveWindow (rc, FALSE);
+
+	if (m_conn_settings.m_hWnd != 0)
+		m_conn_settings.MoveWindow (rc, FALSE);
 }
 
 void CRfhutilView::OnSelchangingSampletab (NMHDR* pNMHDR, LRESULT* pResult)
@@ -3125,6 +3144,11 @@ void CRfhutilView::SetActive(int sel)
 			m_dlq.OnSetActive();
 			break;
 		}
+	case PAGE_CONN:
+		{
+			m_conn_settings.OnSetActive();
+			break;
+		}
 	}
 }
 
@@ -3419,4 +3443,23 @@ void CRfhutilView::OnWriteMsgs()
 		// invoke the proper function for this accelerator
 		m_ps.WriteMsgs();
 	}
+}
+
+HBRUSH CRfhutilView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		pDC->SetTextColor(theme.GetTextColor());
+		pDC->SetBkColor(theme.GetBackgroundColor());
+		
+		if (nCtlColor == CTLCOLOR_DLG || nCtlColor == CTLCOLOR_STATIC) {
+			return *theme.GetBackgroundBrush();
+		}
+		else if (nCtlColor == CTLCOLOR_SCROLLBAR) {
+			return *theme.GetControlBackgroundBrush();
+		}
+	}
+	
+	return CCtrlView::OnCtlColor(pDC, pWnd, nCtlColor);
 }

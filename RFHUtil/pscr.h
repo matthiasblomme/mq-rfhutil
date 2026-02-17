@@ -81,6 +81,9 @@ public:
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(pscr)
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnChangeReason1();
 	afx_msg void OnChangeReason2();

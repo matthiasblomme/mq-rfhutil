@@ -51,6 +51,7 @@ Jim MacNair - Initial Contribution
 #define PAGE_CICS		11
 #define PAGE_IMS		12
 #define PAGE_DLQ		13
+#define PAGE_CONN		14
 
 // Display format types
 #define DATA_CHARACTER	0

@@ -46,6 +46,9 @@ protected:
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnEditUpdate();
 	afx_msg UINT OnGetDlgCode();
+	afx_msg BOOL OnInitDialog();
+	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	int CALLBACK PropSheetProc(HWND hWndDlg, UINT uMsg, LPARAM lParam);
 	//}}AFX_MSG
 
