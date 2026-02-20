@@ -26,6 +26,8 @@ Jim MacNair - Initial Contribution
 #include "windows.h"
 #include "cics.h"
 #include "ThemeManager.h"
+#define SECURITY_WIN32
+#include <Security.h>  // For GetUserNameEx
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -2569,14 +2571,34 @@ void MQMDPAGE::setMessageMQMD(MQMD2 * mqmd, BOOL m_setUserID, BOOL m_set_all)
 		}
 		else
 		{
-			// we need to set the first 12 characters of the logged in user id
+			// Get the domain-qualified user id for IDPWOS authentication
+			// Use a larger buffer to accommodate DOMAIN\username format
+			char fullUserId[256];
+			DWORD fullUserIdSize = sizeof(fullUserId);
+			memset(fullUserId, 0, sizeof(fullUserId));
 			memset(userId, 0, sizeof(userId));
-//			rc = GetUserNameEx(NameSamCompatible, userId, &userIdSize);
-			rc = GetUserName(userId, &userIdSize);
+			
+			// Try to get domain-qualified username first (for LDAP/IDPWOS)
+			rc = GetUserNameEx(NameSamCompatible, fullUserId, &fullUserIdSize);
 			if (rc != 0)
 			{
-				userId[12] = 0;
+				// Successfully got domain\username format
+				// Copy to userId buffer, truncating if necessary to MQ_USER_ID_LENGTH (12)
+				strncpy(userId, fullUserId, MQ_USER_ID_LENGTH);
+				userId[MQ_USER_ID_LENGTH] = 0;
 				setUserId(mqmd);
+			}
+			else
+			{
+				// Fallback to simple username if GetUserNameEx fails
+				// This handles cases where domain info is not available
+				DWORD simpleUserIdSize = sizeof(userId);
+				rc = GetUserName(userId, &simpleUserIdSize);
+				if (rc != 0)
+				{
+					userId[MQ_USER_ID_LENGTH] = 0;
+					setUserId(mqmd);
+				}
 			}
 		}
 
