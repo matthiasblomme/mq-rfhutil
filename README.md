@@ -1,6 +1,8 @@
 # mq-rfhutil
-This repository contains the **rfhutil** program, originally released
-in SupportPac IH03. Both source code and binaries are included.
+
+This is a fork of the **rfhutil** program, originally released in SupportPac IH03 and maintained by IBM Messaging.
+
+**Original Repository**: [ibm-messaging/mq-rfhutil](https://github.com/ibm-messaging/mq-rfhutil)
 
 This program can be useful for the development and testing of IBM MQ and
 IBM Integration Bus aka WebSphere Message Broker aka App Connect Enterprise applications.
@@ -8,19 +10,53 @@ Test messages are stored as files, which are then read by the application and wr
 
 ## Latest Features (v9.4.0.0)
 
+### 🔒 Safe Mode (Browse-Only Version) - NEW!
+
+This fork adds a **Safe Mode** build configuration that creates a browse-only version (`rfhutilc-safe.exe`) with all write operations disabled.
+
+#### Key Features
+- **Browse-Only Operations**: All message reads use non-destructive browse mode
+- **Disabled Write Operations**: Write Q, Load Q, Move Q, Purge Q, and Clear All are completely disabled
+- **Production-Safe**: Perfect for troubleshooting production environments without risk of data modification
+- **Training-Friendly**: Ideal for training new team members without fear of accidental changes
+- **Compliance-Ready**: Meets requirements for read-only access in regulated environments
+
+#### What's Disabled in Safe Mode
+- ❌ Write Q - Cannot write messages to queues
+- ❌ Load Q - Cannot load messages from files to queues
+- ❌ Move Q - Cannot move messages between queues
+- ❌ Purge Q - Cannot clear messages from queues
+- ❌ Clear All - Cannot clear all data
+- ❌ Destructive Reads - All reads automatically use browse mode
+
+#### What's Still Available
+- ✅ Browse Operations - Start Browse, Browse Next, Browse Previous
+- ✅ Save Q - Save messages to files (read-only operation)
+- ✅ Display Q - View queue information
+- ✅ Read Files - Load and view message data from files
+- ✅ All Analysis Tools - Parse, format, and analyze message content
+
+#### Building Safe Mode
+```bash
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=Win32 /v:minimal
+```
+
+Output: `bin\ReleaseSafe\rfhutilc-safe.exe`
+
+See [SAFE_MODE_IMPLEMENTATION.md](docs/SAFE_MODE_IMPLEMENTATION.md) and [BUILD_CONFIG.md](docs/BUILD_CONFIG.md) for detailed implementation information.
+
+## Original Features (v9.4.0.0)
+
 ### 🎨 Dark Mode Support
 RFHUtil now includes full dark mode support with automatic theme detection and manual theme switching.
 
 **Light Mode:**
-<!-- TODO: Add screenshot of light mode interface -->
 ![Light Mode](docs/screenshots/light-mode.png)
 
 **Dark Mode:**
-<!-- TODO: Add screenshot of dark mode interface -->
 ![Dark Mode](docs/screenshots/dark-mode.png)
 
 **Theme Menu:**
-<!-- TODO: Add screenshot of theme menu -->
 ![Theme Selection](docs/screenshots/theme-menu.png)
 
 ### 🔄 Enhanced Connection Reliability
@@ -112,9 +148,12 @@ None beyond basic MQ and IIB/ACE development skills.
 This repository contains source code for the rfhutil program, managed as a Microsoft Visual Studio 2017 Solution.
 If you have VS 2017, then opening the `RFHUtil.sln` file will allow you to rebuild the program.
 
-Pre-built copies of the programs (**rfhutil** for connections to a local queue manager, **rfhutilc** for MQ client connections) are
-under the `bin\Release` directory. They can be run directly but
-you may first need to run the `setmqenv` program to set the environment variables that allow you to locate the MQ runtime libraries.
+Pre-built copies of the programs are available:
+- **rfhutil.exe** - Full version for connections to a local queue manager (`bin\Release`)
+- **rfhutilc.exe** - Client version for MQ client connections (`bin\Release`)
+- **rfhutilc-safe.exe** - **NEW!** Browse-only safe mode version (`bin\ReleaseSafe`)
+
+They can be run directly but you may first need to run the `setmqenv` program to set the environment variables that allow you to locate the MQ runtime libraries.
 
 Documentation is provided in the `ih03.doc` and `ih03.pdf` files.
 
@@ -141,16 +180,20 @@ The **rfhutil** program was conceived, created and developed by **Jim MacNair**.
 
 See [CHANGELOG](CHANGELOG.md) for changes to the program since its inception. The first release to Github is called version 9.1, and was released in December 2018.
 
+### This Fork
+This fork adds Safe Mode (browse-only) functionality to provide a production-safe version of rfhutilc for environments where read-only access is required.
+
+**Original Repository**: [ibm-messaging/mq-rfhutil](https://github.com/ibm-messaging/mq-rfhutil)
+
 ## Health Warning
 
 This package is provided as-is with no guarantees of support or updates.
 
 ## Issues and Contributions
 
-For feedback and issues relating specifically to this package, please use the
-[GitHub issue tracker](https://github.com/ibm-messaging/mq-rfhutil/issues).
+For issues relating to the **original rfhutil**, please use the [IBM Messaging issue tracker](https://github.com/ibm-messaging/mq-rfhutil/issues).
 
-Contributions to this package can be accepted under the terms of the
+For issues relating to the **Safe Mode feature** in this fork, please use this repository's issue tracker.
+
+Contributions to the original package can be accepted under the terms of the
 IBM Contributor License Agreement, found in the file [CLA.md](CLA.md) of this repository.
-When submitting a pull request, you must include a statement stating
-you accept the terms in the CLA.
