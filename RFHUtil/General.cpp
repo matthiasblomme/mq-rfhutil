@@ -272,7 +272,7 @@ void General::OnExit()
 //	PostQuitMessage(0);
 }
 
-void General::OnReadq() 
+void General::OnReadq()
 
 {
 	// User has pressed the Read Q button
@@ -285,9 +285,16 @@ void General::OnReadq()
 	// get the form data into the instance variables
 	UpdateData(TRUE);
 
+#ifdef SAFE_MODE
+	// In SAFE_MODE, force browse mode (non-destructive read)
+	// This ensures messages are not removed from the queue
+	pDoc->m_all_avail = FALSE;
+	pDoc->m_logical_order = FALSE;
+#else
 	// set the get options
 	pDoc->m_all_avail = m_all_avail;
 	pDoc->m_logical_order = m_logical_order;
+#endif
 	pDoc->m_get_by_msgid = m_get_by_msgid;
 	pDoc->m_get_by_correlid = m_get_by_correlid;
 	pDoc->m_get_by_groupid = m_get_by_groupid;
@@ -323,9 +330,14 @@ void General::OnReadq()
 	UpdatePageData();
 }
 
-void General::OnWriteq() 
+void General::OnWriteq()
 
 {
+#ifdef SAFE_MODE
+	// Write operations are disabled in SAFE_MODE
+	AfxMessageBox("Write operations are disabled in Safe Mode.\nThis is a browse-only version.", MB_OK | MB_ICONINFORMATION);
+	return;
+#else
 	// User has pressed the Write Q button
 	// Write a message to a queue
 	CRfhutilApp *	app;
@@ -344,7 +356,7 @@ void General::OnWriteq()
 	pDoc->m_new_msg_id = m_new_msg_id;
 	pDoc->m_new_correl_id = m_new_correl_id;
 
-	// Now, call a routine in the document, passing the 
+	// Now, call a routine in the document, passing the
 	// queue manager and queue names, to write the data
 	// to the appropriate MQSeries queue
 	app->BeginWaitCursor();
@@ -353,6 +365,7 @@ void General::OnWriteq()
 
 	// refresh the variables on the screen
 	UpdatePageData();
+#endif
 }
 
 void General::OnBrowse() 
@@ -1224,11 +1237,55 @@ BOOL General::OnInitDialog()
 	}
 #endif
 	
-#ifdef SAFEMODE
-	((CButton *)GetDlgItem(IDC_READQ))->EnableWindow(FALSE);
-	((CButton *)GetDlgItem(IDC_READQ))->ShowWindow(SW_HIDE);
-	((CButton *)GetDlgItem(IDC_PURGE))->EnableWindow(FALSE);
-	((CButton *)GetDlgItem(IDC_PURGE))->ShowWindow(SW_HIDE);
+#ifdef SAFE_MODE
+	// Disable all write operations in SAFE_MODE
+	// Write Q button
+	wnd = GetDlgItem(IDC_WRITEQ);
+	if (wnd != NULL)
+	{
+		wnd->EnableWindow(FALSE);
+		wnd->ShowWindow(SW_HIDE);
+	}
+	
+	// Load Q button
+	wnd = GetDlgItem(IDC_MAIN_LOADQ);
+	if (wnd != NULL)
+	{
+		wnd->EnableWindow(FALSE);
+		wnd->ShowWindow(SW_HIDE);
+	}
+	
+	// Move Q button
+	wnd = GetDlgItem(IDC_MAIN_MOVEQ);
+	if (wnd != NULL)
+	{
+		wnd->EnableWindow(FALSE);
+		wnd->ShowWindow(SW_HIDE);
+	}
+	
+	// Purge Q button
+	wnd = GetDlgItem(IDC_PURGE);
+	if (wnd != NULL)
+	{
+		wnd->EnableWindow(FALSE);
+		wnd->ShowWindow(SW_HIDE);
+	}
+	
+	// Clear All button
+	wnd = GetDlgItem(IDC_CLEAR_ALL);
+	if (wnd != NULL)
+	{
+		wnd->EnableWindow(FALSE);
+		wnd->ShowWindow(SW_HIDE);
+	}
+	
+	// Hide the Read Q button (IDC_READQ) on the left - use Start Browse instead
+	wnd = GetDlgItem(IDC_READQ);
+	if (wnd != NULL)
+	{
+		wnd->EnableWindow(FALSE);
+		wnd->ShowWindow(SW_HIDE);
+	}
 #endif
 
 	// set the check box for the new message id option
@@ -2516,9 +2573,13 @@ void General::OnOK()
 //
 ///////////////////////////////////////////////
 
-void General::OnMoveQ() 
+void General::OnMoveQ()
 
 {
+#ifdef SAFE_MODE
+	AfxMessageBox("Move Queue operations are disabled in Safe Mode.\nThis is a browse-only version.", MB_OK | MB_ICONINFORMATION);
+	return;
+#else
 	int				rc;
 	int				maxCount=0;
 	int				startMsg=1;
@@ -2587,6 +2648,7 @@ void General::OnMoveQ()
 		// trace entry to updateIdFields
 		pDoc->logTraceEntry(traceInfo);
 	}
+#endif
 }
 
 
