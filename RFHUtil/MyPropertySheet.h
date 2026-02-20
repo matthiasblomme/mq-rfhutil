@@ -49,6 +49,7 @@ protected:
 	afx_msg BOOL OnInitDialog();
 	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	int CALLBACK PropSheetProc(HWND hWndDlg, UINT uMsg, LPARAM lParam);
 	//}}AFX_MSG
 

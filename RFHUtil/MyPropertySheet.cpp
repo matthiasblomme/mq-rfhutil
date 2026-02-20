@@ -60,6 +60,7 @@ BEGIN_MESSAGE_MAP(MyPropertySheet, CPropertySheet)
 	//}}AFX_MSG_MAP
 	ON_WM_DRAWITEM()
 	ON_WM_CTLCOLOR()
+	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -201,4 +202,52 @@ HBRUSH MyPropertySheet::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	}
 	
 	return CPropertySheet::OnCtlColor(pDC, pWnd, nCtlColor);
+}
+
+BOOL MyPropertySheet::OnEraseBkgnd(CDC* pDC)
+{
+	ThemeManager& theme = ThemeManager::GetInstance();
+	
+	if (theme.IsDarkMode()) {
+		// Get the entire client area
+		CRect rect;
+		GetClientRect(&rect);
+		
+		// Fill the entire property sheet background with dark color
+		pDC->FillSolidRect(rect, theme.GetBackgroundColor());
+		
+		// Specifically fill the tab control area to ensure it's dark
+		CTabCtrl* pTab = GetTabControl();
+		if (pTab && pTab->GetSafeHwnd()) {
+			CRect tabRect;
+			pTab->GetWindowRect(&tabRect);
+			ScreenToClient(&tabRect);
+			
+			// Fill entire tab control area with dark background
+			pDC->FillSolidRect(tabRect, theme.GetBackgroundColor());
+			
+			// Get the display area (where pages show)
+			CRect displayRect;
+			pTab->GetItemRect(0, &displayRect);
+			pTab->AdjustRect(FALSE, &displayRect);
+			
+			// Fill the tab strip area (above the display area)
+			CRect tabStripRect = tabRect;
+			tabStripRect.bottom = displayRect.top;
+			pDC->FillSolidRect(tabStripRect, theme.GetBackgroundColor());
+			
+			// Also paint directly on the tab control's DC
+			CDC* pTabDC = pTab->GetDC();
+			if (pTabDC) {
+				CRect tabClientRect;
+				pTab->GetClientRect(&tabClientRect);
+				pTabDC->FillSolidRect(tabClientRect, theme.GetBackgroundColor());
+				pTab->ReleaseDC(pTabDC);
+			}
+		}
+		
+		return TRUE;
+	}
+	
+	return CPropertySheet::OnEraseBkgnd(pDC);
 }
