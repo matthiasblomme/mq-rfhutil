@@ -7540,7 +7540,27 @@ int DataArea::processMQGet(const char * getType, MQHOBJ handle, int options, int
 	}
 
 	// set the gmo options and match options
+#ifdef SAFE_MODE
+	// In SAFE_MODE, force browse operations to prevent destructive reads
+	// Replace any destructive get options with browse equivalents
+	if (options & MQGMO_MSG_UNDER_CURSOR)
+	{
+		// Remove destructive get flag and add browse flag
+		gmo.Options = (options & ~MQGMO_MSG_UNDER_CURSOR) | MQGMO_BROWSE_MSG_UNDER_CURSOR;
+	}
+	else if (!(options & (MQGMO_BROWSE_FIRST | MQGMO_BROWSE_NEXT | MQGMO_BROWSE_MSG_UNDER_CURSOR)))
+	{
+		// No browse option specified, add MQGMO_BROWSE_NEXT to make it non-destructive
+		gmo.Options = options | MQGMO_BROWSE_NEXT;
+	}
+	else
+	{
+		// Already a browse operation, use as-is
+		gmo.Options = options;
+	}
+#else
 	gmo.Options = options;
+#endif
 	gmo.MatchOptions = match;
 
 	// check if a wait time was specified
