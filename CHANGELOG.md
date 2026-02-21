@@ -1,5 +1,137 @@
 # Changelog
 Newest updates are at the top of this file
+## Build 234 (V9.4.0.0 build 234) February 2026
+
+### 🔌 Connection Reliability Improvements (P0)
+
+#### P0.1: HeartBeat and KeepAlive Configuration
+* Added configurable HeartBeat interval (default 60 seconds, range 1-999999)
+* Added configurable KeepAlive interval (AUTO or 1-999999 seconds)
+* Implemented in DataArea class with UI controls
+* Prevents firewall timeouts and enables fast failure detection
+* Saves settings to registry for persistence
+
+#### P0.2: Automatic Reconnection
+* Implemented intelligent reconnection with exponential backoff
+* Retry sequence: 1s → 2s → 4s → 8s → 16s → 32s → 60s (max)
+* Handles 7 different MQ error scenarios:
+  - MQRC_CONNECTION_BROKEN (2009)
+  - MQRC_Q_MGR_NOT_AVAILABLE (2059)
+  - MQRC_CONNECTION_QUIESCING (2161)
+  - MQRC_CONNECTION_STOPPED (2162)
+  - MQRC_RECONNECT_FAILED (2203)
+  - MQRC_RECONNECT_QMID_MISMATCH (2204)
+  - MQRC_RECONNECT_INCOMPATIBLE (2205)
+* Configurable maximum retry attempts (default 7)
+* User feedback during reconnection attempts
+* Automatic state restoration after successful reconnection
+
+#### P0.3: Connection Settings UI Tab
+* Added new 15th property page: "Connection Settings"
+* Three organized sections:
+  1. **MQ HeartBeat Settings** (3 controls)
+     - Enable/disable HeartBeat
+     - HeartBeat interval configuration
+     - Informational text
+  2. **TCP KeepAlive Settings** (3 controls)
+     - Enable/disable KeepAlive
+     - KeepAlive interval configuration
+     - Informational text
+  3. **Auto-Reconnect Settings** (4 controls)
+     - Enable/disable auto-reconnect
+     - Maximum retry attempts
+     - Current status display
+     - Informational text
+* Total: 28 UI controls including labels and group boxes
+* Settings persist via registry
+* Real-time validation and feedback
+
+### 🎨 Dark Mode Support (P1.2)
+
+#### Phase 1: ThemeManager Infrastructure
+* Created ThemeManager singleton class
+* Implemented three theme modes:
+  - Light Mode (traditional)
+  - Dark Mode (modern dark theme)
+  - System Mode (follows Windows 10/11 theme)
+* Color scheme management:
+  - Light: White background, black text
+  - Dark: Dark grey background (RGB 30,30,30), white text, dark grey controls (RGB 48,48,48)
+* System theme detection via Windows registry
+* Theme persistence via MFC profile (registry)
+
+#### Phase 2: UI Integration
+* Added theme menu to View menu
+* Implemented menu handlers in MainFrm
+* Theme switching with full window repaint
+* Menu checkmarks for current theme
+* Initialization in application startup
+
+#### Phase 3: Dialog Theming
+* Applied dark mode to all 15 property page dialogs:
+  1. General - Main tab
+  2. MQMD - MQMD settings
+  3. Message Data - Message content
+  4. RFH - RFH header
+  5. JMS - JMS properties
+  6. CICS - CICS settings
+  7. DLQ - Dead letter queue
+  8. IMS - IMS settings
+  9. Other - Other headers
+  10. Properties - Message properties
+  11. PS - Pub/Sub
+  12. PSCR - PSCR header
+  13. PubSub - Publish/Subscribe
+  14. Usr - User properties
+  15. Connection Settings - Connection configuration
+* WM_CTLCOLOR handlers for all dialogs
+* Consistent theming across all controls
+
+#### Phase 4: Visual Polish
+* Enhanced color palette for better aesthetics
+* Gradient backgrounds for dialogs
+* Dark grey themed buttons
+* Dark grey edit controls and combo boxes
+* Subtle borders for visual separation
+* Improved contrast and readability
+
+### 🔧 Build System Updates (P1.1)
+
+* Upgraded to Visual Studio 2022 Build Tools
+* Platform Toolset: v143
+* Updated for IBM MQ 9.4.5 compatibility
+* Maintained backward compatibility with MQ 9.x
+
+### 📚 Documentation Improvements
+
+* Reorganized documentation into docs/ folder
+* Created comprehensive implementation guides:
+  - Architecture Analysis
+  - Build Configuration
+  - MQ HeartBeat and KeepAlive details
+  - P0 Implementation Plan
+  - P1.2 Dark Mode Implementation
+* Updated Modernization Roadmap with progress tracker
+* Added version history table to README
+* Created "What's New" section in README
+
+### 🐛 Bug Fixes
+
+* Fixed CBrush to HBRUSH casting in OnCtlColor handlers
+* Corrected ThemeManager method signatures
+* Fixed enum scoping for AppTheme
+* Resolved header declaration issues in Ims.h, Props.h, pscr.h
+
+### 🔍 Technical Details
+
+**Files Modified:** 50+
+**Lines of Code Added:** ~2,500
+**New Classes:** ThemeManager, ConnSettings
+**New Methods:** 30+
+**PowerShell Scripts:** 2 (automation for dialog updates)
+
+---
+
 
 ## Build 233 (V9.1.6 build 233) Oct 11 2021
 * Remove references to "Use CSP" in doc as now used always     

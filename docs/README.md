@@ -21,9 +21,12 @@ This folder contains detailed technical documentation for the mq-rfhutil project
 #### Completed ✅
 - **[P0 Implementation Plan](P0_IMPLEMENTATION_PLAN.md)** - Overall plan for P0 priorities
 - **[P0.2 & P0.3 Implementation Guide](P0_2_AND_P0_3_IMPLEMENTATION_GUIDE.md)** - Detailed guide for auto-reconnect and UI tab
+- **[P1.2 Dark Mode Implementation](P1_2_DARK_MODE_IMPLEMENTATION.md)** - Complete plan for dark mode support
+- **[P1.2 Visual Polish Plan](P1_2_DARK_MODE_VISUAL_POLISH.md)** - Phase 4 visual improvements
+- **[P1.2 README Update Plan](P1_2_README_UPDATE_PLAN.md)** - Documentation updates
 
 #### In Progress 🚧
-- **[P1.2 Dark Mode Implementation](P1_2_DARK_MODE_IMPLEMENTATION.md)** - Complete plan for dark mode support
+- None currently
 
 ## 🎯 Quick Links
 
@@ -51,7 +54,9 @@ This folder contains detailed technical documentation for the mq-rfhutil project
 | MQ KeepAlive Detailed | ✅ Complete | Feb 2026 |
 | P0 Implementation Plan | ✅ Complete | Feb 2026 |
 | P0.2 & P0.3 Guide | ✅ Complete | Feb 2026 |
-| P1.2 Dark Mode Plan | 🚧 In Progress | Feb 14, 2026 |
+| P1.2 Dark Mode Plan | ✅ Complete | Feb 16, 2026 |
+| P1.2 Visual Polish Plan | ✅ Complete | Feb 16, 2026 |
+| P1.2 README Update Plan | ✅ Complete | Feb 21, 2026 |
 | Test Environment Info | ✅ Complete | Feb 2026 |
 
 ## 🔄 Contributing to Documentation
