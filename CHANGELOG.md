@@ -46,6 +46,24 @@ Newest updates are at the top of this file
 * Settings persist via registry
 * Real-time validation and feedback
 
+### 🏗️ 64-bit Platform Support (P1.3)
+
+* Added x64 (64-bit) platform configurations to Visual Studio solution
+* Configured x64-specific build settings with IBM MQ lib64 library paths
+* Fixed 32 MFC message handler function signatures for x64 compatibility:
+  - Updated 16 header files with LRESULT/WPARAM/LPARAM signatures
+  - Updated 16 implementation files to match
+  - Affected classes: CapPubs, WritePubs, CICS, Dlq, General, Ims, jms, MQMDPAGE, MSGDATA, other, Props, PS, pscr, PubSub, RFH, Usr
+* Enhanced build.cmd with x64 commands:
+  - `rfhutil-x64`, `client-x64`, `safe-x64` - Individual x64 builds
+  - `all-x64` - Build all x64 projects
+  - `all-both` - Build both Win32 and x64 platforms
+* Updated .gitignore for x64 output directories
+* All configurations build successfully:
+  - Win32: rfhutil.exe, rfhutilc.exe, rfhutilc-safe.exe
+  - x64: rfhutil.exe, rfhutilc.exe, rfhutilc-safe.exe (in x64 subdirectories)
+* Documentation: [P1.3 Implementation Guide](docs/P1_3_64BIT_IMPLEMENTATION.md)
+
 ### 🎨 Dark Mode Support (P1.2)
 
 #### Phase 1: ThemeManager Infrastructure

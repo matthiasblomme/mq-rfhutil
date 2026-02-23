@@ -712,7 +712,7 @@ void Usr::clearUsrData()
 	UpdateData(FALSE);
 }
 
-LONG Usr::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT Usr::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	// set the focus to the queue manager name combo box

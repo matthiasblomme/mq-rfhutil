@@ -187,7 +187,7 @@ private:
 	void SetId(MQBYTE24 * id, int idType);
 	void processFlags(int flags);
 	void processReportOptions(int report);
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	void setPutApplType(int putType);
 	BOOL putApplTypeInit;
 	int getPutApplType(const char *applType);

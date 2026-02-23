@@ -85,7 +85,7 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	MyEdit m_DataEditBox;
 	int m_RFH_usr_len;
 	int m_rfh_usr_encoding;

@@ -99,7 +99,7 @@ protected:
 
 private:
 	BOOL GetToolTipText(UINT id, NMHDR *pTTTStruct, LRESULT *pResult);
-	LONG OnUserClose(UINT wParam, LONG lParam);
+	LRESULT OnUserClose(WPARAM wParam, LPARAM lParam);
 
 	HACCEL		m_hAccel;		// accelerator table for this dialog
 	CWinThread	*thread;		// worker thread

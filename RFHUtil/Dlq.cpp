@@ -1123,7 +1123,7 @@ void CDlq::enableDisplay()
 	}
 }
 
-LONG CDlq::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT CDlq::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	// set the focus to the queue manager name combo box

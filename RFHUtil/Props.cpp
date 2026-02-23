@@ -158,7 +158,7 @@ BOOL CProps::OnInitDialog()
 	return TRUE;  // return TRUE unless you set the focus to a control
 }
 
-LONG CProps::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT CProps::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	// set the focus to the queue manager name combo box

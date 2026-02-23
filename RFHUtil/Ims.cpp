@@ -1240,7 +1240,7 @@ void CIms::restoreTransInstanceId()
 	UpdateData(FALSE);
 }
 
-LONG CIms::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT CIms::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	// set the focus to the queue manager name combo box

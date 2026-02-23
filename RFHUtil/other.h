@@ -79,7 +79,7 @@ protected:
 private:
 	int processFolder(char *input, int length, char *output, int maxLen, int ccsid, int encoding, BOOL ucs);
 	char * findEndOfLine(char * inPtr, char * endPtr);
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	int otherEncoding;
 	int otherCcsid;
 	unsigned char * rfh_other_area;

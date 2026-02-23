@@ -214,7 +214,7 @@ private:
 	int cicsEncodeType;
 	int cicsCcsid;
 	void resetCICSheader();
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	void enableDisplay();
 	int m_save_CIH_version;
 	CString saveCICSfacility;

@@ -1724,7 +1724,7 @@ void PubSub::PubProcess()
 	OnPubProcess();
 }
 
-LONG PubSub::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT PubSub::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	char	traceInfo[256];		// work variable to build trace message

@@ -88,7 +88,7 @@ private:
 	int checkLine(const char * start, const char * end);
 	int checkPropData(const char * start, const char * end);
 	int propertyCount;
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	MyEdit m_PropertiesEditBox;
 	BOOL GetToolTipText(UINT id, NMHDR *pTTTStruct, LRESULT *pResult);
 };

@@ -544,7 +544,7 @@ BOOL CCapPubs::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-LONG CCapPubs::OnUserClose(UINT wParam, LONG lParam)
+LRESULT CCapPubs::OnUserClose(WPARAM wParam, LPARAM lParam)
 
 {
 	// shut down the dialog

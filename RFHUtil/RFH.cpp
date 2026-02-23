@@ -865,7 +865,7 @@ void RFH::OnRfh1PdEncodePc()
 // 
 //////////////////////////////////////////////////////////////
 
-LONG RFH::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT RFH::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	// set the focus to the queue manager name combo box

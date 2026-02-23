@@ -101,7 +101,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	int m_RFH_pscr_len;
 	int m_RFH_pscr_ccsid;
 	int m_RFH_pscr_encoding;

@@ -242,7 +242,7 @@ void WritePubs::OnStop()
 	OnOK();
 }
 
-LONG WritePubs::OnUserClose(UINT wParam, LONG lParam)
+LRESULT WritePubs::OnUserClose(WPARAM wParam, LPARAM lParam)
 
 {
 	// shut down the dialog

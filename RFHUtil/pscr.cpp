@@ -314,7 +314,7 @@ void pscr::OnChangePscrUserId()
 	pscrDataChanged = true;
 }
 
-LONG pscr::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT pscr::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	// set the focus to the appropriate response type

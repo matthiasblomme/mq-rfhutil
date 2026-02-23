@@ -414,7 +414,7 @@ void jms::updatePageData()
 	UpdateData(FALSE);
 }
 
-LONG jms::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT jms::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	// set the focus to the queue manager name combo box
