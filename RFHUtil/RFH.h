@@ -186,7 +186,7 @@ private:
 	void parseRFH1VarArea(char *rfhptr, int msglength);
 	void convertRFH2Header(MQRFH2 *tempRFH, int encodeType);
 	void convertRFHeader(MQRFH *tempRFH, int encodeType);
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	int m_rfh_data_len;
 	int m_rfh1_data_len;
 	int m_rfh_mcd_len;

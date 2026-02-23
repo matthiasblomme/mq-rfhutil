@@ -860,8 +860,7 @@ void other::clearOtherData()
 	UpdateData(FALSE);
 }
 
-LONG other::OnSetPageFocus(UINT wParam, LONG lParam)
-
+LRESULT other::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 {
 	// set the focus to the queue manager name combo box
 	m_OtherEditBox.SetFocus();

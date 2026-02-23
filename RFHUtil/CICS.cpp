@@ -2361,7 +2361,7 @@ void CCICS::enableDisplay()
 	}
 }
 
-LONG CCICS::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT CCICS::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	if (pDoc->traceEnabled)

@@ -5,10 +5,16 @@
 # Files created during the build by Visual Studio
 Client/Release
 Client/Debug
+Client/x64
+Client/ReleaseSafe
 
 RFHUtil/Release
 RFHUtil/Debug
+RFHUtil/x64
 bin/Debug
+bin/Debug/x64
+bin/Release/x64
+bin/ReleaseSafe/x64
 
 mqperf/*/Release
 mqperf/Release

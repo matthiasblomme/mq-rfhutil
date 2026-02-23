@@ -136,7 +136,7 @@ private:
 	void setFont(CFont * font);
 	void traceFont(CEdit * cedit, CFont *font);
 	void setThaiFont();
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	void updateFixedFont(LONG height);
 	void setFixedFont();
 	void setJapanFont();

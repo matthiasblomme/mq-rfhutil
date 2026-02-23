@@ -2536,7 +2536,7 @@ void General::EndBr()
 //
 //////////////////////////////////////////////////////
 
-LONG General::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT General::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	// set the focus to the queue manager name combo box

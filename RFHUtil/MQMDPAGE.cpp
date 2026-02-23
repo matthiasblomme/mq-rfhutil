@@ -1079,7 +1079,7 @@ void MQMDPAGE::ResetIds()
 	OnResetIds();
 }
 
-LONG MQMDPAGE::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT MQMDPAGE::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	// set the focus to the queue manager name combo box

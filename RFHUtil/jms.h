@@ -103,7 +103,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	int m_RFH_jms_len;
 	int jms_data_ccsid;
 	int jms_data_encoding;

@@ -169,7 +169,7 @@ private:
 
 	MyComboBox m_qmComboBox;
 	MyComboBox m_q_nameComboBox;
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	BOOL GetToolTipText(UINT id, NMHDR *pTTTStruct, LRESULT *pResult);
 	void loadEditBox();
 };

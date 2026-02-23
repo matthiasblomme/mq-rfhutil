@@ -2,7 +2,7 @@
 
 ## 📊 Progress Tracker
 
-**Last Updated:** February 14, 2026
+**Last Updated:** February 23, 2026
 **Current Version:** 9.4.0.0
 **Build Environment:** Visual Studio 2022 (v143), IBM MQ 9.4.5
 
@@ -14,18 +14,19 @@
 | 🔴 **P0.2** | Automatic Reconnection | ✅ COMPLETE | Feb 14, 2026 | Exponential backoff, 7 error handlers |
 | 🔴 **P0.3** | Connection Settings UI Tab | ✅ COMPLETE | Feb 14, 2026 | 15th tab with 3 sections, 28 controls |
 | 🟡 **P1.1** | Visual Studio 2022 Upgrade | ✅ COMPLETE | Feb 14, 2026 | Already using VS 2022 Build Tools |
+| 🟡 **P1.2** | Dark Mode Support | ✅ COMPLETE | Feb 21, 2026 | Full implementation with visual polish |
+| 🟡 **P1.3** | 64-bit Support | ✅ COMPLETE | Feb 23, 2026 | x64 platform, fixed MFC handlers, 32 files |
 
 ### In Progress 🚧
 
 | Priority | Item | Status | Started Date | Target Date |
 |----------|------|--------|--------------|-------------|
-| 🟡 **P1.2** | Dark Mode Support | 🚧 PLANNED | Feb 14, 2026 | Feb 16, 2026 |
+| None | - | - | - | - |
 
 ### Upcoming 📋
 
 | Priority | Item | Effort | Impact | Target Quarter |
 |----------|------|--------|--------|----------------|
-| 🟡 **P1.3** | 64-bit Support | Low | Medium | Q1 2026 |
 | 🟡 **P1.4** | Basic Unit Testing | Medium | High | Q1 2026 |
 | 🟢 **P2.1** | Connection Health Monitor | Medium | Medium | Q2 2026 |
 | 🟢 **P2.2** | Secure Credential Storage | Medium | High | Q2 2026 |
@@ -38,6 +39,8 @@ All detailed documentation has been moved to the [`docs/`](docs/) folder:
 - [MQ HeartBeat Details](docs/MQ_HEARTBEAT_NEGOTIATION.md)
 - [MQ KeepAlive Details](docs/MQ_KEEPALIVE_DETAILED.md)
 - [P0 Implementation Plans](docs/P0_IMPLEMENTATION_PLAN.md)
+- [P1.2 Dark Mode Implementation](docs/P1_2_DARK_MODE_IMPLEMENTATION.md)
+- [P1.3 64-bit Support Implementation](docs/P1_3_64BIT_IMPLEMENTATION.md)
 - [Test Environment Info](docs/TEST_ENVIRONMENT_INFO.md)
 
 ---
@@ -58,14 +61,13 @@ This document provides a **detailed, actionable roadmap** for modernizing the mq
 | 🔴 **P0.2** | Implement Auto-Reconnect | Medium | High | Low | ✅ DONE |
 | 🔴 **P0.3** | Add tab to enable auto-reconnect and heartbeat/keepalive | Medium | High | Low | ✅ DONE |
 | 🟡 **P1.1** | Upgrade to VS 2022 | Low | Medium | Low | ✅ DONE |
-| 🟡 **P1.2** | Dark mode | Low | Medium | Low | 🚧 IN PROGRESS |
+| 🟡 **P1.2** | Dark mode | Low | Medium | Low | ✅ DONE |
 
 
 ### Short Term (Weeks 5-12)
 
 | Priority | Item | Effort | Impact | Risk | Status |
 |----------|------|--------|--------|------|--------|
-| 🟡 **P1.3** | Add 64-bit Support | Low | Medium | Low | 📋 PLANNED |
 | 🟡 **P1.4** | Basic Unit Testing | Medium | High | Low | 📋 PLANNED |
 | 🟢 **P2.1** | Connection Health Monitor | Medium | Medium | Low | 📋 PLANNED |
 | 🟢 **P2.2** | Secure Credential Storage | Medium | High | Medium | 📋 PLANNED |

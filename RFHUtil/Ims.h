@@ -133,7 +133,7 @@ protected:
 private:
 	int imsEncodeType;
 	int imsCcsid;
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	CString saveIMStransId;
 	void enableDisplay();
 	BOOL m_save_include_header;

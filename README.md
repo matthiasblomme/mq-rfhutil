@@ -7,8 +7,57 @@ This is a fork of the **rfhutil** program, originally released in SupportPac IH0
 This program can be useful for the development and testing of IBM MQ and
 IBM Integration Bus aka WebSphere Message Broker aka App Connect Enterprise applications.
 Test messages are stored as files, which are then read by the application and written to an MQ queue. The program is GUI based.
+## 🎉 What's New in Version 9.4.0.0
 
-## Latest Features (v9.4.0.0)
+**Released:** February 2026  
+**Build:** 234
+
+### Major Improvements
+
+#### 🔌 Enhanced Connection Reliability (P0)
+- **HeartBeat Configuration** - Configurable MQ HeartBeat intervals (default 60s) for fast failure detection
+- **KeepAlive Support** - TCP KeepAlive configuration to prevent firewall timeouts
+- **Automatic Reconnection** - Intelligent reconnection with exponential backoff (1s → 2s → 4s → 8s → 16s → 32s → 60s)
+- **Connection Settings UI** - New dedicated tab for managing connection parameters
+
+#### 🎨 Dark Mode Support (P1.2)
+- **Three Theme Modes** - Light, Dark, and System (follows Windows theme)
+- **Modern UI** - Gradient backgrounds, themed buttons, and dark grey controls
+- **Persistent Preferences** - Theme choice saved between sessions
+- **All Dialogs Themed** - Consistent dark mode across all 15 property pages
+
+#### 🔧 Build System Updates (P1.1 & P1.3)
+- **Visual Studio 2022** - Upgraded to VS 2022 Build Tools (v143 toolset)
+- **IBM MQ 9.4** - Updated for IBM MQ 9.4.5 compatibility
+- **64-bit Support** - Full x64 platform support alongside Win32 builds
+
+### Quick Start with New Features
+
+#### Using Dark Mode
+1. Launch RFHUtil
+2. Go to **View → Theme** menu
+3. Choose:
+   - **Light Mode** - Traditional light theme
+   - **Dark Mode** - Modern dark theme
+   - **System Default** - Follows Windows 10/11 theme
+
+#### Configuring Connection Settings
+1. Open the **Connection Settings** tab (15th tab)
+2. Configure:
+   - **HeartBeat Interval** - Set MQ heartbeat (recommended: 60 seconds)
+   - **KeepAlive Interval** - Set TCP keepalive (use AUTO for OS defaults)
+   - **Auto-Reconnect** - Enable automatic reconnection on connection loss
+   - **Reconnect Attempts** - Set maximum retry attempts (default: 7)
+
+### Documentation
+- 📚 [Complete Documentation](docs/README.md)
+- 🗺️ [Modernization Roadmap](MODERNIZATION_ROADMAP.md)
+- 📝 [Changelog](CHANGELOG.md)
+
+---
+
+
+## Overview
 
 ### 🔒 Safe Mode (Browse-Only Version) - NEW!
 
@@ -37,15 +86,28 @@ This fork adds a **Safe Mode** build configuration that creates a browse-only ve
 - ✅ All Analysis Tools - Parse, format, and analyze message content
 
 #### Building Safe Mode
+
+**Win32 (32-bit):**
 ```bash
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=Win32 /v:minimal
 ```
-
 Output: `bin\ReleaseSafe\rfhutilc-safe.exe`
+
+**x64 (64-bit):**
+```bash
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=x64 /v:minimal
+```
+Output: `bin\ReleaseSafe\x64\rfhutilc-safe.exe`
+
+Or use the convenient build script:
+```bash
+build.cmd safe      # Build Win32 safe mode
+build.cmd safe-x64  # Build x64 safe mode
+```
 
 See [SAFE_MODE_IMPLEMENTATION.md](docs/SAFE_MODE_IMPLEMENTATION.md) and [BUILD_CONFIG.md](docs/BUILD_CONFIG.md) for detailed implementation information.
 
-## Original Features (v9.4.0.0)
+## Additional Features
 
 ### 🎨 Dark Mode Support
 RFHUtil now includes full dark mode support with automatic theme detection and manual theme switching.
@@ -145,22 +207,59 @@ It allows test messages to be captured and stored in files, and then used to dri
 None beyond basic MQ and IIB/ACE development skills.
 
 ## Contents of repository
-This repository contains source code for the rfhutil program, managed as a Microsoft Visual Studio 2017 Solution.
-If you have VS 2017, then opening the `RFHUtil.sln` file will allow you to rebuild the program.
+This repository contains source code for the rfhutil program, managed as a Microsoft Visual Studio 2022 Solution.
+If you have VS 2022, then opening the `RFHUtil.sln` file will allow you to rebuild the program.
 
-Pre-built copies of the programs are available:
+Pre-built copies of the programs are available in both **Win32 (32-bit)** and **x64 (64-bit)** versions:
+
+**Win32 Builds:**
 - **rfhutil.exe** - Full version for connections to a local queue manager (`bin\Release`)
 - **rfhutilc.exe** - Client version for MQ client connections (`bin\Release`)
-- **rfhutilc-safe.exe** - **NEW!** Browse-only safe mode version (`bin\ReleaseSafe`)
+- **rfhutilc-safe.exe** - Browse-only safe mode version (`bin\ReleaseSafe`)
+
+**x64 Builds:**
+- **rfhutil.exe** - Full version for connections to a local queue manager (`bin\Release\x64`)
+- **rfhutilc.exe** - Client version for MQ client connections (`bin\Release\x64`)
+- **rfhutilc-safe.exe** - Browse-only safe mode version (`bin\ReleaseSafe\x64`)
 
 They can be run directly but you may first need to run the `setmqenv` program to set the environment variables that allow you to locate the MQ runtime libraries.
 
 Documentation is provided in the `ih03.doc` and `ih03.pdf` files.
 
 ## Building and running the programs
-The VS 2017 configuration assumes that MQ is installed in the default location, C:\Program Files\IBM\MQ. If you have installed MQ
-elsewhere, then you may consider adding a link from the default location to your installation directory. Otherwise, you will
-have to modify the configuration properties.
+
+### Build Requirements
+- **Visual Studio 2022** with C++ Desktop Development workload
+- **IBM MQ 9.4.5** Client (both 32-bit and 64-bit for full platform support)
+- **Windows SDK 10.0**
+
+### Platform Support
+The project now supports both **Win32 (32-bit)** and **x64 (64-bit)** platforms:
+
+**Win32 builds** use MQ libraries from: `C:\Program Files (x86)\IBM\MQ\tools\lib`
+**x64 builds** use MQ libraries from: `C:\Program Files\IBM\MQ\tools\lib64`
+
+If you have installed MQ elsewhere, you may consider adding a link from the default location to your installation directory. Otherwise, you will have to modify the configuration properties.
+
+### Quick Build Commands
+Use the convenient `build.cmd` script:
+
+```bash
+# Win32 builds
+build.cmd rfhutil    # Build RFHUtil (Win32)
+build.cmd client     # Build Client (Win32)
+build.cmd safe       # Build Safe Mode (Win32)
+build.cmd all        # Build all Win32 projects
+
+# x64 builds
+build.cmd rfhutil-x64  # Build RFHUtil (x64)
+build.cmd client-x64   # Build Client (x64)
+build.cmd safe-x64     # Build Safe Mode (x64)
+build.cmd all-x64      # Build all x64 projects
+
+# Build both platforms
+build.cmd all-both   # Build all projects for both Win32 and x64
+```
 
 Running the programs may require that you run `setmqenv` to set a suitable environment for the programs to locate the MQ
 libraries.
@@ -176,14 +275,49 @@ variable to `CLIENT`.
 
 
 ## History
+
 The **rfhutil** program was conceived, created and developed by **Jim MacNair**.
 
-See [CHANGELOG](CHANGELOG.md) for changes to the program since its inception. The first release to Github is called version 9.1, and was released in December 2018.
+### Version History
+
+| Version | Build | Release Date | Key Features | Status |
+|---------|-------|--------------|--------------|--------|
+| **9.4.0.0** | 234 | Feb 2026 | Dark Mode, Connection Reliability, Auto-Reconnect, 64-bit Support | ✅ Current |
+| 9.1.6 | 233 | Oct 2021 | TLS cipher updates, CSP improvements | Stable |
+| 9.1.5 | 232 | Apr 2021 | MQDLH fixes, trace improvements | Stable |
+| 9.1.4 | 231 | Apr 2021 | TLS 1.3 support, MQMD fixes | Stable |
+| 9.1.3 | 230 | Jun 2019 | Registry updates | Stable |
+| 9.1.2 | 229 | Mar 2019 | XML parsing fixes | Stable |
+| 9.1.1 | 228 | Feb 2019 | Code analysis, TLS password fix | Stable |
+| 9.1.0 | 227 | Dec 2018 | First GitHub release | Stable |
+| 9.0.0 | 226 | Nov 2018 | VS 2017 upgrade, high DPI support | Legacy |
+| 9.0.0 | 225 | Oct 2018 | VS 2017 migration | Legacy |
+| 8.0.0 | 224 | Dec 2015 | JSON parser improvements | Legacy |
+
+### Recent Changes (v9.4.0.0)
+
+#### Connection Reliability (P0)
+- **P0.1:** HeartBeat/KeepAlive configuration with UI controls
+- **P0.2:** Automatic reconnection with exponential backoff
+- **P0.3:** Dedicated Connection Settings tab with 28 controls
+
+#### User Interface (P1)
+- **P1.1:** Visual Studio 2022 upgrade (v143 toolset)
+- **P1.2:** Complete dark mode support with gradient backgrounds
+
+#### Technical Improvements
+- IBM MQ 9.4.5 compatibility
+- Enhanced error handling (7 reconnection scenarios)
+- Theme persistence via registry
+- System theme detection (Windows 10+)
 
 ### This Fork
 This fork adds Safe Mode (browse-only) functionality to provide a production-safe version of rfhutilc for environments where read-only access is required.
 
 **Original Repository**: [ibm-messaging/mq-rfhutil](https://github.com/ibm-messaging/mq-rfhutil)
+
+### Documentation
+See [CHANGELOG.md](CHANGELOG.md) for detailed change history.
 
 ## Health Warning
 

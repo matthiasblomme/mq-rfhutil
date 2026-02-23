@@ -1300,7 +1300,7 @@ void CPS::OnSetfocusPsQm()
 //
 //////////////////////////////////////////////////////
 
-LONG CPS::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT CPS::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	// set the focus to the queue manager name combo box

@@ -162,7 +162,7 @@ private:
 	MyComboBox m_ps_topicNameComboBox;
 	CIdEdit m_SubCorrelIdEdit;
 	CIdEdit m_SubAcctTokenEdit;
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	CAPTPARMS	cparms;								// parameters area for capturing messages
 	WRITEPARMS	wparms;								// parameters area for publishing messages
 	BOOL GetToolTipText(UINT id, NMHDR *pTTTStruct, LRESULT *pResult);

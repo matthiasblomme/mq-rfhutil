@@ -1190,7 +1190,7 @@ void MSGDATA::ReadCopybook()
 //
 //////////////////////////////////////////////////////
 
-LONG MSGDATA::OnSetPageFocus(UINT wParam, LONG lParam)
+LRESULT MSGDATA::OnSetPageFocus(WPARAM wParam, LPARAM lParam)
 
 {
 	char	traceInfo[512];		// work variable to build trace message

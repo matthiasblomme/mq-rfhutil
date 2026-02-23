@@ -112,7 +112,7 @@ private:
 	int dlqEncodeType;
 	int dlqCcsid;
 	void resetDLQdata();
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	void enableDisplay();
 	BOOL OnInitDialog();
 	BOOL GetToolText(UINT id, NMHDR *pTTTStruct, LRESULT *pResult);

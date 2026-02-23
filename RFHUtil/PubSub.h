@@ -187,7 +187,7 @@ private:
 	char * buildV1RegOpt(char * ptr, const char *value);
 	char * buildV1Opt(char * ptr, const char *value, const char * opt);
 	void processPubsubOption(char *value);
-	LONG OnSetPageFocus(UINT wParam, LONG lParam);
+	LRESULT OnSetPageFocus(WPARAM wParam, LPARAM lParam);
 	int m_RFH_pubsub_len;
 	int m_RFH_pubsub_ccsid;
 	int m_RFH_pubsub_encoding;
