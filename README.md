@@ -323,6 +323,12 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed change history.
 
 This package is provided as-is with no guarantees of support or updates.
 
+## Community
+
+Join the Discord server to ask questions, request support, or discuss RFHUtil:
+
+[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?logo=discord&logoColor=white)](https://discord.gg/ubSszdcS)
+
 ## Issues and Contributions
 
 For issues relating to the **original rfhutil**, please use the [IBM Messaging issue tracker](https://github.com/ibm-messaging/mq-rfhutil/issues).
