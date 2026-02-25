@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C d:/GIT/mq-rfhutil worktree remove:*)",
+      "Bash(git -C d:/GIT/mq-rfhutil branch:*)"
+    ]
+  }
+}

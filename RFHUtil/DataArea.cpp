@@ -10709,20 +10709,27 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 			csp.CSPUserIdPtr = (void *)((LPCTSTR)m_conn_userid);
 
 			// get the length of the password
-			csp.CSPPasswordLength = m_conn_password.GetLength();
+			int pwdlen = m_conn_password.GetLength();
 
-			// set the password pointer as well
-			csp.CSPPasswordPtr = (void *)((LPCTSTR)m_conn_password);
+			// only attach MQCSP (and request authentication) when a password is also provided.
+			// with CHCKCLNT(OPTIONAL), sending a user ID without a password causes MQ to attempt
+			// authentication and fail (AMQ5534E). omitting the MQCSP avoids the auth check entirely.
+			if (pwdlen > 0)
+			{
+				// set the password pointer and length
+				csp.CSPPasswordLength = pwdlen;
+				csp.CSPPasswordPtr = (void *)((LPCTSTR)m_conn_password);
 
-			// set the authentication type to user id and password
-			csp.AuthenticationType = MQCSP_AUTH_USER_ID_AND_PWD;
+				// set the authentication type to user id and password
+				csp.AuthenticationType = MQCSP_AUTH_USER_ID_AND_PWD;
 
-			// set the pointer to the MQCSP area in the MQCNO
-			cno.SecurityParmsPtr = &csp;
+				// set the pointer to the MQCSP area in the MQCNO
+				cno.SecurityParmsPtr = &csp;
 
-			// set the CNO version level so the MQCSP pointer is used
-			if (cno.Version < MQCNO_VERSION_5) {
-				cno.Version = MQCNO_VERSION_5;
+				// set the CNO version level so the MQCSP pointer is used
+				if (cno.Version < MQCNO_VERSION_5) {
+					cno.Version = MQCNO_VERSION_5;
+				}
 			}
 		}
 		else
