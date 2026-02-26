@@ -1,0 +1,10 @@
+D:\GIT\mq-rfhutil\RFHUtil\comsubs.cpp;D:\GIT\mq-rfhutil\obj\UnitTests\x64\Debug\comsubs.obj
+D:\GIT\mq-rfhutil\RFHUtil\xmlsubs.cpp;D:\GIT\mq-rfhutil\obj\UnitTests\x64\Debug\xmlsubs.obj
+D:\GIT\mq-rfhutil\RFHUtil\JsonParse.cpp;D:\GIT\mq-rfhutil\obj\UnitTests\x64\Debug\JsonParse.obj
+D:\GIT\mq-rfhutil\RFHUtil\XMLParse.cpp;D:\GIT\mq-rfhutil\obj\UnitTests\x64\Debug\XMLParse.obj
+D:\GIT\mq-rfhutil\RFHUtil\Names.cpp;D:\GIT\mq-rfhutil\obj\UnitTests\x64\Debug\Names.obj
+D:\GIT\mq-rfhutil\tests\UnitTests\TestMain.cpp;D:\GIT\mq-rfhutil\obj\UnitTests\x64\Debug\TestMain.obj
+D:\GIT\mq-rfhutil\tests\UnitTests\ComsubsTests.cpp;D:\GIT\mq-rfhutil\obj\UnitTests\x64\Debug\ComsubsTests.obj
+D:\GIT\mq-rfhutil\tests\UnitTests\XmlsubsTests.cpp;D:\GIT\mq-rfhutil\obj\UnitTests\x64\Debug\XmlsubsTests.obj
+D:\GIT\mq-rfhutil\tests\UnitTests\JsonParseTests.cpp;D:\GIT\mq-rfhutil\obj\UnitTests\x64\Debug\JsonParseTests.obj
+D:\GIT\mq-rfhutil\tests\UnitTests\XMLParseTests.cpp;D:\GIT\mq-rfhutil\obj\UnitTests\x64\Debug\XMLParseTests.obj

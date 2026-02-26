@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(git -C d:/GIT/mq-rfhutil worktree remove:*)",
-      "Bash(git -C d:/GIT/mq-rfhutil branch:*)"
+      "Bash(git -C d:/GIT/mq-rfhutil branch:*)",
+      "Bash(docker exec QM1 bash -c \"echo ''DISPLAY QMGR CHLAUTH CONNAUTH'' | runmqsc QM1\")",
+      "Bash(docker exec QM1 bash -c \"echo ''DISPLAY AUTHINFO\\(*\\) ALL'' | runmqsc QM1\")",
+      "Bash(docker exec:*)",
+      "Bash(/tmp/nuget.exe restore:*)",
+      "Bash(/tmp/nuget.exe sources add:*)",
+      "Bash(/tmp/nuget.exe:*)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/MSBuild.exe\" tests/UnitTests/UnitTests.vcxproj /p:Configuration=Debug /p:Platform=x64 /v:minimal)",
+      "Bash(cmd /c:*)",
+      "Bash(powershell -Command:*)"
     ]
   }
 }

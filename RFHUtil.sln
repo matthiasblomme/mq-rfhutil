@@ -7,6 +7,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RFHUtil", "RFHUtil\RFHUtil.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{EC01C33C-4873-4A5A-8221-FE67320BB156}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "tests\UnitTests\UnitTests.vcxproj", "{5F8E2D3A-7B4C-4E9A-8F12-3C0D5A6B7E8F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IntegrationTests", "tests\IntegrationTests\IntegrationTests.vcxproj", "{9C3D4E5F-8A6B-4C7D-9E1F-2A3B4C5D6E7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -41,6 +45,22 @@ Global
 		{EC01C33C-4873-4A5A-8221-FE67320BB156}.ReleaseSafe|Win32.Build.0 = ReleaseSafe|Win32
 		{EC01C33C-4873-4A5A-8221-FE67320BB156}.ReleaseSafe|x64.ActiveCfg = ReleaseSafe|x64
 		{EC01C33C-4873-4A5A-8221-FE67320BB156}.ReleaseSafe|x64.Build.0 = ReleaseSafe|x64
+		{5F8E2D3A-7B4C-4E9A-8F12-3C0D5A6B7E8F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5F8E2D3A-7B4C-4E9A-8F12-3C0D5A6B7E8F}.Debug|Win32.Build.0 = Debug|Win32
+		{5F8E2D3A-7B4C-4E9A-8F12-3C0D5A6B7E8F}.Debug|x64.ActiveCfg = Debug|x64
+		{5F8E2D3A-7B4C-4E9A-8F12-3C0D5A6B7E8F}.Debug|x64.Build.0 = Debug|x64
+		{5F8E2D3A-7B4C-4E9A-8F12-3C0D5A6B7E8F}.Release|Win32.ActiveCfg = Debug|Win32
+		{5F8E2D3A-7B4C-4E9A-8F12-3C0D5A6B7E8F}.Release|x64.ActiveCfg = Debug|x64
+		{5F8E2D3A-7B4C-4E9A-8F12-3C0D5A6B7E8F}.ReleaseSafe|Win32.ActiveCfg = Debug|Win32
+		{5F8E2D3A-7B4C-4E9A-8F12-3C0D5A6B7E8F}.ReleaseSafe|x64.ActiveCfg = Debug|x64
+		{9C3D4E5F-8A6B-4C7D-9E1F-2A3B4C5D6E7F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9C3D4E5F-8A6B-4C7D-9E1F-2A3B4C5D6E7F}.Debug|Win32.Build.0 = Debug|Win32
+		{9C3D4E5F-8A6B-4C7D-9E1F-2A3B4C5D6E7F}.Debug|x64.ActiveCfg = Debug|x64
+		{9C3D4E5F-8A6B-4C7D-9E1F-2A3B4C5D6E7F}.Debug|x64.Build.0 = Debug|x64
+		{9C3D4E5F-8A6B-4C7D-9E1F-2A3B4C5D6E7F}.Release|Win32.ActiveCfg = Debug|Win32
+		{9C3D4E5F-8A6B-4C7D-9E1F-2A3B4C5D6E7F}.Release|x64.ActiveCfg = Debug|x64
+		{9C3D4E5F-8A6B-4C7D-9E1F-2A3B4C5D6E7F}.ReleaseSafe|Win32.ActiveCfg = Debug|Win32
+		{9C3D4E5F-8A6B-4C7D-9E1F-2A3B4C5D6E7F}.ReleaseSafe|x64.ActiveCfg = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
