@@ -37,5 +37,11 @@ filelist
 TODO.txt
 DONE.txt
 
-Tests/
+bin/tests/
+obj/UnitTests/
+obj/IntegrationTests/
+tests/UnitTests/bin/
+tests/UnitTests/obj/
+tests/IntegrationTests/bin/
+tests/IntegrationTests/obj/
 images/

@@ -1,0 +1,31 @@
+# tests/docker/compose.yaml
+# Reproducible IBM MQ test environment for integration tests.
+# Matches the QM1 configuration used in local development (D:\Docker\ibmmq\compose.yaml)
+# so integration tests produce the same results locally and in CI.
+#
+# Usage:
+#   docker compose -f tests/docker/compose.yaml up -d
+#   bin\tests\x64\IntegrationTests.exe
+#   docker compose -f tests/docker/compose.yaml down
+
+services:
+  qmgr:
+    image: icr.io/ibm-messaging/mq:latest
+    container_name: test-qm1
+    environment:
+      - LICENSE=accept
+      - MQ_QMGR_NAME=QM1
+      - MQ_APP_USER=app
+      - MQ_APP_PASSWORD=passw0rd
+      - MQ_ADMIN_USER=admin
+      - MQ_ADMIN_PASSWORD=passw0rd
+    ports:
+      - "1414:1414"
+      - "9443:9443"
+    volumes:
+      - ./config:/etc/mqm/mqsc
+    healthcheck:
+      test: ["CMD", "dspmq", "-m", "QM1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
