@@ -82,7 +82,12 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Secur32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- Delay-load gtest DLLs so they initialize AFTER we set _CrtSetReportMode.
+           Without this, the v140 CRT in gtestd.dll initialises at process startup,
+           clashes with the v143 CRT, and fires "__acrt_first_block == header"
+           before InitInstance() even runs. -->
+      <DelayLoadDLLs>gtestd.dll;gtest_maind.dll</DelayLoadDLLs>
+      <AdditionalDependencies>Secur32.lib;version.lib;delayimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
@@ -100,7 +105,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Secur32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>gtestd.dll;gtest_maind.dll</DelayLoadDLLs>
+      <AdditionalDependencies>Secur32.lib;version.lib;delayimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
