@@ -1,0 +1,17 @@
+* test-qm.mqsc — MQSC applied at QM startup to configure authentication
+* matching the local QM1 setup (CHCKCLNT REQDADM, DEV.APP.SVRCONN with MCAUSER app).
+*
+* The IBM MQ developer image already creates DEV.APP.SVRCONN and DEV.AUTHINFO,
+* this file just ensures the settings we test against are explicitly set.
+
+* Ensure channel auth records are disabled (matches local QM1: CHLAUTH DISABLED)
+ALTER QMGR CHLAUTH(DISABLED)
+
+* Configure connection authentication:
+*   CHCKCLNT(REQDADM) — password required for mqm-group (admin) users,
+*                        optional for application users.
+*   ADOPTCTX(YES)     — adopt the MQ context of the authenticated user.
+ALTER AUTHINFO(DEV.AUTHINFO) AUTHTYPE(IDPWOS) CHCKCLNT(REQDADM) CHCKLOCL(OPTIONAL) ADOPTCTX(YES)
+
+* Activate the authentication configuration
+REFRESH SECURITY TYPE(CONNAUTH)
