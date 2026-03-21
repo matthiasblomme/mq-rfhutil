@@ -2,7 +2,7 @@
 
 ## 📊 Progress Tracker
 
-**Last Updated:** March 20, 2026
+**Last Updated:** March 21, 2026
 **Current Version:** 9.4.0.0
 **Build Environment:** Visual Studio 2022 (v143), IBM MQ 9.4.5
 
@@ -17,6 +17,7 @@
 | 🟡 **P1.2** | Dark Mode Support | ✅ COMPLETE | Feb 21, 2026 | Full implementation with visual polish |
 | 🟡 **P1.3** | 64-bit Support | ✅ COMPLETE | Feb 23, 2026 | x64 platform, fixed MFC handlers, 32 files |
 | 🟡 **P1.4** | Basic Unit Testing | ✅ COMPLETE | Mar 20, 2026 | 132 tests across 5 modules, Win32+x64 |
+| 🟢 **P2.1** | Connection Health Monitor | ✅ COMPLETE | Mar 21, 2026 | Proactive MQINQ health probes, auto-reconnect on idle, UI status display |
 
 ### In Progress 🚧
 
@@ -28,7 +29,6 @@
 
 | Priority | Item | Effort | Impact | Target Quarter |
 |----------|------|--------|--------|----------------|
-| 🟢 **P2.1** | Connection Health Monitor | Medium | Medium | Q2 2026 |
 | 🟢 **P2.2** | Secure Credential Storage | Medium | High | Q2 2026 |
 
 ### Documentation 📚
@@ -69,7 +69,7 @@ This document provides a **detailed, actionable roadmap** for modernizing the mq
 | Priority | Item | Effort | Impact | Risk | Status |
 |----------|------|--------|--------|------|--------|
 | 🟡 **P1.4** | Basic Unit Testing | Medium | High | Low | ✅ DONE |
-| 🟢 **P2.1** | Connection Health Monitor | Medium | Medium | Low | 📋 PLANNED |
+| 🟢 **P2.1** | Connection Health Monitor | Medium | Medium | Low | ✅ DONE |
 | 🟢 **P2.2** | Secure Credential Storage | Medium | High | Medium | 📋 PLANNED |
 | 🟢 **P2.3** | Make the Data tab editable by adding a check mark and allow for that data to be written to the queue | Medium | Medium | Medium | 📋 PLANNED |
 
