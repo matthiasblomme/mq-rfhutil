@@ -11,7 +11,20 @@
       "Bash(/tmp/nuget.exe:*)",
       "Bash(\"/c/Program Files \\(x86\\)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/MSBuild.exe\" tests/UnitTests/UnitTests.vcxproj /p:Configuration=Debug /p:Platform=x64 /v:minimal)",
       "Bash(cmd /c:*)",
-      "Bash(powershell -Command:*)"
+      "Bash(powershell -Command:*)",
+      "Bash(git commit:*)",
+      "Bash(where msbuild:*)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/MSBuild.exe\" RFHUtil.sln /t:UnitTests:Rebuild /p:Configuration=Debug /p:Platform=Win32 /v:minimal)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/MSBuild.exe\" \"RFHUtil.sln\" \"/t:UnitTests:Rebuild\" \"/p:Configuration=Debug\" \"/p:Platform=Win32\" \"/v:minimal\")",
+      "Bash(MSBUILDFULL=\"/c/Program Files \\(x86\\)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/MSBuild.exe\")",
+      "Bash(\"$MSBUILDFULL\" d:/GIT/mq-rfhutil/RFHUtil.sln -t:UnitTests:Rebuild -p:Configuration=Debug -p:Platform=Win32 -v:minimal)",
+      "Bash(\"$MSBUILDFULL\" d:/GIT/mq-rfhutil/RFHUtil.sln -t:UnitTests:Rebuild -p:Configuration=Debug -p:Platform=x64 -v:minimal)",
+      "Bash(taskkill -F -IM UnitTests.exe)",
+      "Bash(MSBUILDFULL=\"/c/Program Files \\(x86\\)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/MSBuild.exe\" \"$MSBUILDFULL\" d:/GIT/mq-rfhutil/RFHUtil.sln -t:UnitTests:Rebuild -p:Configuration=Debug -p:Platform=x64 -v:minimal)",
+      "Bash(MSBUILDFULL=\"C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\2022\\\\BuildTools\\\\MSBuild\\\\Current\\\\Bin\\\\MSBuild.exe\")",
+      "Bash(ls -la d:/GIT/mq-rfhutil/bin/tests/gtest*.dll d:/GIT/mq-rfhutil/bin/tests/x64/gtest*.dll)",
+      "Bash(powershell -ExecutionPolicy Bypass -File d:/GIT/mq-rfhutil/run_tests.ps1)",
+      "Bash(gh pr:*)"
     ]
   }
 }

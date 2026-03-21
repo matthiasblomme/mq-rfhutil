@@ -501,6 +501,24 @@ public:
 	CString m_browse_queue_name;        // Queue name for active browse operation
 	BOOL m_browse_active;               // Flag indicating browse operation in progress
 	BOOL m_browse_restart_pending;      // Flag indicating browse needs restart after reconnection
+
+	// P2.1: Connection Health Monitor — settings
+	BOOL m_health_monitor_enabled;       // Enable/disable health monitoring
+	int m_health_check_interval;         // Check interval in seconds (default 30)
+
+	// P2.1: Connection Health Monitor — runtime state
+	BOOL m_health_check_active;          // Is the monitor currently running
+	MQHOBJ m_hHealthCheckObj;            // Cached QM object handle for MQINQ probes
+	DWORD m_connection_start_time;       // GetTickCount() when connection established
+	DWORD m_last_health_check_time;      // GetTickCount() of last successful check
+	int m_health_check_count;            // Total checks since connect
+	int m_health_check_failures;         // Failed checks since connect
+	int m_total_reconnections;           // Total reconnections since app start
+	int m_health_status;                 // 0=disconnected, 1=healthy, 2=degraded, 3=reconnecting
+
+	// P2.1: Operation guard — prevents health check during user MQ operations
+	BOOL m_mq_operation_active;
+
 	MQLONG			m_q_depth;			// depth of the last queue that was accessed
 	MQLONG			level;				// queue manager level
 	MQLONG			platform;			// queue manager platform type
@@ -651,6 +669,14 @@ public:
 	void resetReconnectionState();
 	bool shouldAttemptReconnect(MQLONG rc);
 	int calculateReconnectDelay();
+
+	// P2.1: Connection Health Monitor methods
+	bool performHealthCheck();
+	void startHealthMonitor();
+	void stopHealthMonitor();
+	CString getHealthStatusText();
+	CString getUptimeText();
+	CString getLastCheckText();
 	
 	int readFirstMessage(bool silent, LPCTSTR qName, int line);
 	int startBrowse(LPCTSTR QMname, LPCTSTR Queue, bool silent, int line);

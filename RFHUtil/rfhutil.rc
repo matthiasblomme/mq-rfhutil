@@ -1091,6 +1091,20 @@ BEGIN
     LTEXT           "(1 = no backoff, 2 = double)",IDC_STATIC,145,206,150,8
     LTEXT           "Maximum Interval (seconds):",IDC_STATIC,14,224,90,8
     EDITTEXT        IDC_RECONNECT_MAX_INTERVAL,110,222,40,14,ES_AUTOHSCROLL | ES_NUMBER
+
+    GROUPBOX        "Connection Health Monitor",IDC_STATIC,7,238,516,130
+    CONTROL         "Enable Health Monitoring",IDC_ENABLE_HEALTH_MONITOR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,253,100,10
+    LTEXT           "Check Interval (seconds):",IDC_STATIC,14,271,85,8
+    EDITTEXT        IDC_HEALTH_CHECK_INTERVAL,105,269,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "(5-3600, recommended: 30)",IDC_STATIC,150,271,140,8
+    LTEXT           "Status:",IDC_STATIC,14,292,30,8
+    LTEXT           "Not connected",IDC_HEALTH_STATUS_TEXT,50,292,200,8
+    LTEXT           "Uptime:",IDC_STATIC,14,306,30,8
+    LTEXT           "-",IDC_HEALTH_UPTIME_TEXT,50,306,200,8
+    LTEXT           "Last Check:",IDC_STATIC,14,320,45,8
+    LTEXT           "-",IDC_HEALTH_LAST_CHECK_TEXT,65,320,200,8
+    LTEXT           "Health Checks:",IDC_STATIC,14,334,55,8
+    LTEXT           "0",IDC_HEALTH_CHECK_COUNT_TEXT,75,334,50,8
 END
 
 IDD_MOVEQ DIALOG 0, 0, 373, 194

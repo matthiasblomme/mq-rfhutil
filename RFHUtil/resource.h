@@ -764,6 +764,14 @@
 #define IDC_RECONNECT_BACKOFF           1669
 #define IDC_RECONNECT_MAX_INTERVAL      1670
 
+// P2.1: Health Monitor Controls
+#define IDC_ENABLE_HEALTH_MONITOR       1671
+#define IDC_HEALTH_CHECK_INTERVAL       1672
+#define IDC_HEALTH_STATUS_TEXT          1673
+#define IDC_HEALTH_UPTIME_TEXT          1674
+#define IDC_HEALTH_LAST_CHECK_TEXT      1675
+#define IDC_HEALTH_CHECK_COUNT_TEXT     1676
+
 // P1.2: Dark Mode Theme Menu
 #define ID_VIEW_THEME_LIGHT             2000
 #define ID_VIEW_THEME_DARK              2001
@@ -775,7 +783,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        174
 #define _APS_NEXT_COMMAND_VALUE         32897
-#define _APS_NEXT_CONTROL_VALUE         1671
+#define _APS_NEXT_CONTROL_VALUE         1677
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

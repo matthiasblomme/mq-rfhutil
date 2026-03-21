@@ -66,6 +66,14 @@ public:
 	int		m_reconnect_interval;
 	int		m_reconnect_backoff;
 	int		m_reconnect_max_interval;
+
+	// P2.1: Health Monitor settings
+	BOOL	m_enable_health_monitor;
+	int		m_health_check_interval;
+	CString	m_health_status_text;
+	CString	m_health_uptime_text;
+	CString	m_health_last_check_text;
+	CString	m_health_check_count_text;
 	//}}AFX_DATA
 
 // Overrides
@@ -87,6 +95,7 @@ protected:
 	afx_msg void OnEnableHeartbeat();
 	afx_msg void OnEnableKeepalive();
 	afx_msg void OnEnableAutoReconnect();
+	afx_msg void OnEnableHealthMonitor();	// P2.1
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -55,6 +55,15 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+// P2.1: RAII guard to set/clear m_mq_operation_active flag
+class MqOperationGuard
+{
+	BOOL &m_flag;
+public:
+	MqOperationGuard(BOOL &flag) : m_flag(flag) { m_flag = TRUE; }
+	~MqOperationGuard() { m_flag = FALSE; }
+};
+
 // Definitions
 #define MAX_ERR_MSG_LEN			8191
 
@@ -302,6 +311,19 @@ DataArea::DataArea()
 	m_browse_active = FALSE;
 	m_browse_restart_pending = FALSE;
 	m_browse_queue_name.Empty();
+
+	// P2.1: Initialize Health Monitor settings
+	m_health_monitor_enabled = TRUE;
+	m_health_check_interval = 30;
+	m_health_check_active = FALSE;
+	m_hHealthCheckObj = MQHO_NONE;
+	m_connection_start_time = 0;
+	m_last_health_check_time = 0;
+	m_health_check_count = 0;
+	m_health_check_failures = 0;
+	m_total_reconnections = 0;
+	m_health_status = 0;
+	m_mq_operation_active = FALSE;
 
 	// initialize storage freed indicator
 	storageFreed = FALSE;
@@ -6058,6 +6080,7 @@ void DataArea::getParsedData(const int charFormat)
 void DataArea::putMessage(LPCTSTR QMname, LPCTSTR RemoteQM, LPCTSTR Queue)
 
 {
+	MqOperationGuard opGuard(m_mq_operation_active);	// P2.1: prevent health check during put
 	// define the MQ objects that we need
 	MQLONG			cc=MQCC_OK;						// MQ completion code
 	MQLONG			rc=MQRC_NONE;					// MQ reason code
@@ -7503,6 +7526,7 @@ int DataArea::appendPropsToBuffer(const char *namePtr, const char *valuePtr, int
 int DataArea::processMQGet(const char * getType, MQHOBJ handle, int options, int match, int waitTime, MQMD2 *mqmd, MQLONG * rc)
 
 {
+	MqOperationGuard opGuard(m_mq_operation_active);	// P2.1: prevent health check during get
 	MQLONG			tempOpt;
 	MQLONG			cc=MQCC_OK;					// MQ completion code
 	MQLONG			cc2=MQCC_OK;				// MQ completion code
@@ -9188,6 +9212,11 @@ void DataArea::connectionLostCleanup()
 	// remember the connection is no longer active
 	connected = false;
 	qm = NULL;
+
+	// P2.1: Clear health monitor state (handle is now invalid)
+	m_hHealthCheckObj = MQHO_NONE;
+	m_health_check_active = FALSE;
+	m_health_status = 0;
 
 	// P0.2: Preserve browse state for potential reconnection
 	// Only clear browseActive if browse wasn't active or if we shouldn't preserve it
@@ -11318,6 +11347,12 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 		}
 	}
 
+	// P2.1: Start health monitor if enabled
+	if (m_health_monitor_enabled)
+	{
+		startHealthMonitor();
+	}
+
 	return true;
 }
 
@@ -11517,6 +11552,194 @@ bool DataArea::shouldAttemptReconnect(MQLONG rc)
 	}
 }
 
+///////////////////////////////////////////////////////
+//
+// P2.1: Connection Health Monitor
+//
+// Proactive health checking using a cached MQHOBJ
+// for lightweight MQINQ probes on a timer.
+//
+///////////////////////////////////////////////////////
+
+void DataArea::startHealthMonitor()
+{
+	MQLONG cc, rc;
+	MQOD od = {MQOD_DEFAULT};
+	char traceInfo[512];
+
+	// Guard: nothing to do if not connected or already active
+	if (!connected || m_health_check_active)
+		return;
+
+	// Open the QM object for inquire — used as a lightweight health probe
+	od.ObjectType = MQOT_Q_MGR;
+	XMQOpen(qm, &od, MQOO_INQUIRE | MQOO_FAIL_IF_QUIESCING,
+			&m_hHealthCheckObj, &cc, &rc);
+
+	if (cc == MQCC_OK)
+	{
+		m_health_check_active = TRUE;
+		m_health_status = 1;	// healthy
+		m_connection_start_time = GetTickCount();
+		m_last_health_check_time = GetTickCount();
+		m_health_check_count = 0;
+		m_health_check_failures = 0;
+
+		if (traceEnabled)
+		{
+			sprintf(traceInfo, "Health monitor started (interval=%ds)", m_health_check_interval);
+			logTraceEntry(traceInfo);
+		}
+	}
+	else
+	{
+		// Open failed — monitor won't run but connection is still usable
+		m_hHealthCheckObj = MQHO_NONE;
+		m_health_check_active = FALSE;
+
+		if (traceEnabled)
+		{
+			sprintf(traceInfo, "Health monitor MQOPEN failed cc=%d rc=%d", cc, rc);
+			logTraceEntry(traceInfo);
+		}
+	}
+}
+
+void DataArea::stopHealthMonitor()
+{
+	MQLONG cc, rc;
+	char traceInfo[512];
+
+	if (m_hHealthCheckObj != MQHO_NONE && connected)
+	{
+		XMQClose(qm, &m_hHealthCheckObj, MQCO_NONE, &cc, &rc);
+	}
+
+	m_hHealthCheckObj = MQHO_NONE;
+	m_health_check_active = FALSE;
+	m_health_status = 0;	// disconnected
+
+	if (traceEnabled)
+	{
+		sprintf(traceInfo, "Health monitor stopped");
+		logTraceEntry(traceInfo);
+	}
+}
+
+bool DataArea::performHealthCheck()
+{
+	MQLONG cc, rc;
+	MQLONG selector = MQIA_COMMAND_LEVEL;
+	MQLONG value = 0;
+	char traceInfo[512];
+
+	// Guard: skip if not connected, not active, or busy with a user operation
+	if (!connected || !m_health_check_active || m_mq_operation_active || m_reconnecting)
+		return true;
+
+	// Guard: if cached handle is gone, try to re-establish
+	if (m_hHealthCheckObj == MQHO_NONE)
+	{
+		startHealthMonitor();
+		if (m_hHealthCheckObj == MQHO_NONE)
+			return true;	// can't probe, skip this cycle
+	}
+
+	// Lightweight health probe: MQINQ for command level
+	XMQInq(qm, m_hHealthCheckObj, 1, &selector, 1, &value, 0, NULL, &cc, &rc);
+
+	m_health_check_count++;
+
+	if (cc == MQCC_OK)
+	{
+		m_last_health_check_time = GetTickCount();
+		m_health_status = 1;	// healthy
+		return true;
+	}
+
+	// Health check failed
+	m_health_check_failures++;
+	m_health_status = 2;	// degraded
+
+	if (traceEnabled)
+	{
+		sprintf(traceInfo, "Health check failed cc=%d rc=%d (check #%d)", cc, rc, m_health_check_count);
+		logTraceEntry(traceInfo);
+	}
+
+	if (shouldAttemptReconnect(rc))
+	{
+		m_health_status = 3;	// reconnecting
+		m_hHealthCheckObj = MQHO_NONE;	// handle is gone
+		connectionLostCleanup();
+
+		if (m_auto_reconnect)
+		{
+			m_total_reconnections++;
+			bool success = attemptReconnection(m_last_qm_name, rc);
+			if (success)
+			{
+				startHealthMonitor();	// re-open cached handle on new connection
+				appendError("Connection restored by health monitor");
+				updateMsgText();
+				return true;
+			}
+		}
+
+		appendError("Connection lost \xE2\x80\x94 detected by health monitor");
+		updateMsgText();
+		return false;
+	}
+
+	return true;	// non-fatal error, keep monitoring
+}
+
+CString DataArea::getHealthStatusText()
+{
+	switch (m_health_status)
+	{
+	case 1: return "Connected (healthy)";
+	case 2: return "Connection degraded";
+	case 3: return "Reconnecting...";
+	default: return "Not connected";
+	}
+}
+
+CString DataArea::getUptimeText()
+{
+	if (!connected || m_connection_start_time == 0)
+		return "-";
+
+	DWORD elapsed = (GetTickCount() - m_connection_start_time) / 1000;
+	int hours = elapsed / 3600;
+	int minutes = (elapsed % 3600) / 60;
+	int seconds = elapsed % 60;
+
+	CString text;
+	if (hours > 0)
+		text.Format("%dh %dm %ds", hours, minutes, seconds);
+	else if (minutes > 0)
+		text.Format("%dm %ds", minutes, seconds);
+	else
+		text.Format("%ds", seconds);
+	return text;
+}
+
+CString DataArea::getLastCheckText()
+{
+	if (!m_health_check_active || m_last_health_check_time == 0)
+		return "-";
+
+	DWORD elapsed = (GetTickCount() - m_last_health_check_time) / 1000;
+
+	CString text;
+	if (elapsed < 2)
+		text = "Just now";
+	else
+		text.Format("%d seconds ago", elapsed);
+	return text;
+}
+
 ///////////////////////////////////////////
 //
 // Routine to indicate if there is a
@@ -11557,6 +11780,9 @@ void DataArea::discQM()
 		// trace entry to discQM
 		logTraceEntry(traceInfo);
 	}
+
+	// P2.1: Stop health monitor before disconnecting
+	stopHealthMonitor();
 
 	// disconnect from the current queue manager
 	if (qm != NULL)
