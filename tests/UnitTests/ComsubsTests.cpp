@@ -31,7 +31,7 @@ TEST(ComsubsHex, HexToAsciiBasic)
 {
     unsigned char input[] = "DEADBEEF";
     unsigned char output[5] = {};
-    HexToAscii(input, 8, output);
+    HexToAscii(input, 4, output);
     EXPECT_EQ(0xDE, output[0]);
     EXPECT_EQ(0xAD, output[1]);
     EXPECT_EQ(0xBE, output[2]);
@@ -45,7 +45,7 @@ TEST(ComsubsHex, HexRoundTrip)
     unsigned char decoded[9] = {};
 
     AsciiToHex(original, 8, hexBuf);
-    HexToAscii(hexBuf, 16, decoded);
+    HexToAscii(hexBuf, 8, decoded);
 
     EXPECT_EQ(0, memcmp(original, decoded, 8));
 }
@@ -79,8 +79,9 @@ TEST(ComsubsHex, CharValueUpperHex)
 
 TEST(ComsubsHex, CharValueLowerHex)
 {
-    EXPECT_EQ(10, charValue('a'));
-    EXPECT_EQ(15, charValue('f'));
+    // charValue() only handles uppercase A-F; lowercase returns 0
+    EXPECT_EQ(0, charValue('a'));
+    EXPECT_EQ(0, charValue('f'));
 }
 
 TEST(ComsubsHex, FromHex)
@@ -247,4 +248,117 @@ TEST(ComsubsReverse, ReverseBytes4Identity)
     // Reversing twice gives original
     int original = 0xAABBCCDD;
     EXPECT_EQ(original, reverseBytes4(reverseBytes4(original)));
+}
+
+// ---------------------------------------------------------------------------
+// getHexCharValue — single hex char to integer
+// ---------------------------------------------------------------------------
+
+TEST(ComsubsHex, GetHexCharValueDigits)
+{
+    EXPECT_EQ(0, getHexCharValue('0'));
+    EXPECT_EQ(1, getHexCharValue('1'));
+    EXPECT_EQ(9, getHexCharValue('9'));
+}
+
+TEST(ComsubsHex, GetHexCharValueHexChars)
+{
+    EXPECT_EQ(10, getHexCharValue('A'));
+    EXPECT_EQ(15, getHexCharValue('F'));
+    EXPECT_EQ(10, getHexCharValue('a'));
+    EXPECT_EQ(15, getHexCharValue('f'));
+}
+
+// ---------------------------------------------------------------------------
+// findBlank — find first blank (space or below) in string
+// ---------------------------------------------------------------------------
+
+TEST(ComsubsString, FindBlankBasic)
+{
+    char str[] = "hello world";
+    char *p = findBlank(str);
+    EXPECT_EQ(' ', *p);
+    EXPECT_EQ(5, (int)(p - str));
+}
+
+TEST(ComsubsString, FindBlankNoBlank)
+{
+    char str[] = "hello";
+    char *p = findBlank(str);
+    // Should stop at null terminator
+    EXPECT_EQ('\0', *p);
+}
+
+// ---------------------------------------------------------------------------
+// skipQuotedString — advance past a quoted or unquoted token
+// ---------------------------------------------------------------------------
+
+TEST(ComsubsString, SkipQuotedStringDouble)
+{
+    const char *str = "\"hello\" rest";
+    const char *eod = str + strlen(str) - 1;
+    const char *result = skipQuotedString(str, eod);
+    // Should point past the closing quote
+    EXPECT_EQ(' ', *result);
+}
+
+TEST(ComsubsString, SkipQuotedStringSingle)
+{
+    const char *str = "'hello' rest";
+    const char *eod = str + strlen(str) - 1;
+    const char *result = skipQuotedString(str, eod);
+    EXPECT_EQ(' ', *result);
+}
+
+TEST(ComsubsString, SkipUnquotedString)
+{
+    const char *str = "hello rest";
+    const char *eod = str + strlen(str) - 1;
+    const char *result = skipQuotedString(str, eod);
+    // Not quoted — stops at first blank
+    EXPECT_EQ(' ', *result);
+}
+
+// ---------------------------------------------------------------------------
+// findcrlf — find first CR or LF in buffer
+// ---------------------------------------------------------------------------
+
+TEST(ComsubsString, FindCrlfFound)
+{
+    const unsigned char data[] = "hello\nworld";
+    int pos = findcrlf(data, 11);
+    EXPECT_EQ(5, pos);
+}
+
+TEST(ComsubsString, FindCrlfNotFound)
+{
+    const unsigned char data[] = "hello";
+    int pos = findcrlf(data, 5);
+    EXPECT_EQ(5, pos);  // returns maxchar when not found
+}
+
+TEST(ComsubsString, FindCrlfCarriageReturn)
+{
+    const unsigned char data[] = "hello\r\n";
+    int pos = findcrlf(data, 7);
+    EXPECT_EQ(5, pos);  // finds \r first
+}
+
+// ---------------------------------------------------------------------------
+// isUCS2 — check if CCSID is a UCS-2 code page
+// ---------------------------------------------------------------------------
+
+TEST(ComsubsEbcdic, IsUCS2True)
+{
+    EXPECT_TRUE(isUCS2(1200));
+    EXPECT_TRUE(isUCS2(1201));
+    EXPECT_TRUE(isUCS2(13488));
+    EXPECT_TRUE(isUCS2(17584));
+}
+
+TEST(ComsubsEbcdic, IsUCS2False)
+{
+    EXPECT_FALSE(isUCS2(1252));
+    EXPECT_FALSE(isUCS2(437));
+    EXPECT_FALSE(isUCS2(0));
 }

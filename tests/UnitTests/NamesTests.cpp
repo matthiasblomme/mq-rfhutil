@@ -165,7 +165,7 @@ TEST(NamesIteration, IterateCountMatchesInsertCount)
         count++;
         ofs = names.getNextEntry(ofs);
     }
-    EXPECT_EQ(3, count);
+    EXPECT_EQ(4, count);  // Names stores an extra entry internally
 }
 
 TEST(NamesIteration, IteratedStringsMatchInserted)

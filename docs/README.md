@@ -10,6 +10,7 @@ This folder contains detailed technical documentation for the mq-rfhutil project
 
 ### Build & Configuration
 - **[Build Configuration](BUILD_CONFIG.md)** - MSBuild paths, build commands, and project structure
+- **[Unit Testing](UNIT_TESTING.md)** - Test framework, running tests, modules under test, adding new tests
 
 ### IBM MQ Technical Details
 - **[MQ HeartBeat Negotiation](MQ_HEARTBEAT_NEGOTIATION.md)** - How MQ HeartBeat negotiation works
@@ -49,6 +50,7 @@ This folder contains detailed technical documentation for the mq-rfhutil project
 |----------|--------|--------------|
 | Architecture Analysis | ✅ Complete | Feb 2026 |
 | Build Configuration | ✅ Complete | Feb 14, 2026 |
+| Unit Testing | ✅ Complete | Mar 21, 2026 |
 | MQ HeartBeat Negotiation | ✅ Complete | Feb 2026 |
 | MQ HeartBeat vs KeepAlive | ✅ Complete | Feb 2026 |
 | MQ KeepAlive Detailed | ✅ Complete | Feb 2026 |

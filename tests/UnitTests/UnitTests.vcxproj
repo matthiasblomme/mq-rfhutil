@@ -25,7 +25,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <UseOfMfc>Static</UseOfMfc>
+    <UseOfMfc>Dynamic</UseOfMfc>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
 
@@ -34,7 +34,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <UseOfMfc>Static</UseOfMfc>
+    <UseOfMfc>Dynamic</UseOfMfc>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
 
@@ -78,16 +78,15 @@
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- Force-include prelude.h before each TU to block rfhutil.h → DataArea.h → cmqc.h -->
       <ForcedIncludeFiles>prelude.h</ForcedIncludeFiles>
+      <!-- Dynamic CRT (/MDd) so the exe shares ucrtbased.dll's heap with the
+           gtest NuGet DLLs (built with v140 /MDd).  The default for static MFC
+           is /MTd (private heap), which causes cross-CRT heap corruption. -->
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <!-- Delay-load gtest DLLs so they initialize AFTER we set _CrtSetReportMode.
-           Without this, the v140 CRT in gtestd.dll initialises at process startup,
-           clashes with the v143 CRT, and fires "__acrt_first_block == header"
-           before InitInstance() even runs. -->
-      <DelayLoadDLLs>gtestd.dll;gtest_maind.dll</DelayLoadDLLs>
-      <AdditionalDependencies>Secur32.lib;version.lib;delayimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Secur32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
@@ -101,12 +100,12 @@
       <PreprocessorDefinitions>_WIN64;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- Force-include prelude.h before each TU to block rfhutil.h → DataArea.h → cmqc.h -->
       <ForcedIncludeFiles>prelude.h</ForcedIncludeFiles>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <DelayLoadDLLs>gtestd.dll;gtest_maind.dll</DelayLoadDLLs>
-      <AdditionalDependencies>Secur32.lib;version.lib;delayimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Secur32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
