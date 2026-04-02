@@ -26,6 +26,8 @@ Jim MacNair - Initial Contribution
 #include "comsubs.h"
 
 #include <locale.h>
+#include <wincrypt.h>
+#pragma comment(lib, "Crypt32.lib")
 
 void EnablePrintfInMFC();
 
@@ -79,7 +81,8 @@ static char THIS_FILE[] = __FILE__;
 #define RFHUTIL_MOST_RECENT_SSL_VALIDATE	"SSLValidate"
 #define RFHUTIL_MOST_RECENT_SSL_RESET_COUNT	"SSLResetCount"
 #define RFHUTIL_MOST_RECENT_CONN_USER		"connUser"
-#define RFHUTIL_MOST_RECENT_CONN_PW			"connPW" // This field will in future be stored with no real content. So it overwrites any previous plaintext password.
+#define RFHUTIL_MOST_RECENT_CONN_PW			"connPW"    // Stores DPAPI-encrypted, base64-encoded password when save is enabled
+#define RFHUTIL_MOST_RECENT_SAVE_PW			"savePW"    // 1 if password save is enabled, 0 otherwise
 #define RFHUTIL_MOST_RECENT_CONN_SEC_EXIT	"SecurityExit"
 #define RFHUTIL_MOST_RECENT_CONN_SEC_DATA	"SecurityData"
 #define RFHUTIL_MOST_RECENT_CONN_LOC_ADDR	"LocalAddress"
@@ -156,6 +159,7 @@ CRfhutilApp::CRfhutilApp()
 	initSSLKeyR.Empty();
 	initConnUser.Empty();
 	initConnPW.Empty();
+	initSavePassword = FALSE;
 	initFilePath.Empty();
 	initSSLResetCount = 0;
 	initUseSSL = FALSE;
@@ -1469,6 +1473,73 @@ void CRfhutilApp::findFonts(HDC hdc, BYTE charSet)
 	}
 }
 
+// P2.2: Encrypt a password using Windows DPAPI, returns base64-encoded ciphertext.
+// The encrypted blob is tied to the current Windows user account and machine.
+// Returns empty string on any failure.
+static CString EncryptPasswordDPAPI(const CString& plaintext)
+{
+	if (plaintext.IsEmpty())
+		return _T("");
+
+	DATA_BLOB dataIn, dataOut;
+	dataIn.pbData = (BYTE *)(LPCTSTR)plaintext;
+	dataIn.cbData = (DWORD)plaintext.GetLength();
+	dataOut.pbData = NULL;
+	dataOut.cbData = 0;
+
+	if (!CryptProtectData(&dataIn, NULL, NULL, NULL, NULL, CRYPTPROTECT_UI_FORBIDDEN, &dataOut))
+		return _T("");
+
+	// Base64-encode the encrypted blob for registry storage
+	DWORD base64Len = 0;
+	CryptBinaryToStringA(dataOut.pbData, dataOut.cbData, CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, NULL, &base64Len);
+
+	CString result;
+	char *buf = result.GetBufferSetLength((int)base64Len);
+	CryptBinaryToStringA(dataOut.pbData, dataOut.cbData, CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, buf, &base64Len);
+	result.ReleaseBuffer();
+
+	LocalFree(dataOut.pbData);
+	return result;
+}
+
+// P2.2: Decrypt a base64-encoded DPAPI blob back to plaintext password.
+// Returns empty string on any failure (wrong user, wrong machine, corrupt data).
+static CString DecryptPasswordDPAPI(const CString& base64)
+{
+	if (base64.IsEmpty())
+		return _T("");
+
+	// Decode base64 to binary
+	DWORD binaryLen = 0;
+	if (!CryptStringToBinaryA((LPCTSTR)base64, (DWORD)base64.GetLength(), CRYPT_STRING_BASE64, NULL, &binaryLen, NULL, NULL))
+		return _T("");
+
+	BYTE *binaryBuf = new BYTE[binaryLen];
+	if (!CryptStringToBinaryA((LPCTSTR)base64, (DWORD)base64.GetLength(), CRYPT_STRING_BASE64, binaryBuf, &binaryLen, NULL, NULL))
+	{
+		delete[] binaryBuf;
+		return _T("");
+	}
+
+	DATA_BLOB dataIn, dataOut;
+	dataIn.pbData = binaryBuf;
+	dataIn.cbData = binaryLen;
+	dataOut.pbData = NULL;
+	dataOut.cbData = 0;
+
+	BOOL ok = CryptUnprotectData(&dataIn, NULL, NULL, NULL, NULL, CRYPTPROTECT_UI_FORBIDDEN, &dataOut);
+	delete[] binaryBuf;
+
+	if (!ok)
+		return _T("");
+
+	CString result((char *)dataOut.pbData, (int)dataOut.cbData);
+	SecureZeroMemory(dataOut.pbData, dataOut.cbData);
+	LocalFree(dataOut.pbData);
+	return result;
+}
+
 void CRfhutilApp::SaveLastUsedQNames()
 
 {
@@ -1482,7 +1553,18 @@ void CRfhutilApp::SaveLastUsedQNames()
 	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_QUEUE, (LPCTSTR)initQname);
 	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_REMOTE, (LPCTSTR)initRemoteQMname);
 	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_CONN_USER, (LPCTSTR)initConnUser);
-	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_CONN_PW, (LPCTSTR)""); // Storing this will overwrite any previously-stored password.
+
+	// P2.2: Save encrypted password if user opted in, otherwise clear any stored value
+	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_SAVE_PW, initSavePassword ? "1" : "0");
+	if (initSavePassword && initConnPW.GetLength() > 0)
+	{
+		CString encrypted = EncryptPasswordDPAPI(initConnPW);
+		WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_CONN_PW, (LPCTSTR)encrypted);
+	}
+	else
+	{
+		WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_CONN_PW, (LPCTSTR)"");
+	}
 	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_FILE_PATH, (LPCTSTR)initFilePath);
 	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_CONN_SEC_EXIT, (LPCTSTR)initSecExit);
 	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_CONN_SEC_DATA, (LPCTSTR)initSecData);
@@ -1529,9 +1611,17 @@ void CRfhutilApp::GetLastUsedQNames()
 		initRemoteQMname = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_REMOTE, NULL);
 	}
 
-	// get the connection user id but not the password which is no longer saved
+	// get the connection user id
 	initConnUser = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_CONN_USER, NULL);
-	/*initConnPW = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_CONN_PW, NULL);*/
+
+	// P2.2: Read save-password flag and decrypt stored password if enabled
+	tempNum = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_SAVE_PW, NULL);
+	initSavePassword = (tempNum == "1") ? TRUE : FALSE;
+	if (initSavePassword)
+	{
+		CString encrypted = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_CONN_PW, NULL);
+		initConnPW = DecryptPasswordDPAPI(encrypted);
+	}
 
 	// get the most recently used file path
 	initFilePath = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_FILE_PATH, NULL);

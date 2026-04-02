@@ -203,6 +203,7 @@ public:
 	CString initSSLKeyR;
 	CString initConnUser;
 	CString initConnPW;
+	BOOL    initSavePassword;
 	CString initFilePath;
 	CString initSecData;
 	CString initSecExit;

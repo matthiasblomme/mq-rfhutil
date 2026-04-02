@@ -36,6 +36,7 @@ CConnUser::CConnUser(CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CConnUser)
 	m_conn_userid = _T("");
 	m_conn_password = _T("");
+	m_save_password = FALSE;
 	m_use_ssl = FALSE;
 	m_ssl_validate_client = FALSE;
 	m_ssl_cipher = _T("");
@@ -57,6 +58,7 @@ void CConnUser::DoDataExchange(CDataExchange* pDX)
 	DDV_MaxChars(pDX, m_conn_userid, 255);
 	DDX_Text(pDX, IDC_CONN_PASSWORD, m_conn_password);
 	DDV_MaxChars(pDX, m_conn_password, 1024);
+	DDX_Check(pDX, IDC_SAVE_PASSWORD, m_save_password);
 	DDX_Check(pDX, IDC_CONN_USE_SSL, m_use_ssl);
 	DDX_Check(pDX, IDC_CONN_VALIDATE_CLIENT, m_ssl_validate_client);
 	DDX_CBString(pDX, IDC_CONN_SSL_CIPHER, m_ssl_cipher);
@@ -133,6 +135,7 @@ void CConnUser::OnConnReset()
 	// clear the current connection parameters
 	m_conn_userid.Empty();
 	m_conn_password.Empty();
+	m_save_password = FALSE;
 	m_ssl_cipher.Empty();
 	m_ssl_validate_client = FALSE;
 	m_use_ssl = FALSE;

@@ -1053,6 +1053,7 @@ BEGIN
     PUSHBUTTON      "R&eset",IDC_CONN_RESET,261,223,50,14
     LTEXT           "User id",IDC_STATIC,23,12,23,8
     LTEXT           "Password",IDC_STATIC,23,43,32,8
+    CONTROL         "Save password",IDC_SAVE_PASSWORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,43,100,8
     LTEXT           "SSL Cipher Algorithm",IDC_CONN_SSL_CIPHER_LABEL,23,233,67,8,WS_TABSTOP
     LTEXT           "Certificate Store Location",IDC_CONN_STORE_LOC_LABEL,23,171,80,8
     PUSHBUTTON      "Br&owse",IDC_CONN_BROWSE,241,115,50,14
@@ -2228,6 +2229,7 @@ BEGIN
     IDC_IIH_ADD_LENGTH      "Insert LLBB field after IMS header, based on data length"
     IDC_CONN_USERID         "User id for connection requests"
     IDC_CONN_PASSWORD       "Password to be used for connection requests"
+    IDC_SAVE_PASSWORD       "Encrypt and save password using Windows DPAPI (tied to this user account)"
     IDC_CONN_RESET          "Delete the current user id and password used for connection requests"
 END
 

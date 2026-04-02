@@ -37,6 +37,7 @@ public:
 	enum { IDD = IDD_USERID };
 	CString	m_conn_userid;
 	CString	m_conn_password;
+	BOOL	m_save_password;
 	BOOL	m_use_ssl;
 	BOOL	m_ssl_validate_client;
 	CString	m_ssl_cipher;
