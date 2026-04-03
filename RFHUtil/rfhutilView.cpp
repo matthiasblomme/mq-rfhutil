@@ -2763,6 +2763,10 @@ void CRfhutilView::OnWriteq()
 	{
 		m_general.WriteQ();
 	}
+	else if (PAGE_DATA == currentSelection)
+	{
+		m_data.WriteQ();    // P2.3: write edited data from Data tab
+	}
 	else if (PAGE_PUBSUB == currentSelection)
 	{
 		m_pubsub.PubProcess();

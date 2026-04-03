@@ -2,7 +2,7 @@
 
 ## 📊 Progress Tracker
 
-**Last Updated:** April 2, 2026
+**Last Updated:** April 2, 2026 (P2.3)
 **Current Version:** 9.4.0.0
 **Build Environment:** Visual Studio 2022 (v143), IBM MQ 9.4.5
 
@@ -19,6 +19,7 @@
 | 🟡 **P1.4** | Basic Unit Testing | ✅ COMPLETE | Mar 20, 2026 | 132 tests across 5 modules, Win32+x64 |
 | 🟢 **P2.1** | Connection Health Monitor | ✅ COMPLETE | Mar 21, 2026 | Proactive MQINQ health probes, auto-reconnect on idle, UI status display |
 | 🟢 **P2.2** | Secure Credential Storage | ✅ COMPLETE | Apr 2, 2026 | DPAPI-encrypted password in registry, "Save password" checkbox in Set Connection Parameters |
+| 🟢 **P2.3** | Editable Data Tab | ✅ COMPLETE | Apr 2, 2026 | "Allow Edit" checkbox + "Write Q" button on Data tab; Character and Hex modes are round-trippable back to raw bytes |
 
 ### In Progress 🚧
 
@@ -71,7 +72,7 @@ This document provides a **detailed, actionable roadmap** for modernizing the mq
 | 🟡 **P1.4** | Basic Unit Testing | Medium | High | Low | ✅ DONE |
 | 🟢 **P2.1** | Connection Health Monitor | Medium | Medium | Low | ✅ DONE |
 | 🟢 **P2.2** | Secure Credential Storage | Medium | High | Medium | ✅ DONE |
-| 🟢 **P2.3** | Make the Data tab editable by adding a check mark and allow for that data to be written to the queue | Medium | Medium | Medium | 📋 PLANNED |
+| 🟢 **P2.3** | Editable Data Tab | Medium | Medium | Medium | ✅ DONE |
 
 ### Medium Term (Months 4-6)
 

@@ -74,6 +74,7 @@ public:
 	BOOL	m_BOM;
 	BOOL	m_data_indent;
 	BOOL	m_checkData;
+	BOOL	m_data_editable;    // P2.3: "Allow Edit" checkbox state
 	//}}AFX_DATA
 
 
@@ -125,6 +126,8 @@ protected:
 	afx_msg void OnJson();
 	afx_msg void OnFix();
 	afx_msg void OnRussian();
+	afx_msg void OnDataEditable();  // P2.3: "Allow Edit" checkbox handler
+	afx_msg void OnDataWriteQ();    // P2.3: "Write Q" button handler
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -149,6 +152,10 @@ private:
 	int	curDisplayResolution;
 public:
 	afx_msg void OnBnClickedDataBom();
+	void WriteQ();  // P2.3: public wrapper called from rfhutilView
+private:
+	void setEditableState(BOOL editable);
+	int  parseEditedDataToFileData();
 };
 
 //{{AFX_INSERT_LOCATION}}

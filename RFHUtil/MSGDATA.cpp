@@ -58,6 +58,7 @@ MSGDATA::MSGDATA() : CPropertyPage(MSGDATA::IDD)
 	m_save_data_type = DATA_CHARACTER;
 	m_called_copybook = 0;
 	m_checkData = FALSE;
+	m_data_editable = FALSE;
 	curDisplayResolution = 0;
 	pDoc = NULL;
 	//}}AFX_DATA_INIT
@@ -90,6 +91,7 @@ void MSGDATA::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_DATA_BOM, m_BOM);
 	DDX_Check(pDX, IDC_INDENT, m_data_indent);
 	DDX_Check(pDX, IDC_DATA_VALIDATE, m_checkData);
+	DDX_Check(pDX, IDC_DATA_EDITABLE, m_data_editable);
 	//}}AFX_DATA_MAP
 }
 
@@ -126,6 +128,8 @@ BEGIN_MESSAGE_MAP(MSGDATA, CPropertyPage)
 	ON_BN_CLICKED(IDC_JSON, OnJson)
 	ON_BN_CLICKED(IDC_FIX, OnFix)
 	ON_BN_CLICKED(IDC_RUSSIAN, OnRussian)
+	ON_BN_CLICKED(IDC_DATA_EDITABLE, OnDataEditable)
+	ON_BN_CLICKED(IDC_DATA_WRITEQ,   OnDataWriteQ)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_SETPAGEFOCUS, OnSetPageFocus)
 	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTA, 0, 0xFFFF, MSGDATA::GetToolTipText)
@@ -407,6 +411,13 @@ void MSGDATA::updateMsgdata()
 
 	// Update the controls from the instance data
 	UpdateData(FALSE);
+
+	// P2.3: Restore edit-mode state after each data refresh
+	{
+		CEdit *cedit = (CEdit *)GetDlgItem(IDC_MSG_DATA);
+		if (cedit != NULL)
+			cedit->SetReadOnly(m_data_editable ? FALSE : TRUE);
+	}
 
 	EndWaitCursor();
 
@@ -858,7 +869,14 @@ BOOL MSGDATA::OnInitDialog()
 	// disable the byte order mark (BOM) check box
 	((CWnd *)GetDlgItem(IDC_DATA_BOM))->EnableWindow(FALSE);
 
-	
+#ifdef SAFE_MODE
+	// P2.3: In SAFE_MODE, hide and disable the Allow Edit checkbox and Write Q button
+	GetDlgItem(IDC_DATA_EDITABLE)->EnableWindow(FALSE);
+	GetDlgItem(IDC_DATA_EDITABLE)->ShowWindow(SW_HIDE);
+	GetDlgItem(IDC_DATA_WRITEQ)->EnableWindow(FALSE);
+	GetDlgItem(IDC_DATA_WRITEQ)->ShowWindow(SW_HIDE);
+#endif
+
 	// Apply theme to dialog
 	ThemeManager::GetInstance().ApplyThemeToDialog(this);
 
@@ -1220,7 +1238,7 @@ BOOL MSGDATA::PreCreateWindow(CREATESTRUCT& cs)
 	return CPropertyPage::PreCreateWindow(cs);
 }
 
-BOOL MSGDATA::PreTranslateMessage(MSG* pMsg) 
+BOOL MSGDATA::PreTranslateMessage(MSG* pMsg)
 
 {
 	//
@@ -1229,6 +1247,17 @@ BOOL MSGDATA::PreTranslateMessage(MSG* pMsg)
 
 	if (pMsg->message != WM_KEYDOWN)
 		return CPropertyPage::PreTranslateMessage(pMsg);
+
+	// P2.3: When the edit box is editable and has keyboard focus, bypass
+	// IsDialogMessage entirely so that all keystrokes (including Backspace
+	// and any letter that matches a dialog mnemonic) go directly to the
+	// edit control without being intercepted as dialog navigation.
+	if (m_data_editable)
+	{
+		CEdit *cedit = (CEdit *)GetDlgItem(IDC_MSG_DATA);
+		if (cedit != NULL && ::GetFocus() == cedit->GetSafeHwnd())
+			return CPropertyPage::PreTranslateMessage(pMsg);
+	}
 
 	if (IsDialogMessage(pMsg))
 		return TRUE;
@@ -1583,6 +1612,232 @@ void MSGDATA::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
 	// Use ThemeManager to draw the button
 	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
 	CRect rect = lpDrawItemStruct->rcItem;
-	
+
 	theme.DrawThemedButton(pDC, rect, buttonText, lpDrawItemStruct->itemState);
+}
+
+// P2.3 -----------------------------------------------------------------------
+
+void MSGDATA::setEditableState(BOOL editable)
+{
+	CEdit   *cedit = (CEdit *)GetDlgItem(IDC_MSG_DATA);
+	CButton *wbtn  = (CButton *)GetDlgItem(IDC_DATA_WRITEQ);
+
+	if (cedit != NULL)
+		cedit->SetReadOnly(editable ? FALSE : TRUE);
+
+	if (wbtn != NULL)
+		wbtn->EnableWindow(editable);
+}
+
+void MSGDATA::OnDataEditable()
+{
+	char traceInfo[256];
+
+	// Capture the new checkbox state
+	UpdateData(TRUE);
+
+	setEditableState(m_data_editable);
+
+	// Move focus to the edit box immediately so keystrokes go there, not to
+	// dialog mnemonics (Backspace = 0x08 = Ctrl+H which can hit &Hex)
+	if (m_data_editable)
+	{
+		CEdit *cedit = (CEdit *)GetDlgItem(IDC_MSG_DATA);
+		if (cedit != NULL)
+			cedit->SetFocus();
+	}
+
+	// Warn if a non-reversible display format is selected
+	if (m_data_editable)
+	{
+		if (m_data_format != DATA_CHARACTER && m_data_format != DATA_HEX)
+		{
+			AfxMessageBox(
+				"Note: Editing is only supported in Character and Hex display modes.\n"
+				"Switch to Character or Hex format before writing.",
+				MB_OK | MB_ICONINFORMATION);
+		}
+	}
+
+	if (pDoc->traceEnabled)
+	{
+		sprintf(traceInfo, "MSGDATA::OnDataEditable() m_data_editable=%d", m_data_editable);
+		pDoc->logTraceEntry(traceInfo);
+	}
+}
+
+int MSGDATA::parseEditedDataToFileData()
+{
+	// P2.3: Convert the displayed (and possibly edited) text back to raw bytes,
+	// replacing pDoc->fileData / pDoc->fileSize.
+	// Returns 0 on success, -1 on error (pDoc->m_error_msg set).
+
+	// Capture the current edit box text into m_msg_data
+	UpdateData(TRUE);
+
+	int         len     = m_msg_data.GetLength();
+	const char *src     = (LPCTSTR)m_msg_data;
+	int         ccsid   = pDoc->fileCcsid;   // save before resetDataArea clears it
+	char        traceInfo[256];
+
+	if (pDoc->traceEnabled)
+	{
+		sprintf(traceInfo, "Entering MSGDATA::parseEditedDataToFileData() format=%d len=%d ccsid=%d",
+		        m_data_format, len, ccsid);
+		pDoc->logTraceEntry(traceInfo);
+	}
+
+	if (DATA_CHARACTER == m_data_format)
+	{
+		unsigned char *newData = (unsigned char *)rfhMalloc(len + 2, "EDTASCII");
+		if (newData == NULL)
+		{
+			pDoc->m_error_msg = "*Memory allocation failure in parseEditedDataToFileData";
+			return -1;
+		}
+
+		memcpy(newData, src, len);
+		newData[len]   = 0;
+		newData[len+1] = 0;
+
+		// If the data was originally EBCDIC, re-encode back to EBCDIC
+		if (CHAR_EBCDIC == m_character_format)
+			AsciiToEbcdic(newData, len, newData);
+
+		pDoc->resetDataArea();
+		pDoc->fileData = newData;
+		pDoc->fileSize = len;
+		pDoc->fileCcsid = ccsid;
+		return 0;
+	}
+	else if (DATA_HEX == m_data_format)
+	{
+		// The hex display format is:  "DDDDDDDD AABB CCDD EEFF 0011\r\n"
+		// Each line starts with an 8-digit decimal offset followed by a space.
+		// Strip the offset prefix and all whitespace, then parse hex pairs.
+		unsigned char *newData = (unsigned char *)rfhMalloc(len / 2 + 4, "EDTHEX  ");
+		if (newData == NULL)
+		{
+			pDoc->m_error_msg = "*Memory allocation failure in parseEditedDataToFileData";
+			return -1;
+		}
+
+		int i = 0;
+		int j = 0;
+		while (i < len)
+		{
+			// Skip 8-digit decimal offset at the start of each line ("DDDDDDDD ")
+			if ((i == 0 || src[i-1] == '\n') && (i + 8 < len))
+			{
+				int k;
+				for (k = 0; k < 8; k++)
+					if (!isdigit((unsigned char)src[i+k])) break;
+				if (k == 8 && src[i+8] == ' ')
+				{
+					i += 9;
+					continue;
+				}
+			}
+
+			char ch = src[i];
+
+			// Skip spaces, tabs, CR, LF
+			if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n')
+			{
+				i++;
+				continue;
+			}
+
+			// Expect a hex digit pair
+			if (i + 1 < len && isxdigit((unsigned char)ch) && isxdigit((unsigned char)src[i+1]))
+			{
+				newData[j++] = fromHex(ch, src[i+1]);
+				i += 2;
+			}
+			else
+			{
+				rfhFree(newData);
+				pDoc->m_error_msg = "*Invalid hex character in edited data";
+				return -1;
+			}
+		}
+
+		newData[j]   = 0;
+		newData[j+1] = 0;
+
+		pDoc->resetDataArea();
+		pDoc->fileData = newData;
+		pDoc->fileSize = j;
+		pDoc->fileCcsid = ccsid;
+		return 0;
+	}
+	else
+	{
+		pDoc->m_error_msg = "*Data editing is only supported in Character and Hex display modes";
+		return -1;
+	}
+}
+
+void MSGDATA::OnDataWriteQ()
+{
+	char traceInfo[256];
+
+#ifdef SAFE_MODE
+	AfxMessageBox("Write operations are disabled in Safe Mode.\nThis is a browse-only build.",
+	              MB_OK | MB_ICONINFORMATION);
+	return;
+#endif
+
+	if (pDoc->traceEnabled)
+		pDoc->logTraceEntry("Entering MSGDATA::OnDataWriteQ()");
+
+	// Only reversible formats may be written
+	if (m_data_format != DATA_CHARACTER && m_data_format != DATA_HEX)
+	{
+		AfxMessageBox(
+			"Write from the Data tab is only supported in Character and Hex display modes.",
+			MB_OK | MB_ICONWARNING);
+		return;
+	}
+
+	// Must have a queue name to write to
+	if (pDoc->currentQ.IsEmpty() && pDoc->m_Q_name.IsEmpty())
+	{
+		AfxMessageBox(
+			"No queue name available.\nPlease read or browse a message from the General tab first.",
+			MB_OK | MB_ICONWARNING);
+		return;
+	}
+
+	// Parse the edit box text back to raw bytes in pDoc->fileData
+	if (parseEditedDataToFileData() != 0)
+	{
+		pDoc->updateMsgText();
+		return;
+	}
+
+	CString qmName   = pDoc->currentQM.IsEmpty()     ? pDoc->m_QM_name   : pDoc->currentQM;
+	CString qName    = pDoc->currentQ.IsEmpty()       ? pDoc->m_Q_name    : pDoc->currentQ;
+	CString remoteQM = pDoc->currentRemoteQM.IsEmpty() ? pDoc->m_remote_QM : pDoc->currentRemoteQM;
+
+	CRfhutilApp *app = (CRfhutilApp *)AfxGetApp();
+	app->BeginWaitCursor();
+	pDoc->putMessage((LPCTSTR)qmName, (LPCTSTR)remoteQM, (LPCTSTR)qName);
+	app->EndWaitCursor();
+
+	// Refresh status line and Data tab display
+	pDoc->updateMsgText();
+	updateMsgdata();
+
+	if (pDoc->traceEnabled)
+	{
+		sprintf(traceInfo, "Exiting MSGDATA::OnDataWriteQ() error=%s", (LPCTSTR)pDoc->m_error_msg);
+		pDoc->logTraceEntry(traceInfo);
+	}
+}
+
+void MSGDATA::WriteQ()
+{
+	OnDataWriteQ();
 }

@@ -403,6 +403,8 @@ BEGIN
     PUSHBUTTON      "Browse&Next",IDC_DATA_BRNEXT,436,312,46,13
     PUSHBUTTON      "B&rowsePrev",IDC_DATA_BRPREV,436,328,46,13
     PUSHBUTTON      "Cop&ybook",IDC_COPYBOOK,436,346,44,11,WS_GROUP
+    CONTROL         "Allow Edit",IDC_DATA_EDITABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,424,359,50,10
+    PUSHBUTTON      "Write Q",IDC_DATA_WRITEQ,476,358,42,12,WS_DISABLED
     LTEXT           "Message Data",IDC_STATIC_MESSAGE_DATA,22,2,454,12
     CONTROL         "BOM",IDC_DATA_BOM,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,424,299,31,10
 END
@@ -1814,6 +1816,8 @@ BEGIN
     IDC_EXIT                "End the program (Alt+F4)"
     IDC_COPYBOOK            "Change or set the COBOL copy book to use for mappings (Alt+Y)"
     IDC_INCL_RFH            "Select type of RFH header(s) to be included with message"
+    IDC_DATA_EDITABLE       "Allow editing of message data (Character and Hex modes only)"
+    IDC_DATA_WRITEQ         "Write the edited message data to the queue"
 END
 
 STRINGTABLE
