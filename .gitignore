@@ -2,6 +2,9 @@
 # Visual Studio tracking directory
 .vs
 
+# Claude Code settings
+.claude
+
 # Files created during the build by Visual Studio
 Client/Release
 Client/Debug
