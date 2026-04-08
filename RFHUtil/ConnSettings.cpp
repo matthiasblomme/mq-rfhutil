@@ -48,8 +48,14 @@ ConnSettings::ConnSettings() : CPropertyPage(ConnSettings::IDD)
 	m_reconnect_interval = 5;
 	m_reconnect_backoff = 2;
 	m_reconnect_max_interval = 60;
+	m_enable_health_monitor = TRUE;
+	m_health_check_interval = 30;
+	m_health_status_text = "Not connected";
+	m_health_uptime_text = "-";
+	m_health_last_check_text = "-";
+	m_health_check_count_text = "0";
 	//}}AFX_DATA_INIT
-	
+
 	pDoc = NULL;
 }
 
@@ -79,6 +85,15 @@ void ConnSettings::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxInt(pDX, m_reconnect_backoff, 1, 10);
 	DDX_Text(pDX, IDC_RECONNECT_MAX_INTERVAL, m_reconnect_max_interval);
 	DDV_MinMaxInt(pDX, m_reconnect_max_interval, 1, 3600);
+
+	// P2.1: Health Monitor
+	DDX_Check(pDX, IDC_ENABLE_HEALTH_MONITOR, m_enable_health_monitor);
+	DDX_Text(pDX, IDC_HEALTH_CHECK_INTERVAL, m_health_check_interval);
+	DDV_MinMaxInt(pDX, m_health_check_interval, 5, 3600);
+	DDX_Text(pDX, IDC_HEALTH_STATUS_TEXT, m_health_status_text);
+	DDX_Text(pDX, IDC_HEALTH_UPTIME_TEXT, m_health_uptime_text);
+	DDX_Text(pDX, IDC_HEALTH_LAST_CHECK_TEXT, m_health_last_check_text);
+	DDX_Text(pDX, IDC_HEALTH_CHECK_COUNT_TEXT, m_health_check_count_text);
 	//}}AFX_DATA_MAP
 }
 
@@ -90,6 +105,7 @@ BEGIN_MESSAGE_MAP(ConnSettings, CPropertyPage)
 	ON_BN_CLICKED(IDC_ENABLE_HEARTBEAT, &ConnSettings::OnEnableHeartbeat)
 	ON_BN_CLICKED(IDC_ENABLE_KEEPALIVE, &ConnSettings::OnEnableKeepalive)
 	ON_BN_CLICKED(IDC_ENABLE_AUTO_RECONNECT, &ConnSettings::OnEnableAutoReconnect)
+	ON_BN_CLICKED(IDC_ENABLE_HEALTH_MONITOR, &ConnSettings::OnEnableHealthMonitor)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -164,6 +180,13 @@ void ConnSettings::OnEnableAutoReconnect()
 	UpdateControlStates();
 }
 
+void ConnSettings::OnEnableHealthMonitor()
+{
+	UpdateData(TRUE);
+	UpdateControlStates();
+	SaveSettings();
+}
+
 void ConnSettings::UpdateControlStates()
 {
 	// Enable/disable HeartBeat interval based on checkbox
@@ -177,6 +200,9 @@ void ConnSettings::UpdateControlStates()
 	GetDlgItem(IDC_RECONNECT_INTERVAL)->EnableWindow(m_enable_auto_reconnect);
 	GetDlgItem(IDC_RECONNECT_BACKOFF)->EnableWindow(m_enable_auto_reconnect);
 	GetDlgItem(IDC_RECONNECT_MAX_INTERVAL)->EnableWindow(m_enable_auto_reconnect);
+
+	// P2.1: Enable/disable health monitor interval based on checkbox
+	GetDlgItem(IDC_HEALTH_CHECK_INTERVAL)->EnableWindow(m_enable_health_monitor);
 }
 
 void ConnSettings::LoadSettings()
@@ -215,6 +241,14 @@ void ConnSettings::LoadSettings()
 	m_reconnect_interval = pDoc->m_reconnect_interval;
 	m_reconnect_backoff = pDoc->m_reconnect_backoff_multiplier;
 	m_reconnect_max_interval = pDoc->m_reconnect_max_interval;
+
+	// P2.1: Load health monitor settings and status
+	m_enable_health_monitor = pDoc->m_health_monitor_enabled;
+	m_health_check_interval = pDoc->m_health_check_interval;
+	m_health_status_text = pDoc->getHealthStatusText();
+	m_health_uptime_text = pDoc->getUptimeText();
+	m_health_last_check_text = pDoc->getLastCheckText();
+	m_health_check_count_text.Format("%d", pDoc->m_health_check_count);
 }
 
 void ConnSettings::SaveSettings()
@@ -264,6 +298,10 @@ void ConnSettings::SaveSettings()
 	pDoc->m_reconnect_interval = m_reconnect_interval;
 	pDoc->m_reconnect_backoff_multiplier = m_reconnect_backoff;
 	pDoc->m_reconnect_max_interval = m_reconnect_max_interval;
+
+	// P2.1: Save health monitor settings
+	pDoc->m_health_monitor_enabled = m_enable_health_monitor;
+	pDoc->m_health_check_interval = m_health_check_interval;
 }
 
 void ConnSettings::UpdatePageData()

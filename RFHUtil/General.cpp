@@ -2363,6 +2363,7 @@ void General::OnSetConnUser()
 	// set the current values in the dialog
 	dlg.m_conn_userid = (LPCTSTR)pDoc->m_conn_userid;
 	dlg.m_conn_password = (LPCTSTR)pDoc->m_conn_password;
+	dlg.m_save_password = ((CRfhutilApp *)AfxGetApp())->initSavePassword;
 	dlg.m_use_ssl = pDoc->m_use_ssl;
 	dlg.m_ssl_validate_client = pDoc->m_ssl_validate;
 	dlg.m_ssl_cipher = (LPCTSTR)pDoc->m_ssl_cipher;
@@ -2381,6 +2382,9 @@ void General::OnSetConnUser()
 		// extract the data from the dialog
 		pDoc->m_conn_userid = (LPCTSTR)dlg.m_conn_userid;
 		pDoc->m_conn_password = (LPCTSTR)dlg.m_conn_password;
+		// P2.2: propagate save-password preference and update stored password immediately
+		((CRfhutilApp *)AfxGetApp())->initSavePassword = dlg.m_save_password;
+		((CRfhutilApp *)AfxGetApp())->initConnPW = dlg.m_conn_password;
 		pDoc->m_ssl_cipher = (LPCTSTR)dlg.m_ssl_cipher;
 		pDoc->m_ssl_validate = dlg.m_ssl_validate_client;
 		pDoc->m_use_ssl = dlg.m_use_ssl;

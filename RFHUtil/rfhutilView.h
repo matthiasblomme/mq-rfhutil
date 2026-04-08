@@ -234,6 +234,8 @@ protected:
 	afx_msg void OnWriteMsgs();
 	//}}AFX_MSG
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);	// P2.1: Health monitor timer
+	afx_msg void OnDestroy();					// P2.1: Cleanup timer
 	afx_msg void findHelper(UINT wParam, LONG lParam);
 	DECLARE_MESSAGE_MAP()
 	General		m_general;

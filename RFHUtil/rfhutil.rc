@@ -403,6 +403,8 @@ BEGIN
     PUSHBUTTON      "Browse&Next",IDC_DATA_BRNEXT,436,312,46,13
     PUSHBUTTON      "B&rowsePrev",IDC_DATA_BRPREV,436,328,46,13
     PUSHBUTTON      "Cop&ybook",IDC_COPYBOOK,436,346,44,11,WS_GROUP
+    CONTROL         "Allow Edit",IDC_DATA_EDITABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,424,359,50,10
+    PUSHBUTTON      "Write Q",IDC_DATA_WRITEQ,476,358,42,12,WS_DISABLED
     LTEXT           "Message Data",IDC_STATIC_MESSAGE_DATA,22,2,454,12
     CONTROL         "BOM",IDC_DATA_BOM,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,424,299,31,10
 END
@@ -1053,6 +1055,7 @@ BEGIN
     PUSHBUTTON      "R&eset",IDC_CONN_RESET,261,223,50,14
     LTEXT           "User id",IDC_STATIC,23,12,23,8
     LTEXT           "Password",IDC_STATIC,23,43,32,8
+    CONTROL         "Save password",IDC_SAVE_PASSWORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,43,100,8
     LTEXT           "SSL Cipher Algorithm",IDC_CONN_SSL_CIPHER_LABEL,23,233,67,8,WS_TABSTOP
     LTEXT           "Certificate Store Location",IDC_CONN_STORE_LOC_LABEL,23,171,80,8
     PUSHBUTTON      "Br&owse",IDC_CONN_BROWSE,241,115,50,14
@@ -1091,6 +1094,20 @@ BEGIN
     LTEXT           "(1 = no backoff, 2 = double)",IDC_STATIC,145,206,150,8
     LTEXT           "Maximum Interval (seconds):",IDC_STATIC,14,224,90,8
     EDITTEXT        IDC_RECONNECT_MAX_INTERVAL,110,222,40,14,ES_AUTOHSCROLL | ES_NUMBER
+
+    GROUPBOX        "Connection Health Monitor",IDC_STATIC,7,238,516,130
+    CONTROL         "Enable Health Monitoring",IDC_ENABLE_HEALTH_MONITOR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,253,100,10
+    LTEXT           "Check Interval (seconds):",IDC_STATIC,14,271,85,8
+    EDITTEXT        IDC_HEALTH_CHECK_INTERVAL,105,269,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "(5-3600, recommended: 30)",IDC_STATIC,150,271,140,8
+    LTEXT           "Status:",IDC_STATIC,14,292,30,8
+    LTEXT           "Not connected",IDC_HEALTH_STATUS_TEXT,50,292,200,8
+    LTEXT           "Uptime:",IDC_STATIC,14,306,30,8
+    LTEXT           "-",IDC_HEALTH_UPTIME_TEXT,50,306,200,8
+    LTEXT           "Last Check:",IDC_STATIC,14,320,45,8
+    LTEXT           "-",IDC_HEALTH_LAST_CHECK_TEXT,65,320,200,8
+    LTEXT           "Health Checks:",IDC_STATIC,14,334,55,8
+    LTEXT           "0",IDC_HEALTH_CHECK_COUNT_TEXT,75,334,50,8
 END
 
 IDD_MOVEQ DIALOG 0, 0, 373, 194
@@ -1799,6 +1816,8 @@ BEGIN
     IDC_EXIT                "End the program (Alt+F4)"
     IDC_COPYBOOK            "Change or set the COBOL copy book to use for mappings (Alt+Y)"
     IDC_INCL_RFH            "Select type of RFH header(s) to be included with message"
+    IDC_DATA_EDITABLE       "Allow editing of message data (Character and Hex modes only)"
+    IDC_DATA_WRITEQ         "Write the edited message data to the queue"
 END
 
 STRINGTABLE
@@ -2214,6 +2233,7 @@ BEGIN
     IDC_IIH_ADD_LENGTH      "Insert LLBB field after IMS header, based on data length"
     IDC_CONN_USERID         "User id for connection requests"
     IDC_CONN_PASSWORD       "Password to be used for connection requests"
+    IDC_SAVE_PASSWORD       "Encrypt and save password using Windows DPAPI (tied to this user account)"
     IDC_CONN_RESET          "Delete the current user id and password used for connection requests"
 END
 

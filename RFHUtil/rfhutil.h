@@ -53,6 +53,9 @@ Jim MacNair - Initial Contribution
 #define PAGE_DLQ		13
 #define PAGE_CONN		14
 
+// P2.1: Timer IDs
+#define IDT_HEALTH_CHECK	1001
+
 // Display format types
 #define DATA_CHARACTER	0
 #define	DATA_HEX		1
@@ -200,6 +203,7 @@ public:
 	CString initSSLKeyR;
 	CString initConnUser;
 	CString initConnPW;
+	BOOL    initSavePassword;
 	CString initFilePath;
 	CString initSecData;
 	CString initSecExit;

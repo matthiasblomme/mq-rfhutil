@@ -150,6 +150,8 @@ BEGIN_MESSAGE_MAP(CRfhutilView, CCtrlView)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_FILE_MRU_FILE1, ID_FILE_MRU_FILE1 + 15, OnUpdateRecentFileMenu)
 //	ON_REGISTERED_MESSAGE( findMessage, findHelper)
 	ON_WM_CTLCOLOR()
+	ON_WM_TIMER()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -680,6 +682,9 @@ void CRfhutilView::OnInitialUpdate()
 	m_conn_settings.MoveWindow (rc, FALSE);
 
 	EnableToolTips(TRUE);   // enable tool tips for view
+
+	// P2.1: Start the health check timer (1-second tick, actual check interval controlled in OnTimer)
+	SetTimer(IDT_HEALTH_CHECK, 1000, NULL);
 
   	m_bInitialized = true;
 }
@@ -2758,6 +2763,10 @@ void CRfhutilView::OnWriteq()
 	{
 		m_general.WriteQ();
 	}
+	else if (PAGE_DATA == currentSelection)
+	{
+		m_data.WriteQ();    // P2.3: write edited data from Data tab
+	}
 	else if (PAGE_PUBSUB == currentSelection)
 	{
 		m_pubsub.PubProcess();
@@ -3462,4 +3471,46 @@ HBRUSH CRfhutilView::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	}
 	
 	return CCtrlView::OnCtlColor(pDC, pWnd, nCtlColor);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// P2.1: Connection Health Monitor timer
+/////////////////////////////////////////////////////////////////////////////
+
+void CRfhutilView::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == IDT_HEALTH_CHECK)
+	{
+		CRfhutilApp *app = (CRfhutilApp *)AfxGetApp();
+		DataArea *pDoc = &(app->pDocument);
+
+		if (pDoc->m_health_monitor_enabled && pDoc->connected && pDoc->m_health_check_active)
+		{
+			DWORD elapsed = GetTickCount() - pDoc->m_last_health_check_time;
+			if (elapsed >= (DWORD)(pDoc->m_health_check_interval * 1000))
+			{
+				pDoc->performHealthCheck();
+
+				// Refresh ConnSettings page if it's the active tab
+				if (PAGE_CONN == currentSelection)
+				{
+					m_conn_settings.UpdatePageData();
+				}
+
+				// Refresh General page if connection was lost
+				if (!pDoc->connected && PAGE_MAIN == currentSelection)
+				{
+					m_general.UpdatePageData();
+				}
+			}
+		}
+	}
+
+	CCtrlView::OnTimer(nIDEvent);
+}
+
+void CRfhutilView::OnDestroy()
+{
+	KillTimer(IDT_HEALTH_CHECK);
+	CCtrlView::OnDestroy();
 }
