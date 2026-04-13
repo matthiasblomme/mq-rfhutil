@@ -1,6 +1,19 @@
 # Build Configuration for mq-rfhutil
 
-## MSBuild Path
+## Prerequisites
+
+### IBM MQ SDK
+The build requires the IBM MQ SDK (headers + libraries). Set the `MQ_HOME` environment variable to your MQ installation root before building:
+
+```cmd
+set MQ_HOME=C:\Program Files\IBM\MQ
+```
+
+Or pass it directly to MSBuild with `/p:MQ_HOME=<path>` (see commands below).
+
+The default in `Directory.Build.props` is `C:\Program Files\IBM\MQ` (standard IBM MQ install location). If your MQ SDK is elsewhere (e.g. `d:\apps\mq`), you must override it.
+
+### MSBuild Path
 **IMPORTANT:** Use this MSBuild path for building the project:
 ```
 C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe
@@ -26,6 +39,11 @@ C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\B
 ### Build All Projects
 ```bash
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" RFHUtil.sln /t:Rebuild /p:Configuration=Release /p:Platform=Win32 /v:minimal
+```
+
+### Override MQ SDK path (non-standard install location)
+```bash
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" RFHUtil.sln /t:Rebuild /p:Configuration=Release /p:Platform=Win32 /p:MQ_HOME="d:\apps\mq" /v:minimal
 ```
 
 ## Build Configurations
