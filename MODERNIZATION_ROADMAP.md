@@ -2,7 +2,7 @@
 
 ## 📊 Progress Tracker
 
-**Last Updated:** April 8, 2026
+**Last Updated:** April 13, 2026
 **Current Version:** 9.4.0.0
 **Build Environment:** Visual Studio 2022 (v143), IBM MQ 9.4.5
 
@@ -15,6 +15,7 @@
 | 🔴 **P0.3** | Connection Settings UI Tab | ✅ COMPLETE | Feb 14, 2026 | 15th tab with 3 sections, 28 controls |
 | 🟡 **P1.1** | Visual Studio 2022 Upgrade | ✅ COMPLETE | Feb 14, 2026 | Already using VS 2022 Build Tools |
 | 🟡 **P1.2** | Dark Mode Support | ✅ COMPLETE | Feb 21, 2026 | Full implementation with visual polish |
+| 🟡 **P1.2b** | Safe Mode Build | ✅ COMPLETE | Feb 20, 2026 | `ReleaseSafe` config, `rfhutilc-safe.exe`, SAFE_MODE guard disables all write ops |
 | 🟡 **P1.3** | 64-bit Support | ✅ COMPLETE | Feb 23, 2026 | x64 platform, fixed MFC handlers, 32 files |
 | 🟡 **P1.4** | Basic Unit Testing | ✅ COMPLETE | Mar 20, 2026 | 132 tests across 5 modules, Win32+x64 |
 | 🟢 **P2.1** | Connection Health Monitor | ✅ COMPLETE | Apr 8, 2026 | WM_TIMER + MQINQ probes, live status in Connection Settings tab |
@@ -56,6 +57,7 @@ This document provides a **detailed, actionable roadmap** for modernizing the mq
 | 🔴 **P0.3** | Add tab to enable auto-reconnect and heartbeat/keepalive | Medium | High | Low | ✅ DONE |
 | 🟡 **P1.1** | Upgrade to VS 2022 | Low | Medium | Low | ✅ DONE |
 | 🟡 **P1.2** | Dark mode | Low | Medium | Low | ✅ DONE |
+| 🟡 **P1.2b** | Safe mode (browse-only build) | Low | High | Low | ✅ DONE |
 
 
 ### Short Term (Weeks 5-12)
