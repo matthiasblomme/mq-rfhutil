@@ -32,11 +32,23 @@
 
 | Priority | Item | Effort | Impact | Target Quarter |
 |----------|------|--------|--------|----------------|
-| 🟢 **P2** | Refactor DataArea Class | High | High | Q3 2026 |
-| 🟢 **P2** | Modern C++ Features | High | Medium | Q3 2026 |
-| 🔵 **P3** | CMake Build System | Medium | Low | Q3 2026 |
-| 🔵 **P3** | Comprehensive Testing | High | High | Q3 2026 |
-| 🟡 **P4** | GitHub Actions CI/CD | Medium | High | Q4 2026 |
+| 🔴 **P3.1** | Fix hardcoded MQ SDK paths | Small | High | Q2 2026 |
+| 🟡 **P3.2** | GitHub Actions — build + unit tests | Small | High | Q2 2026 |
+| 🟡 **P3.3** | Expand tests — header parsing (RFH1/RFH2, DLQ, CICS, IMS) | Medium | High | Q2 2026 |
+| 🟡 **P3.4** | Expand tests — message encoding (EBCDIC, hex, JSON, XML) | Medium | High | Q2 2026 |
+| 🟡 **P3.5** | Expand tests — connection lifecycle | Medium | Medium | Q2 2026 |
+| 🟡 **P3.6** | Expand tests — file I/O round-trips | Medium | Medium | Q3 2026 |
+| 🟢 **P3.7** | MQ handle RAII wrapper | Small | Medium | Q3 2026 |
+| 🟢 **P3.8** | Human-readable MQ error messages | Small | Medium | Q3 2026 |
+| 🟢 **P3.9** | TLS configuration improvements | Medium | Medium | Q3 2026 |
+| 🟢 **P3.10** | GitHub Actions — release artifact publishing | Small | Medium | Q3 2026 |
+| 🔵 **P4.1** | DataArea refactor — extract `MQConnection` | Medium | High | Q3 2026 |
+| 🔵 **P4.2** | DataArea refactor — extract `MQMessageReader` / `MQMessageWriter` | High | High | Q3 2026 |
+| 🔵 **P4.3** | DataArea refactor — extract `RFHHeaders` | High | High | Q4 2026 |
+| 🔵 **P4.4** | DataArea refactor — extract `FileHandler` | Medium | High | Q4 2026 |
+| 🔵 **P4.5** | Replace `char[]` buffers with `std::string` | High | Medium | Q4 2026 |
+| 🔵 **P4.6** | Replace manual `new`/`delete` with smart pointers | High | Medium | Q4 2026 |
+| ⚪ **P5** | CMake build system | Medium | Low | 2027 |
 
 ---
 
@@ -48,449 +60,125 @@ This document provides a **detailed, actionable roadmap** for modernizing the mq
 
 ## Priority Matrix
 
-### Immediate Impact (Do First - Weeks 1-4)
+### Phase 1: Foundation ✅ COMPLETE
 
 | Priority | Item | Effort | Impact | Risk | Status |
 |----------|------|--------|--------|------|--------|
 | 🔴 **P0.1** | Add HeartBeat/KeepAlive | Low | High | Low | ✅ DONE |
 | 🔴 **P0.2** | Implement Auto-Reconnect | Medium | High | Low | ✅ DONE |
-| 🔴 **P0.3** | Add tab to enable auto-reconnect and heartbeat/keepalive | Medium | High | Low | ✅ DONE |
+| 🔴 **P0.3** | Connection Settings UI Tab | Medium | High | Low | ✅ DONE |
 | 🟡 **P1.1** | Upgrade to VS 2022 | Low | Medium | Low | ✅ DONE |
 | 🟡 **P1.2** | Dark mode | Low | Medium | Low | ✅ DONE |
 | 🟡 **P1.2b** | Safe mode (browse-only build) | Low | High | Low | ✅ DONE |
-
-
-### Short Term (Weeks 5-12)
-
-| Priority | Item | Effort | Impact | Risk | Status |
-|----------|------|--------|--------|------|--------|
+| 🟡 **P1.3** | 64-bit Support | Medium | High | Low | ✅ DONE |
 | 🟡 **P1.4** | Basic Unit Testing | Medium | High | Low | ✅ DONE |
 | 🟢 **P2.1** | Connection Health Monitor | Medium | Medium | Low | ✅ DONE |
 | 🟢 **P2.2** | Secure Credential Storage | Medium | High | Medium | ✅ DONE |
-| 🟢 **P2.3** | Make the Data tab editable by adding a check mark and allow for that data to be written to the queue | Medium | Medium | Medium | ✅ DONE |
+| 🟢 **P2.3** | Editable Data Tab | Medium | Medium | Medium | ✅ DONE |
 
-### Medium Term (Months 4-6)
+### Phase 2: CI/CD & Test Coverage (P3) — Next Up
 
-| Priority | Item | Effort | Impact | Risk |
-|----------|------|--------|--------|------|
-| 🟢 **P2** | Refactor DataArea Class | High | High | Medium |
-| 🟢 **P2** | Modern C++ Features | High | Medium | Medium |
-| 🔵 **P3** | CMake Build System | Medium | Low | Medium |
-| 🔵 **P3** | Comprehensive Testing | High | High | Low |
-| 🟡 **P4** | Add GitHub Actions CI/CD | Medium | High | Low |
+| Priority | Item | Effort | Impact | Risk | Notes |
+|----------|------|--------|--------|------|-------|
+| 🔴 **P3.1** | Fix hardcoded MQ SDK paths | Small | High | Low | Replace `d:\apps\mq\` with `$(MQ_HOME)` env var in all .vcxproj files |
+| 🟡 **P3.2** | GitHub Actions — build + unit tests | Small | High | Low | Windows runner, Win32+x64 matrix, Google Test output |
+| 🟡 **P3.3** | Expand tests — header parsing | Medium | High | Low | RFH1, RFH2, DLQ, CICS, IMS header build/parse coverage |
+| 🟡 **P3.4** | Expand tests — message encoding | Medium | High | Low | EBCDIC, hex, JSON, XML round-trips |
+| 🟡 **P3.5** | Expand tests — connection lifecycle | Medium | Medium | Low | Connect, disconnect, reconnect, health check state |
+| 🟡 **P3.6** | Expand tests — file I/O | Medium | Medium | Low | Read/write various formats, round-trip correctness |
+| 🟢 **P3.7** | MQ handle RAII wrapper | Small | Medium | Low | Wrap `MQHOBJ`/`MQHCONN` — prevents leaks on exception paths |
+| 🟢 **P3.8** | Human-readable MQ error messages | Small | Medium | Low | Map reason codes (e.g. RC=2035) to descriptive strings |
+| 🟢 **P3.9** | TLS configuration improvements | Medium | Medium | Medium | Make cipher suite configurable per connection in UI |
+| 🟢 **P3.10** | GitHub Actions — release publishing | Small | Medium | Low | Upload `.exe` artifacts on tag; depends on P3.2 |
 
----
+### Phase 3: Refactoring (P4) — Requires P3 Safety Net
 
-## 1. IMMEDIATE: Connection Reliability (P0)
+| Priority | Item | Effort | Impact | Risk | Notes |
+|----------|------|--------|--------|------|-------|
+| 🔵 **P4.1** | DataArea — extract `MQConnection` | Medium | High | Medium | Connection lifecycle, heartbeat, reconnect — smallest safe first cut |
+| 🔵 **P4.2** | DataArea — extract `MQMessageReader` / `MQMessageWriter` | High | High | Medium | MQGET/browse and MQPUT/put1 — depends on P4.1 |
+| 🔵 **P4.3** | DataArea — extract `RFHHeaders` | High | High | Medium | RFH1/RFH2/DLQ/CICS/IMS parse & build |
+| 🔵 **P4.4** | DataArea — extract `FileHandler` | Medium | High | Medium | File read/write in all supported formats |
+| 🔵 **P4.5** | Replace `char[]` with `std::string` | High | Medium | Medium | Start with non-MQ-API paths; incremental |
+| 🔵 **P4.6** | Replace `new`/`delete` with smart pointers | High | Medium | Medium | Start with DataArea internals after P4.1–P4.4 |
 
-### 1.1 Add HeartBeat and KeepAlive Configuration
+### Phase 4: Long-term (P5)
 
-**Problem:** Current code doesn't set these, leading to slow failure detection and firewall timeouts.
-
-**Solution:** Add explicit configuration in connection setup.
-
-#### Implementation Steps
-
-**Step 1: Locate the connection code**
-- File: [`RFHUtil/DataArea.cpp`](RFHUtil/DataArea.cpp:10350-10450)
-- Method: `DataArea::connect2QM()`
-- Line: After 10407 (after `cd.MaxMsgLength = 104857600;`)
-
-**Step 2: Add the configuration**
-
-```cpp
-// File: RFHUtil/DataArea.cpp
-// Location: After line 10407
-
-// ============================================================
-// MODERNIZATION: Add HeartBeat and KeepAlive configuration
-// ============================================================
-
-// Set HeartBeat interval for fast MQ-level failure detection
-// This detects queue manager crashes, process failures, and keeps
-// the connection active to prevent firewall timeouts
-cd.HeartBeatInterval = 60;  // 60 seconds (vs default 300s)
-
-// Set KeepAlive interval for network-level failure detection
-// This detects network cable unplugs, router failures, and
-// "half-open" TCP connections
-cd.KeepAliveInterval = MQKAI_AUTO;  // Use OS defaults
-
-// For environments with aggressive firewalls (5-minute timeout):
-// cd.KeepAliveInterval = 30;  // 30 seconds
-
-// Ensure we're using a version that supports these fields
-if (cd.Version < MQCD_VERSION_7) {
-    cd.Version = MQCD_VERSION_7;
-    cd.StrucLength = MQCD_LENGTH_7;
-}
-
-// Add trace logging
-if (traceEnabled) {
-    sprintf(traceInfo, "HeartBeat=%d, KeepAlive=%d", 
-            cd.HeartBeatInterval, cd.KeepAliveInterval);
-    logTraceEntry(traceInfo);
-}
-```
-
-**Step 3: Test the changes**
-
-```cpp
-// Test scenarios:
-// 1. Normal connection - verify heartbeats are sent
-// 2. Network disconnect - verify fast detection
-// 3. QM crash - verify fast detection
-// 4. Long idle period - verify no firewall timeout
-```
-
-#### Expected Outcomes
-
-**Before:**
-- Failure detection: 300+ seconds (5+ minutes)
-- Firewall timeouts: Common after 5 minutes idle
-- User experience: Poor (long waits, manual reconnects)
-
-**After:**
-- Failure detection: 60 seconds (5x faster)
-- Firewall timeouts: Eliminated (heartbeats keep connection alive)
-- User experience: Excellent (fast detection, automatic recovery)
-
-#### Effort Estimate
-- **Development:** 1 hour
-- **Testing:** 2 hours
-- **Documentation:** 1 hour
-- **Total:** 4 hours
+| Priority | Item | Effort | Impact | Risk | Notes |
+|----------|------|--------|--------|------|-------|
+| ⚪ **P5** | CMake build system | Medium | Low | Low | Cross-platform support; nice-to-have |
 
 ---
 
-### 1.2 Implement Automatic Reconnection
+## Implementation Timeline
 
-**Problem:** When connection fails, user must manually reconnect. Poor user experience.
+### Phase 1: Foundation ✅ COMPLETE
+All P0–P2 items shipped. Key deliverables: heartbeat/reconnect, dark mode, safe mode, 64-bit, unit testing, health monitor, DPAPI credentials, editable data tab.
 
-**Solution:** Add automatic reconnection with exponential backoff.
+### Phase 2: CI/CD & Coverage (Q2–Q3 2026)
+1. **P3.1** — Parameterize MQ SDK paths (unblocks CI and other contributors)
+2. **P3.2** — GitHub Actions basic workflow
+3. **P3.3–P3.6** — Expand test coverage to core logic areas
+4. **P3.7–P3.10** — Smaller quality improvements in parallel
 
-#### Implementation Steps
+### Phase 3: Refactoring (Q3–Q4 2026)
+With CI/CD and tests as safety net:
+1. **P4.1** — Extract `MQConnection` first (smallest, most self-contained)
+2. **P4.2–P4.4** — Extract remaining DataArea responsibilities iteratively
+3. **P4.5–P4.6** — Modernize memory/string management incrementally
 
-**Step 1: Create ConnectionManager class**
-
-Create new file: `RFHUtil/ConnectionManager.h`
-
-```cpp
-/*
- * ConnectionManager.h
- * Manages MQ connections with automatic reconnection
- */
-
-#ifndef CONNECTION_MANAGER_H
-#define CONNECTION_MANAGER_H
-
-#include "cmqc.h"
-#include <string>
-
-class ConnectionManager {
-public:
-    // Configuration
-    struct Config {
-        int maxRetries = 3;
-        int initialDelayMs = 1000;      // 1 second
-        int maxDelayMs = 30000;         // 30 seconds
-        double backoffMultiplier = 2.0; // Exponential backoff
-        bool enableAutoReconnect = true;
-    };
-
-    ConnectionManager();
-    ~ConnectionManager();
-
-    // Connection management
-    bool connect(const char* qmName, const Config& config = Config());
-    bool disconnect();
-    bool isConnected() const;
-    bool ensureConnected();  // Check and reconnect if needed
-
-    // Health monitoring
-    bool isHealthy();
-    MQLONG getLastCompletionCode() const { return lastCC; }
-    MQLONG getLastReasonCode() const { return lastRC; }
-    const char* getLastError() const { return lastError.c_str(); }
-
-    // Connection handle
-    MQHCONN getHandle() const { return qm; }
-
-private:
-    MQHCONN qm;
-    bool connected;
-    std::string currentQM;
-    Config config;
-    
-    // Error tracking
-    MQLONG lastCC;
-    MQLONG lastRC;
-    std::string lastError;
-    
-    // Reconnection state
-    int reconnectAttempts;
-    DWORD lastReconnectTime;
-
-    // Internal methods
-    bool connectInternal(const char* qmName);
-    bool reconnect();
-    int calculateBackoffDelay(int attempt);
-    void logConnectionEvent(const char* event);
-};
-
-#endif // CONNECTION_MANAGER_H
-```
-
-**Step 2: Integrate with DataArea**
-
-Modify `RFHUtil/DataArea.h`:
-
-```cpp
-// Add to DataArea class
-private:
-    ConnectionManager* connMgr;  // New connection manager
-
-public:
-    // Add new methods
-    bool connectWithRetry(const char* qmName);
-    bool ensureConnection();
-```
-
-#### Effort Estimate
-- **Development:** 8 hours
-- **Testing:** 4 hours
-- **Integration:** 4 hours
-- **Documentation:** 2 hours
-- **Total:** 18 hours (2-3 days)
+### Phase 4: Long-term (2027+)
+- CMake for cross-platform build support
 
 ---
 
-## 2. SHORT TERM: Build System Modernization (P1)
+## Key Findings from Codebase Analysis (April 2026)
 
-### 2.1 Upgrade to Visual Studio 2022
+### DataArea Monolith
+- **DataArea.cpp**: 25,881 lines | **DataArea.h**: 1,091 lines
+- 243+ public/protected methods covering: MQ connections, queue ops, message parsing, file I/O, data transformation, header management, pub/sub, PCF requests
+- 132 raw `new`/`delete` operations; ~1,573 instances of `char*`, `sprintf`, `strcpy`, `malloc`, `free` across the codebase
+- Zero `std::string`, zero smart pointers
 
-**Status:** ✅ DONE — Already using VS 2022 (v143) with Windows SDK 10.0.
+### Test Coverage Gaps
+- 132 existing tests cover utility functions only (encoding, XML/JSON parsing, string utils, names)
+- **Zero tests** for DataArea, header building, connection lifecycle, queue operations, file I/O, pub/sub, PCF
 
----
+### CI/CD Blockers
+- MQ SDK paths hardcoded to `d:\apps\mq\` in all .vcxproj files
+- No `.github/workflows/` directory exists
+- Unit tests (non-MQ) can run in CI immediately once paths are parameterized
 
-### 2.2 Add 64-bit Support
-
-**Status:** ✅ DONE — x64 platform configuration added, 32 files fixed.
-
----
-
-### 2.3 Implement GitHub Actions CI/CD
-
-**Problem:** No automated builds or testing. Manual release process.
-
-**Solution:** Add GitHub Actions for automated CI/CD.
-
-#### Implementation Steps
-
-**Step 1: Create Workflow File**
-
-Create `.github/workflows/build-and-test.yml`:
-
-```yaml
-name: Build and Test
-
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
-  release:
-    types: [ created ]
-
-env:
-  MQ_VERSION: 9.3.0.0
-
-jobs:
-  build:
-    name: Build ${{ matrix.platform }} ${{ matrix.configuration }}
-    runs-on: windows-2022
-    
-    strategy:
-      matrix:
-        platform: [Win32, x64]
-        configuration: [Release, Debug]
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
-    
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v2
-    
-    - name: Cache MQ Installation
-      id: cache-mq
-      uses: actions/cache@v4
-      with:
-        path: C:\Program Files\IBM\MQ
-        key: mq-${{ env.MQ_VERSION }}-${{ matrix.platform }}
-    
-    - name: Install IBM MQ Client
-      if: steps.cache-mq.outputs.cache-hit != 'true'
-      run: |
-        # Download and install MQ client
-        echo "Installing MQ Client..."
-    
-    - name: Restore NuGet packages
-      run: nuget restore RFHUtil.sln
-    
-    - name: Build Solution
-      run: |
-        msbuild RFHUtil.sln `
-          /p:Configuration=${{ matrix.configuration }} `
-          /p:Platform=${{ matrix.platform }} `
-          /m `
-          /v:minimal
-    
-    - name: Run Unit Tests
-      if: matrix.configuration == 'Debug'
-      run: |
-        bin\tests\UnitTests.exe --gtest_output=xml:test-results.xml
-    
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: rfhutil-${{ matrix.platform }}-${{ matrix.configuration }}
-        path: |
-          bin/${{ matrix.platform }}/${{ matrix.configuration }}/*.exe
-          bin/${{ matrix.platform }}/${{ matrix.configuration }}/*.pdb
-        retention-days: 30
-    
-    - name: Create Release Assets
-      if: github.event_name == 'release' && matrix.configuration == 'Release'
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          bin/${{ matrix.platform }}/Release/*.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  code-quality:
-    name: Code Quality Checks
-    runs-on: windows-2022
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Run CodeQL Analysis
-      uses: github/codeql-action/init@v3
-      with:
-        languages: cpp
-    
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
-    
-    - name: Build for Analysis
-      run: msbuild RFHUtil.sln /p:Configuration=Release /p:Platform=Win32
-    
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-```
-
-#### Effort Estimate
-- **Workflow creation:** 4 hours
-- **Testing and refinement:** 4 hours
-- **Documentation:** 2 hours
-- **Total:** 10 hours (1-2 days)
+### Modern C++ Status
+- 0% adoption of modern C++ idioms
+- Full MFC dependency for UI (CString, CDialog — not replaceable short-term)
+- Memory management entirely manual; no RAII outside of MFC
 
 ---
 
-## 3. MEDIUM TERM: Code Quality (P2)
+## Success Metrics
 
-### 3.1 Unit Testing Framework
-
-**Status:** ✅ DONE — 132 tests across 5 modules using Google Test (Win32 + x64).
-
----
-
-### 3.2 Refactor DataArea Class
-
-**Problem:** `DataArea` is a massive monolith (~18,000 lines). Hard to maintain, test, and extend.
-
-**Solution:** Break into focused, single-responsibility classes.
-
-#### Proposed Structure
-
-- `MQConnection` — connection lifecycle, heartbeat, reconnect
-- `MQMessageReader` — MQGET, browse, message parsing
-- `MQMessageWriter` — MQPUT, put1
-- `RFHHeaders` — RFH1/RFH2 build/parse
-- `MessageData` — data area, encoding, display formatting
-
-#### Effort Estimate
-- **Analysis:** 8 hours
-- **Refactoring:** 80 hours
-- **Testing:** 40 hours
-- **Total:** ~128 hours (3-4 weeks)
+| Area | Before | Target |
+|------|--------|--------|
+| Test coverage | 132 tests, utility-only | 400+ tests, core logic covered |
+| CI/CD | None | Automated builds + tests on every PR |
+| DataArea size | 26k lines, 1 class | 5–6 focused classes, <5k lines each |
+| Memory safety | Manual new/delete everywhere | Smart pointers, RAII handles |
+| Build portability | Hardcoded local paths | `$(MQ_HOME)` env var, buildable by any contributor |
 
 ---
 
-## 4. Implementation Timeline
-
-### Phase 1: Quick Wins ✅ COMPLETE
-- P0.1 HeartBeat/KeepAlive
-- P0.2 Auto-Reconnect
-- P0.3 Connection Settings Tab
-- P1.1 VS 2022
-- P1.2 Dark Mode
-- P1.3 64-bit Support
-- P1.4 Unit Testing
-- P2.1 Connection Health Monitor
-- P2.2 Secure Credential Storage
-- P2.3 Editable Data Tab
-
-### Phase 2: CI/CD (Next)
-- GitHub Actions workflow (Win32 + x64, Debug + Release)
-- Automated test runs on PR
-- Release artifact upload
-
-### Phase 3: Refactoring (Month 3-6)
-- DataArea decomposition
-- Modern C++ features (RAII, smart pointers, std::string)
-- Comprehensive test coverage (>70%)
-
----
-
-## 5. Success Metrics
-
-### Connection Reliability
-- **Before:** 300s failure detection, frequent manual reconnects
-- **After:** 60s failure detection, automatic reconnection + proactive health monitoring
-- **Status:** ✅ Achieved
-
-### Build System
-- **Before:** Manual builds, no automation
-- **After:** Automated builds on every commit
-- **Target:** 100% automated build success rate
-
-### Code Quality
-- **Before:** No tests, high regression risk
-- **After:** 132 unit tests, integration tests
-- **Target:** >70% code coverage
-
----
-
-## 6. Risk Mitigation
-
-### Technical Risks
+## Risk Mitigation
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| Breaking changes in VS 2022 | Low | Medium | Thorough testing, gradual rollout |
-| MQ compatibility issues | Low | High | Test with multiple MQ versions |
-| Performance regression | Low | Medium | Performance testing, benchmarks |
-| User resistance to changes | Medium | Low | Clear communication, training |
+| DataArea refactor introduces regressions | Medium | High | Expand tests first (P3.3–P3.6), CI gate (P3.2) |
+| MQ SDK unavailable in CI | High | Medium | Skip MQ-dependent tests in CI; unit tests only |
+| Breaking changes during modernization | Low | Medium | Incremental extraction, one class at a time |
+| MQ API incompatibility with C++ wrappers | Low | High | Keep MQ API calls isolated; wrap at boundary only |
 
 ---
 
-**Document Version:** 1.1  
-**Date:** 2026-04-08  
+**Document Version:** 1.2
+**Date:** 2026-04-13
 **Status:** Active
