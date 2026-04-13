@@ -2,7 +2,7 @@
 
 ## 📊 Progress Tracker
 
-**Last Updated:** April 13, 2026
+**Last Updated:** April 13, 2026 (P3.1 complete)
 **Current Version:** 9.4.0.0
 **Build Environment:** Visual Studio 2022 (v143), IBM MQ 9.4.5
 
@@ -21,6 +21,7 @@
 | 🟢 **P2.1** | Connection Health Monitor | ✅ COMPLETE | Apr 8, 2026 | WM_TIMER + MQINQ probes, live status in Connection Settings tab |
 | 🟢 **P2.2** | Secure Credential Storage | ✅ COMPLETE | Apr 8, 2026 | Windows DPAPI, base64 registry storage, opt-in per connection |
 | 🟢 **P2.3** | Editable Data Tab | ✅ COMPLETE | Apr 8, 2026 | Allow Edit checkbox + Write Q button, Character and Hex round-trip |
+| 🔴 **P3.1** | Fix hardcoded MQ SDK paths | ✅ COMPLETE | Apr 13, 2026 | `Directory.Build.props` with `$(MQ_HOME)`, defaults to `C:\Program Files\IBM\MQ` |
 
 ### In Progress 🚧
 
@@ -32,7 +33,6 @@
 
 | Priority | Item | Effort | Impact | Target Quarter |
 |----------|------|--------|--------|----------------|
-| 🔴 **P3.1** | Fix hardcoded MQ SDK paths | Small | High | Q2 2026 |
 | 🟡 **P3.2** | GitHub Actions — build + unit tests | Small | High | Q2 2026 |
 | 🟡 **P3.3** | Expand tests — header parsing (RFH1/RFH2, DLQ, CICS, IMS) | Medium | High | Q2 2026 |
 | 🟡 **P3.4** | Expand tests — message encoding (EBCDIC, hex, JSON, XML) | Medium | High | Q2 2026 |
@@ -80,7 +80,7 @@ This document provides a **detailed, actionable roadmap** for modernizing the mq
 
 | Priority | Item | Effort | Impact | Risk | Notes |
 |----------|------|--------|--------|------|-------|
-| 🔴 **P3.1** | Fix hardcoded MQ SDK paths | Small | High | Low | Replace `d:\apps\mq\` with `$(MQ_HOME)` env var in all .vcxproj files |
+| 🔴 **P3.1** | Fix hardcoded MQ SDK paths | Small | High | Low | ✅ DONE — `Directory.Build.props` with `$(MQ_HOME)`, override via env var or `/p:MQ_HOME=` |
 | 🟡 **P3.2** | GitHub Actions — build + unit tests | Small | High | Low | Windows runner, Win32+x64 matrix, Google Test output |
 | 🟡 **P3.3** | Expand tests — header parsing | Medium | High | Low | RFH1, RFH2, DLQ, CICS, IMS header build/parse coverage |
 | 🟡 **P3.4** | Expand tests — message encoding | Medium | High | Low | EBCDIC, hex, JSON, XML round-trips |
@@ -116,7 +116,7 @@ This document provides a **detailed, actionable roadmap** for modernizing the mq
 All P0–P2 items shipped. Key deliverables: heartbeat/reconnect, dark mode, safe mode, 64-bit, unit testing, health monitor, DPAPI credentials, editable data tab.
 
 ### Phase 2: CI/CD & Coverage (Q2–Q3 2026)
-1. **P3.1** — Parameterize MQ SDK paths (unblocks CI and other contributors)
+1. **P3.1** ✅ — Parameterize MQ SDK paths (`Directory.Build.props`, `$(MQ_HOME)`)
 2. **P3.2** — GitHub Actions basic workflow
 3. **P3.3–P3.6** — Expand test coverage to core logic areas
 4. **P3.7–P3.10** — Smaller quality improvements in parallel
