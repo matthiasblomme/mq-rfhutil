@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    MQ_HOME: path to IBM MQ installation root.
+    Override by setting the MQ_HOME environment variable before building,
+    or by passing /p:MQ_HOME=<path> to msbuild.
+    Default matches the standard IBM MQ 64-bit client installation on Windows.
+  -->
+  <PropertyGroup>
+    <MQ_HOME Condition="'$(MQ_HOME)' == ''">C:\Program Files\IBM\MQ</MQ_HOME>
+  </PropertyGroup>
+</Project>
