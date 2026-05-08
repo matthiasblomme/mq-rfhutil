@@ -45,11 +45,15 @@ jobs:
             'bin\tests\UnitTests.exe'
           }
           $xml = "test-results-${{ matrix.platform }}.xml"
-          & $exe --gtest_output="xml:$xml"
-          # TerminateProcess sets exit code; $LASTEXITCODE reflects it
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "Tests failed with exit code $LASTEXITCODE"
-            exit $LASTEXITCODE
+          # UnitTests.exe is /SUBSYSTEM:WINDOWS (MFC), so & does not wait
+          # and $LASTEXITCODE is unset. Start-Process -Wait gets the real
+          # exit code from TerminateProcess() in TestMain.cpp.
+          $proc = Start-Process -FilePath $exe `
+            -ArgumentList "--gtest_output=xml:$xml" `
+            -Wait -PassThru -NoNewWindow
+          if ($proc.ExitCode -ne 0) {
+            Write-Error "Tests failed with exit code $($proc.ExitCode)"
+            exit $proc.ExitCode
           }
 
       - name: Upload test results
