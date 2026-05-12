@@ -46,6 +46,8 @@ public:
 	CString	m_security_exit;
 	CString	m_security_data;
 	CString m_local_address;
+	CString m_ssl_peer;
+	BOOL    m_fips_required;
 	//}}AFX_DATA
 
 

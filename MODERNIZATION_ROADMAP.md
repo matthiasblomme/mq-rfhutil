@@ -2,7 +2,7 @@
 
 ## 📊 Progress Tracker
 
-**Last Updated:** May 12, 2026 (P3.8 complete)
+**Last Updated:** May 12, 2026 (P3.9 complete; P3.7 deferred into P4.1)
 **Current Version:** 9.4.0.0
 **Build Environment:** Visual Studio 2022 (v143), IBM MQ 9.4.5
 
@@ -29,6 +29,7 @@
 | 🟡 **P3.6** | Expand tests — file I/O round-trips | ✅ COMPLETE | May 7, 2026 | 241 tests across 46 test cases, both platforms green |
 | 🟢 **P3.10** | GitHub Actions — release artifact publishing | ✅ COMPLETE | May 8, 2026 | `release.yml` triggers on `v*` tag push, publishes committed binaries |
 | 🟢 **P3.8** | Human-readable MQ error messages | ✅ COMPLETE | May 12, 2026 | `mqerror.cpp` maps ~120 reason codes; wired into `setErrorMsg` default case |
+| 🟢 **P3.9** | TLS configuration improvements | ✅ COMPLETE | May 12, 2026 | Cipher list reordered (strong→legacy); added SSL Peer Name + FIPS Required UI fields, persisted to registry |
 
 ### In Progress 🚧
 
@@ -40,9 +41,7 @@
 
 | Priority | Item | Effort | Impact | Target Quarter |
 |----------|------|--------|--------|----------------|
-| 🟢 **P3.7** | MQ handle RAII wrapper | Small | Medium | Q3 2026 |
-| 🟢 **P3.9** | TLS configuration improvements | Medium | Medium | Q3 2026 |
-| 🔵 **P4.1** | DataArea refactor — extract `MQConnection` | Medium | High | Q3 2026 |
+| 🔵 **P4.1** | DataArea refactor — extract `MQConnection` (includes deferred P3.7 RAII work) | Medium | High | Q3 2026 |
 | 🔵 **P4.2** | DataArea refactor — extract `MQMessageReader` / `MQMessageWriter` | High | High | Q3 2026 |
 | 🔵 **P4.3** | DataArea refactor — extract `RFHHeaders` | High | High | Q4 2026 |
 | 🔵 **P4.4** | DataArea refactor — extract `FileHandler` | Medium | High | Q4 2026 |
@@ -86,9 +85,9 @@ This document provides a **detailed, actionable roadmap** for modernizing the mq
 | 🟡 **P3.4** | Expand tests — message encoding | Medium | High | Low | ✅ DONE — EBCDIC, hex, JSON, XML round-trips |
 | 🟡 **P3.5** | Expand tests — connection lifecycle | Medium | Medium | Low | ✅ DONE — reconnect eligibility, attempt counter |
 | 🟡 **P3.6** | Expand tests — file I/O | Medium | Medium | Low | ✅ DONE — read/write round-trips |
-| 🟢 **P3.7** | MQ handle RAII wrapper | Small | Medium | Low | Wrap `MQHOBJ`/`MQHCONN` — prevents leaks on exception paths |
+| 🟢 **P3.7** | MQ handle RAII wrapper | Small | Medium | Low | ⏭️ Deferred into P4.1 — RAII is built in when `MQConnection` is extracted, avoids doing the wrapping twice |
 | 🟢 **P3.8** | Human-readable MQ error messages | Small | Medium | Low | ✅ DONE — `mqReasonString()` covers ~120 codes, used in `setErrorMsg` default branch |
-| 🟢 **P3.9** | TLS configuration improvements | Medium | Medium | Medium | Make cipher suite configurable per connection in UI |
+| 🟢 **P3.9** | TLS configuration improvements | Medium | Medium | Medium | ✅ DONE — cipher list reordered, SSL Peer Name + FIPS Required UI fields added |
 | 🟢 **P3.10** | GitHub Actions — release publishing | Small | Medium | Low | ✅ DONE — `release.yml` publishes committed binaries on `v*` tag |
 
 ### Phase 3: Refactoring (P4) — Requires P3 Safety Net
@@ -119,7 +118,8 @@ All P0–P2 items shipped. Key deliverables: heartbeat/reconnect, dark mode, saf
 1. **P3.1** ✅ — Parameterize MQ SDK paths (`Directory.Build.props`, `$(MQ_HOME)`)
 2. **P3.2** ✅ — GitHub Actions basic workflow
 3. **P3.3–P3.6** ✅ — Expand test coverage to core logic areas
-4. **P3.7–P3.10** — Smaller quality improvements in parallel
+4. **P3.7** — Deferred into P4.1 (`MQConnection` extraction)
+5. **P3.8–P3.10** ✅ — Smaller quality improvements
 
 ### Phase 3: Refactoring (Q3–Q4 2026)
 With CI/CD and tests as safety net:

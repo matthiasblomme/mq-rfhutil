@@ -458,6 +458,7 @@
 #define IDC_CONN_STORE_LOC_LABEL        1473
 #define IDC_CONN_SSL_RESET_COUNT        1474
 #define IDC_CONN_SSL_RESET_COUNT_LABEL  1475
+#define IDC_CONN_SSL_PEER               1476
 #define IDC_SAVEMSGS_END_COUNT          1477
 #define IDC_SAVEMSGS_START              1478
 #define IDC_SAVEMSGS_REM_YES            1479
@@ -479,6 +480,8 @@
 #define IDC_CONN_LOCAL_ADDRESS_LABEL    1498
 #define IDC_CONN_LOCAL_ADDRESS          1499
 #define IDC_LOADQ_ERROR_MESSAGE         1500
+#define IDC_CONN_SSL_PEER_LABEL         1501
+#define IDC_CONN_FIPS_REQUIRED          1502
 #define IDC_MAIN_FILTER_LABEL           1503
 #define IDC_MAIN_FILTER                 1504
 #define IDC_LOADQ_PROP_DELIM            1508

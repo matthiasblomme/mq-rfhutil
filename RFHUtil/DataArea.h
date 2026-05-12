@@ -398,6 +398,8 @@ public:
 	CString	m_security_data;
 	CString m_ssl_keyr;
 	CString m_ssl_cipher;
+	CString m_ssl_peer;
+	BOOL    m_fips_required;
 	CString m_conn_password;
 	CString m_conn_userid;
 	CString m_local_address;

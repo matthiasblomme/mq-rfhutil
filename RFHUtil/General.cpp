@@ -1221,6 +1221,8 @@ BOOL General::OnInitDialog()
 	pDoc->m_ssl_keyr = ((CRfhutilApp *)AfxGetApp())->initSSLKeyR;
 	pDoc->m_ssl_validate = ((CRfhutilApp *)AfxGetApp())->initSSLValidateClient;
 	pDoc->m_ssl_reset_count = ((CRfhutilApp *)AfxGetApp())->initSSLResetCount;
+	pDoc->m_ssl_peer = ((CRfhutilApp *)AfxGetApp())->initSSLPeerName;
+	pDoc->m_fips_required = ((CRfhutilApp *)AfxGetApp())->initFipsRequired;
 	pDoc->m_security_exit = ((CRfhutilApp *)AfxGetApp())->initSecExit;
 	pDoc->m_security_data = ((CRfhutilApp *)AfxGetApp())->initSecData;
 
@@ -2372,6 +2374,8 @@ void General::OnSetConnUser()
 	dlg.m_security_data = (LPCTSTR)pDoc->m_security_data;
 	sprintf(tempCount, "%d", pDoc->m_ssl_reset_count);
 	dlg.m_ssl_reset_count = tempCount;
+	dlg.m_ssl_peer = (LPCTSTR)pDoc->m_ssl_peer;
+	dlg.m_fips_required = pDoc->m_fips_required;
 
 	// run the dialog
 	rc = dlg.DoModal();
@@ -2392,6 +2396,8 @@ void General::OnSetConnUser()
 		pDoc->m_security_exit = (LPCTSTR)dlg.m_security_exit;
 		pDoc->m_security_data = (LPCTSTR)dlg.m_security_data;
 		pDoc->m_ssl_reset_count = atoi(dlg.m_ssl_reset_count);
+		pDoc->m_ssl_peer = (LPCTSTR)dlg.m_ssl_peer;
+		pDoc->m_fips_required = dlg.m_fips_required;
 	}
 
 	if (pDoc->traceEnabled)

@@ -80,6 +80,8 @@ static char THIS_FILE[] = __FILE__;
 #define RFHUTIL_MOST_RECENT_SSL_KEYR		"SSLKeyR"
 #define RFHUTIL_MOST_RECENT_SSL_VALIDATE	"SSLValidate"
 #define RFHUTIL_MOST_RECENT_SSL_RESET_COUNT	"SSLResetCount"
+#define RFHUTIL_MOST_RECENT_SSL_PEER		"SSLPeerName"
+#define RFHUTIL_MOST_RECENT_FIPS			"FipsRequired"
 #define RFHUTIL_MOST_RECENT_CONN_USER		"connUser"
 #define RFHUTIL_MOST_RECENT_CONN_PW			"connPW"    // Stores DPAPI-encrypted, base64-encoded password when save is enabled
 #define RFHUTIL_MOST_RECENT_SAVE_PW			"savePW"    // 1 if password save is enabled, 0 otherwise
@@ -164,6 +166,8 @@ CRfhutilApp::CRfhutilApp()
 	initSSLResetCount = 0;
 	initUseSSL = FALSE;
 	initSSLValidateClient = FALSE;
+	initSSLPeerName.Empty();
+	initFipsRequired = FALSE;
 	m_enableRecentFileList = TRUE;
 	auditFileName = NULL;
 	numMonitors = 0;
@@ -1594,6 +1598,9 @@ void CRfhutilApp::SaveLastUsedQNames()
 	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_SSL_RESET_COUNT, tempNum);
 	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_CIPHER_SPEC, (LPCTSTR)initSSLCipherSpec);
 	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_SSL_KEYR, (LPCTSTR)initSSLKeyR);
+	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_SSL_PEER, (LPCTSTR)initSSLPeerName);
+	sprintf(tempNum, "%d", initFipsRequired);
+	WriteProfileString(sectionName, RFHUTIL_MOST_RECENT_FIPS, tempNum);
 	writeQMgr2Registry(sectionName);
 #endif
 }
@@ -1667,6 +1674,14 @@ void CRfhutilApp::GetLastUsedQNames()
 
 	initSSLCipherSpec = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_CIPHER_SPEC, NULL);
 	initSSLKeyR = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_SSL_KEYR, NULL);
+	initSSLPeerName = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_SSL_PEER, NULL);
+
+	tempNum.Empty();
+	tempNum = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_FIPS, NULL);
+	if (tempNum.GetLength() > 0)
+	{
+		initFipsRequired = atoi((LPCTSTR)tempNum);
+	}
 
 	// get the security exit name and data
 	initSecExit = GetProfileString(sectionName, RFHUTIL_MOST_RECENT_CONN_SEC_EXIT, NULL);
@@ -1683,7 +1698,7 @@ void CRfhutilApp::GetLastUsedQNames()
 	{
 #ifdef MQCLIENT
 		// create trace entry for the SSL entries
-		sprintf(traceInfo, "Exiting CRfhutilApp::GetLastUsedQNames() initUseSSL=%d, initSSLCipherSpec=%s initSSLValidateClient=%d initSSLKeyR=%s initSSLResetCount=%d", initUseSSL, (LPCTSTR)initSSLCipherSpec, initSSLValidateClient, (LPCTSTR)initSSLKeyR, initSSLResetCount);
+		sprintf(traceInfo, "Exiting CRfhutilApp::GetLastUsedQNames() initUseSSL=%d, initSSLCipherSpec=%s initSSLValidateClient=%d initSSLKeyR=%s initSSLResetCount=%d initSSLPeerName=%s initFipsRequired=%d", initUseSSL, (LPCTSTR)initSSLCipherSpec, initSSLValidateClient, (LPCTSTR)initSSLKeyR, initSSLResetCount, (LPCTSTR)initSSLPeerName, initFipsRequired);
 
 		// write the data to the trace
 		logTraceEntry(traceInfo);
