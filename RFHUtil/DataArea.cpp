@@ -26,6 +26,7 @@ Jim MacNair - Initial Contribution
 #include "rfhutil.h"
 #include "DataArea.h"
 #include "comsubs.h"
+#include "mqerror.h"
 #include "xmlsubs.h"
 #include "mqsubs.h"
 #include "cics.h"
@@ -9802,8 +9803,15 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 		}
 	default:
 		{
-			// build an error message
-			sprintf(errtxt, "*Error cc=%d rc=%d Cannot %s", cc, rc, operation);
+			const char *reasonText = mqReasonString(rc);
+			if (reasonText != NULL)
+			{
+				sprintf(errtxt, "*Error cc=%d rc=%d (%s) Cannot %s", cc, rc, reasonText, operation);
+			}
+			else
+			{
+				sprintf(errtxt, "*Error cc=%d rc=%d Cannot %s", cc, rc, operation);
+			}
 		}
 	}
 

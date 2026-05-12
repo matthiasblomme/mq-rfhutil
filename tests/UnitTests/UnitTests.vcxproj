@@ -116,6 +116,7 @@
     <ClCompile Include="..\..\RFHUtil\JsonParse.cpp" />
     <ClCompile Include="..\..\RFHUtil\XMLParse.cpp" />
     <ClCompile Include="..\..\RFHUtil\Names.cpp" />
+    <ClCompile Include="..\..\RFHUtil\mqerror.cpp" />
   </ItemGroup>
 
   <!-- Test files -->
@@ -130,6 +131,7 @@
     <ClCompile Include="EncodingTests.cpp" />
     <ClCompile Include="ReconnectTests.cpp" />
     <ClCompile Include="FileFormatTests.cpp" />
+    <ClCompile Include="MQErrorTests.cpp" />
   </ItemGroup>
 
   <!-- Headers -->
@@ -141,6 +143,7 @@
     <ClInclude Include="..\..\RFHUtil\JsonParse.h" />
     <ClInclude Include="..\..\RFHUtil\XMLParse.h" />
     <ClInclude Include="..\..\RFHUtil\Names.h" />
+    <ClInclude Include="..\..\RFHUtil\mqerror.h" />
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
