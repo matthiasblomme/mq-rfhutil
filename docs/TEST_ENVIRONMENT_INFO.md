@@ -1,5 +1,9 @@
 # Test Environment Information
 
+> **Note:** Credentials in this document use the placeholder `<your-password>`.
+> Substitute the value configured for your local Docker queue manager —
+> typically the IBM MQ Developer Edition default for the `mqapp` user.
+
 ## Available Test Queue Manager
 
 ### Connection Details
@@ -12,7 +16,7 @@
 
 #### Authentication (Secured Setup)
 **Username:** mqapp
-**Password:** securePassword123
+**Password:** <your-password>
 
 #### Available Queues
 - **TEST.HELLO.WORLD.Q1** - Test queue (from screenshot)
@@ -33,7 +37,7 @@ Channel: DEV.APP.SVRCONN
 Host: localhost
 Port: 1414
 User: mqapp
-Password: securePassword123
+Password: <your-password>
 ```
 
 ### Screenshot Analysis
@@ -52,7 +56,7 @@ From the RFHUtil screenshot, I can see:
    - Transport: TCP/IP
    - Host: localhost (Docker container)
    - Port: 1414
-   - Authentication: User ID and password (mqapp/securePassword123)
+   - Authentication: User ID and password (mqapp/<your-password>)
 
 3. **Application Status:**
    - Multiple "No messages in queue" entries at 14:14:40-41 2033
@@ -90,7 +94,7 @@ docker run -d \
   -p 9443:9443 \
   -e LICENSE=accept \
   -e MQ_QMGR_NAME=QM1 \
-  -e MQ_APP_PASSWORD=securePassword123 \
+  -e MQ_APP_PASSWORD=<your-password> \
   ibmcom/mq:latest
 ```
 
@@ -106,7 +110,7 @@ docker run -d \
 
 **Authentication:**
 - User: `mqapp`
-- Password: `securePassword123`
+- Password: `<your-password>`
 - Authentication Type: User ID and Password (MQCSP)
 
 ### Testing Recommendations
@@ -116,7 +120,7 @@ docker run -d \
 **Test HeartBeat/KeepAlive defaults:**
 ```
 1. Connect to QM1 via DEV.APP.SVRCONN/TCP/localhost
-   - Use credentials: mqapp / securePassword123
+   - Use credentials: mqapp / <your-password>
 2. Leave connection idle for 5+ minutes
 3. Observe if connection stays alive
 4. Try to put/get message to DEV.INPUT.QUEUE after idle period
@@ -129,7 +133,7 @@ docker run -d \
 2. Queue Manager Name: QM1
 3. Click "Set Conn Id" button
 4. Enter User ID: mqapp
-5. Enter Password: securePassword123
+5. Enter Password: <your-password>
 6. Click OK
 7. Click "Connect" (or use MQ menu → MQCONN)
 8. Select Queue: DEV.INPUT.QUEUE or DEV.OUTPUT.QUEUE
@@ -168,7 +172,7 @@ cd.KeepAliveInterval = MQKAI_AUTO;
 
 **Simulate Connection Failure:**
 ```
-1. Connect to QM1 with credentials (mqapp/securePassword123)
+1. Connect to QM1 with credentials (mqapp/<your-password>)
 2. Put a test message to DEV.INPUT.QUEUE
 3. Stop Docker container: docker stop qm1
 4. Observe RFHUtil behavior (should detect failure in ~60s)
@@ -303,7 +307,7 @@ rfhutilc.exe
 
 **Measure Current Performance:**
 ```
-1. Connect to QM1 with credentials (mqapp/securePassword123)
+1. Connect to QM1 with credentials (mqapp/<your-password>)
 2. Select queue: DEV.INPUT.QUEUE
 3. Put 1000 messages (use Load Q feature)
 4. Record time
@@ -328,7 +332,7 @@ Test with different message sizes:
 ### Integration Testing Checklist
 
 **Authentication Tests:**
-- [ ] Connect with valid credentials (mqapp/securePassword123)
+- [ ] Connect with valid credentials (mqapp/<your-password>)
 - [ ] Connect with invalid credentials (verify error handling)
 - [ ] Connect without credentials (verify error)
 
@@ -374,7 +378,7 @@ Transport: TCP
 Host: localhost
 Port: 1414
 User: mqapp
-Password: securePassword123
+Password: <your-password>
 ```
 
 **MQSERVER Environment Variable:**
@@ -389,7 +393,7 @@ The connection uses MQCSP (Connection Security Parameters) for authentication:
 MQCSP csp = {MQCSP_DEFAULT};
 csp.AuthenticationType = MQCSP_AUTH_USER_ID_AND_PWD;
 csp.CSPUserIdPtr = "mqapp";
-csp.CSPPasswordPtr = "securePassword123";
+csp.CSPPasswordPtr = "<your-password>";
 cno.SecurityParmsPtr = &csp;
 ```
 
@@ -445,7 +449,7 @@ docker exec qm1 dspmqver
 **Current Behavior:**
 - ✅ Can connect to QM1 with authentication
 - ✅ Can put/get messages to DEV.INPUT.QUEUE and DEV.OUTPUT.QUEUE
-- ✅ Authentication working (mqapp/securePassword123)
+- ✅ Authentication working (mqapp/<your-password>)
 - ⚠️ Slow failure detection (300s)
 - ⚠️ No automatic reconnection
 - ⚠️ Potential firewall timeouts
