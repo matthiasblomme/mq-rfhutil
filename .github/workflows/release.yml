@@ -1,0 +1,43 @@
+name: Release — Publish Artifacts
+
+# Triggered when a version tag is pushed (e.g. `git tag v9.4.0.0 && git push --tags`).
+# Publishes the committed Release/ReleaseSafe binaries — these can't be built in
+# CI because the runner has no IBM MQ SDK, so we ship what's tracked in the repo
+# at the tagged commit.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish release artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify binaries exist
+        run: |
+          set -e
+          for f in bin/Release/rfhutil.exe bin/Release/rfhutilc.exe bin/ReleaseSafe/rfhutilc-safe.exe; do
+            if [ ! -f "$f" ]; then
+              echo "Missing required binary: $f"
+              exit 1
+            fi
+            ls -la "$f"
+          done
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            bin/Release/rfhutil.exe
+            bin/Release/rfhutilc.exe
+            bin/ReleaseSafe/rfhutilc-safe.exe
+          generate_release_notes: true
+          fail_on_unmatched_files: true

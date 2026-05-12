@@ -2,7 +2,7 @@
 
 ## 📊 Progress Tracker
 
-**Last Updated:** May 8, 2026 (P3.2–P3.6 complete)
+**Last Updated:** May 8, 2026 (P3.10 complete)
 **Current Version:** 9.4.0.0
 **Build Environment:** Visual Studio 2022 (v143), IBM MQ 9.4.5
 
@@ -27,6 +27,7 @@
 | 🟡 **P3.4** | Expand tests — message encoding | ✅ COMPLETE | May 7, 2026 | EBCDIC, hex, JSON, XML round-trips |
 | 🟡 **P3.5** | Expand tests — connection lifecycle | ✅ COMPLETE | May 7, 2026 | Reconnect eligibility + attempt counter |
 | 🟡 **P3.6** | Expand tests — file I/O round-trips | ✅ COMPLETE | May 7, 2026 | 241 tests across 46 test cases, both platforms green |
+| 🟢 **P3.10** | GitHub Actions — release artifact publishing | ✅ COMPLETE | May 8, 2026 | `release.yml` triggers on `v*` tag push, publishes committed binaries |
 
 ### In Progress 🚧
 
@@ -41,7 +42,6 @@
 | 🟢 **P3.7** | MQ handle RAII wrapper | Small | Medium | Q3 2026 |
 | 🟢 **P3.8** | Human-readable MQ error messages | Small | Medium | Q3 2026 |
 | 🟢 **P3.9** | TLS configuration improvements | Medium | Medium | Q3 2026 |
-| 🟢 **P3.10** | GitHub Actions — release artifact publishing | Small | Medium | Q3 2026 |
 | 🔵 **P4.1** | DataArea refactor — extract `MQConnection` | Medium | High | Q3 2026 |
 | 🔵 **P4.2** | DataArea refactor — extract `MQMessageReader` / `MQMessageWriter` | High | High | Q3 2026 |
 | 🔵 **P4.3** | DataArea refactor — extract `RFHHeaders` | High | High | Q4 2026 |
@@ -89,7 +89,7 @@ This document provides a **detailed, actionable roadmap** for modernizing the mq
 | 🟢 **P3.7** | MQ handle RAII wrapper | Small | Medium | Low | Wrap `MQHOBJ`/`MQHCONN` — prevents leaks on exception paths |
 | 🟢 **P3.8** | Human-readable MQ error messages | Small | Medium | Low | Map reason codes (e.g. RC=2035) to descriptive strings |
 | 🟢 **P3.9** | TLS configuration improvements | Medium | Medium | Medium | Make cipher suite configurable per connection in UI |
-| 🟢 **P3.10** | GitHub Actions — release publishing | Small | Medium | Low | Upload `.exe` artifacts on tag; depends on P3.2 |
+| 🟢 **P3.10** | GitHub Actions — release publishing | Small | Medium | Low | ✅ DONE — `release.yml` publishes committed binaries on `v*` tag |
 
 ### Phase 3: Refactoring (P4) — Requires P3 Safety Net
 
@@ -179,6 +179,6 @@ With CI/CD and tests as safety net:
 
 ---
 
-**Document Version:** 1.3
+**Document Version:** 1.4
 **Date:** 2026-05-08
 **Status:** Active
