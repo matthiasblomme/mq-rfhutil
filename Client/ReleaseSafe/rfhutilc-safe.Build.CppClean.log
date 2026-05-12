@@ -19,7 +19,6 @@ d:\git\mq-rfhutil\client\releasesafe\connsettings.obj
 d:\git\mq-rfhutil\client\releasesafe\comsubs.obj
 d:\git\mq-rfhutil\client\releasesafe\cics.obj
 d:\git\mq-rfhutil\client\releasesafe\cappubs.obj
-d:\git\mq-rfhutil\client\releasesafe\writepubs.obj
 d:\git\mq-rfhutil\client\releasesafe\usr.obj
 d:\git\mq-rfhutil\client\releasesafe\thememanager.obj
 d:\git\mq-rfhutil\client\releasesafe\stdafx.obj
@@ -38,9 +37,11 @@ d:\git\mq-rfhutil\client\releasesafe\myedit.obj
 d:\git\mq-rfhutil\client\releasesafe\mycombobox.obj
 d:\git\mq-rfhutil\client\releasesafe\msgdata.obj
 d:\git\mq-rfhutil\client\releasesafe\mqsubs.obj
+d:\git\mq-rfhutil\client\releasesafe\mqerror.obj
 d:\git\mq-rfhutil\client\releasesafe\mqmdpage.obj
 d:\git\mq-rfhutil\client\releasesafe\xmlsubs.obj
 d:\git\mq-rfhutil\client\releasesafe\xmlparse.obj
+d:\git\mq-rfhutil\client\releasesafe\writepubs.obj
 d:\git\mq-rfhutil\bin\releasesafe\rfhutilc-safe.exe
 d:\git\mq-rfhutil\bin\releasesafe\rfhutilc-safe.pdb
 d:\git\mq-rfhutil\client\releasesafe\rfhutil.res

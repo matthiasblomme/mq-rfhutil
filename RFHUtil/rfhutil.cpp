@@ -1476,18 +1476,28 @@ void CRfhutilApp::findFonts(HDC hdc, BYTE charSet)
 // P2.2: Encrypt a password using Windows DPAPI, returns base64-encoded ciphertext.
 // The encrypted blob is tied to the current Windows user account and machine.
 // Returns empty string on any failure.
+//
+// App-scoped entropy: a fixed byte string mixed into the DPAPI master key.
+// Without entropy any process running as the same user could decrypt the
+// blob; with entropy, attackers must also know this constant. The value is
+// versioned ("-v1") so a future rotation can invalidate old blobs.
+static const BYTE kDpapiEntropy[] = "rfhutil-conn-pw-v1";
+static const DWORD kDpapiEntropyLen = sizeof(kDpapiEntropy) - 1;  // exclude trailing NUL
+
 static CString EncryptPasswordDPAPI(const CString& plaintext)
 {
 	if (plaintext.IsEmpty())
 		return _T("");
 
-	DATA_BLOB dataIn, dataOut;
+	DATA_BLOB dataIn, entropy, dataOut;
 	dataIn.pbData = (BYTE *)(LPCTSTR)plaintext;
 	dataIn.cbData = (DWORD)plaintext.GetLength();
+	entropy.pbData = (BYTE *)kDpapiEntropy;
+	entropy.cbData = kDpapiEntropyLen;
 	dataOut.pbData = NULL;
 	dataOut.cbData = 0;
 
-	if (!CryptProtectData(&dataIn, NULL, NULL, NULL, NULL, CRYPTPROTECT_UI_FORBIDDEN, &dataOut))
+	if (!CryptProtectData(&dataIn, NULL, &entropy, NULL, NULL, CRYPTPROTECT_UI_FORBIDDEN, &dataOut))
 		return _T("");
 
 	// Base64-encode the encrypted blob for registry storage
@@ -1504,7 +1514,10 @@ static CString EncryptPasswordDPAPI(const CString& plaintext)
 }
 
 // P2.2: Decrypt a base64-encoded DPAPI blob back to plaintext password.
-// Returns empty string on any failure (wrong user, wrong machine, corrupt data).
+// Returns empty string on any failure (wrong user, wrong machine, corrupt
+// data, or blob encrypted without the current entropy — pre-hardening
+// blobs will silently fail to decrypt and the user will be prompted to
+// re-enter their password).
 static CString DecryptPasswordDPAPI(const CString& base64)
 {
 	if (base64.IsEmpty())
@@ -1522,13 +1535,15 @@ static CString DecryptPasswordDPAPI(const CString& base64)
 		return _T("");
 	}
 
-	DATA_BLOB dataIn, dataOut;
+	DATA_BLOB dataIn, entropy, dataOut;
 	dataIn.pbData = binaryBuf;
 	dataIn.cbData = binaryLen;
+	entropy.pbData = (BYTE *)kDpapiEntropy;
+	entropy.cbData = kDpapiEntropyLen;
 	dataOut.pbData = NULL;
 	dataOut.cbData = 0;
 
-	BOOL ok = CryptUnprotectData(&dataIn, NULL, NULL, NULL, NULL, CRYPTPROTECT_UI_FORBIDDEN, &dataOut);
+	BOOL ok = CryptUnprotectData(&dataIn, NULL, &entropy, NULL, NULL, CRYPTPROTECT_UI_FORBIDDEN, &dataOut);
 	delete[] binaryBuf;
 
 	if (!ok)
