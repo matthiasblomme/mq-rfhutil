@@ -1,0 +1,73 @@
+name: CI — Build & Test
+
+on:
+  push:
+    branches: [ master, 'features/**' ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  unit-tests:
+    name: Unit Tests (${{ matrix.platform }})
+    runs-on: windows-2022
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [Win32, x64]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore tests\UnitTests\packages.config -PackagesDirectory packages
+
+      - name: Build UnitTests
+        run: |
+          msbuild RFHUtil.sln /t:UnitTests `
+            /p:Configuration=Debug `
+            /p:Platform=${{ matrix.platform }} `
+            /v:minimal
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          $exe = if ('${{ matrix.platform }}' -eq 'x64') {
+            'bin\tests\x64\UnitTests.exe'
+          } else {
+            'bin\tests\UnitTests.exe'
+          }
+          $xml = "test-results-${{ matrix.platform }}.xml"
+          # UnitTests.exe is /SUBSYSTEM:WINDOWS (MFC), so & does not wait
+          # and $LASTEXITCODE is unset. Start-Process -Wait gets the real
+          # exit code from TerminateProcess() in TestMain.cpp.
+          $proc = Start-Process -FilePath $exe `
+            -ArgumentList "--gtest_output=xml:$xml" `
+            -Wait -PassThru -NoNewWindow
+          if ($proc.ExitCode -ne 0) {
+            Write-Error "Tests failed with exit code $($proc.ExitCode)"
+            exit $proc.ExitCode
+          }
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.platform }}
+          path: test-results-${{ matrix.platform }}.xml
+
+      - name: Publish test report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Tests (${{ matrix.platform }})
+          path: test-results-${{ matrix.platform }}.xml
+          reporter: java-junit
+          fail-on-error: true

@@ -126,6 +126,10 @@
     <ClCompile Include="JsonParseTests.cpp" />
     <ClCompile Include="XMLParseTests.cpp" />
     <ClCompile Include="NamesTests.cpp" />
+    <ClCompile Include="HeaderUtilTests.cpp" />
+    <ClCompile Include="EncodingTests.cpp" />
+    <ClCompile Include="ReconnectTests.cpp" />
+    <ClCompile Include="FileFormatTests.cpp" />
   </ItemGroup>
 
   <!-- Headers -->
