@@ -326,6 +326,7 @@
     <ClInclude Include="..\RFHUtil\MainFrm.h" />
     <ClInclude Include="..\RFHUtil\MoveQ.h" />
     <ClInclude Include="..\RFHUtil\MQMDPAGE.h" />
+    <ClInclude Include="..\RFHUtil\mqerror.h" />
     <ClInclude Include="..\RFHUtil\mqsubs.h" />
     <ClInclude Include="..\RFHUtil\MSGDATA.h" />
     <ClInclude Include="..\RFHUtil\MyComboBox.h" />
@@ -375,6 +376,7 @@
     <ClCompile Include="..\RFHUtil\MainFrm.cpp" />
     <ClCompile Include="..\RFHUtil\MoveQ.cpp" />
     <ClCompile Include="..\RFHUtil\MQMDPAGE.cpp" />
+    <ClCompile Include="..\RFHUtil\mqerror.cpp" />
     <ClCompile Include="..\RFHUtil\mqsubs.cpp" />
     <ClCompile Include="..\RFHUtil\MSGDATA.cpp" />
     <ClCompile Include="..\RFHUtil\MyComboBox.cpp" />

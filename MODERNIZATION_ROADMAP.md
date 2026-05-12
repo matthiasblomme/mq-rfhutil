@@ -2,7 +2,7 @@
 
 ## 📊 Progress Tracker
 
-**Last Updated:** May 8, 2026 (P3.10 complete)
+**Last Updated:** May 12, 2026 (P3.8 complete)
 **Current Version:** 9.4.0.0
 **Build Environment:** Visual Studio 2022 (v143), IBM MQ 9.4.5
 
@@ -28,6 +28,7 @@
 | 🟡 **P3.5** | Expand tests — connection lifecycle | ✅ COMPLETE | May 7, 2026 | Reconnect eligibility + attempt counter |
 | 🟡 **P3.6** | Expand tests — file I/O round-trips | ✅ COMPLETE | May 7, 2026 | 241 tests across 46 test cases, both platforms green |
 | 🟢 **P3.10** | GitHub Actions — release artifact publishing | ✅ COMPLETE | May 8, 2026 | `release.yml` triggers on `v*` tag push, publishes committed binaries |
+| 🟢 **P3.8** | Human-readable MQ error messages | ✅ COMPLETE | May 12, 2026 | `mqerror.cpp` maps ~120 reason codes; wired into `setErrorMsg` default case |
 
 ### In Progress 🚧
 
@@ -40,7 +41,6 @@
 | Priority | Item | Effort | Impact | Target Quarter |
 |----------|------|--------|--------|----------------|
 | 🟢 **P3.7** | MQ handle RAII wrapper | Small | Medium | Q3 2026 |
-| 🟢 **P3.8** | Human-readable MQ error messages | Small | Medium | Q3 2026 |
 | 🟢 **P3.9** | TLS configuration improvements | Medium | Medium | Q3 2026 |
 | 🔵 **P4.1** | DataArea refactor — extract `MQConnection` | Medium | High | Q3 2026 |
 | 🔵 **P4.2** | DataArea refactor — extract `MQMessageReader` / `MQMessageWriter` | High | High | Q3 2026 |
@@ -87,7 +87,7 @@ This document provides a **detailed, actionable roadmap** for modernizing the mq
 | 🟡 **P3.5** | Expand tests — connection lifecycle | Medium | Medium | Low | ✅ DONE — reconnect eligibility, attempt counter |
 | 🟡 **P3.6** | Expand tests — file I/O | Medium | Medium | Low | ✅ DONE — read/write round-trips |
 | 🟢 **P3.7** | MQ handle RAII wrapper | Small | Medium | Low | Wrap `MQHOBJ`/`MQHCONN` — prevents leaks on exception paths |
-| 🟢 **P3.8** | Human-readable MQ error messages | Small | Medium | Low | Map reason codes (e.g. RC=2035) to descriptive strings |
+| 🟢 **P3.8** | Human-readable MQ error messages | Small | Medium | Low | ✅ DONE — `mqReasonString()` covers ~120 codes, used in `setErrorMsg` default branch |
 | 🟢 **P3.9** | TLS configuration improvements | Medium | Medium | Medium | Make cipher suite configurable per connection in UI |
 | 🟢 **P3.10** | GitHub Actions — release publishing | Small | Medium | Low | ✅ DONE — `release.yml` publishes committed binaries on `v*` tag |
 
@@ -179,6 +179,6 @@ With CI/CD and tests as safety net:
 
 ---
 
-**Document Version:** 1.4
-**Date:** 2026-05-08
+**Document Version:** 1.5
+**Date:** 2026-05-12
 **Status:** Active
