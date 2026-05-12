@@ -84,5 +84,24 @@ When built with `ReleaseSafe` configuration:
 
 See [SAFE_MODE_IMPLEMENTATION.md](SAFE_MODE_IMPLEMENTATION.md) for detailed implementation information.
 
+## Cutting a Release
+
+The release workflow (`.github/workflows/release.yml`) triggers on any tag
+matching `v*` and publishes the committed Release/ReleaseSafe binaries.
+
+1. Rebuild and commit Release + ReleaseSafe binaries locally (see build
+   commands above).
+2. Tag and push:
+   ```bash
+   git tag v9.4.0.0
+   git push origin v9.4.0.0
+   ```
+3. The workflow attaches `rfhutil.exe`, `rfhutilc.exe`, and
+   `rfhutilc-safe.exe` to an auto-generated GitHub Release.
+
+The runner has no IBM MQ SDK, so the workflow does not build — it publishes
+what is tracked at the tagged commit. Always rebuild and commit binaries
+before tagging.
+
 ## Current Version
 **9.4.0.0** - Built against IBM MQ 9.4.5
