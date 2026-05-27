@@ -11717,7 +11717,7 @@ bool DataArea::performHealthCheck()
 			}
 		}
 
-		appendError("Connection lost \xE2\x80\x94 detected by health monitor");
+		appendError("Connection lost - detected by health monitor");
 		updateMsgText();
 		return false;
 	}
