@@ -306,6 +306,7 @@ DataArea::DataArea()
 	m_reconnect_attempt_count = 0;
 	m_last_reconnect_time = 0;
 	m_reconnecting = FALSE;
+	m_connection_was_lost = FALSE;
 	m_last_qm_name = "";
 	m_last_channel_name = "";
 	m_last_conn_name = "";
@@ -9216,6 +9217,10 @@ void DataArea::connectionLostCleanup()
 	connected = false;
 	qm = NULL;
 
+	// Mark involuntary loss so the next successful connect (via checkConnection
+	// or attemptReconnection) emits a "Reconnected" line in the message log.
+	m_connection_was_lost = TRUE;
+
 	// P2.1: Clear health monitor state (handle is now invalid)
 	m_hHealthCheckObj = MQHO_NONE;
 	m_health_check_active = FALSE;
@@ -11475,9 +11480,15 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 		
 		// P0.2: Save attempt count before reset (fixes "0 attempts" bug)
 		int attemptCount = m_reconnect_attempt_count;
-		
+
 		// Reset reconnection state on success
 		resetReconnectionState();
+
+		// We're emitting our own "Reconnected ... after N attempt(s)" line
+		// below — clear the lost-connection flag so the next checkConnection
+		// call doesn't append a duplicate "Reconnected to queue manager"
+		// line for the same recovery.
+		m_connection_was_lost = FALSE;
 		
 		// P0.2: Check if browse operation needs restart
 		if (m_browse_active && !m_browse_queue_name.IsEmpty())
@@ -12627,6 +12638,16 @@ bool DataArea::checkConnection(LPCTSTR QMname)
 		{
 			// unable to connect to QM
 			return false;
+		}
+
+		// If the previous connection was involuntarily lost (health monitor
+		// cleanup, broken pipe, etc.), this connect is a recovery — surface
+		// it in the message log so the user can see the silent reconnect.
+		if (m_connection_was_lost)
+		{
+			m_connection_was_lost = FALSE;
+			m_error_msg.Format("Reconnected to queue manager '%s'", QMname);
+			updateMsgText();
 		}
 	}
 

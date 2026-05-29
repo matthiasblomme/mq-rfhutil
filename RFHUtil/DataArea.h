@@ -495,6 +495,8 @@ public:
 	int m_reconnect_attempt_count;      // Current reconnection attempt number
 	DWORD m_last_reconnect_time;        // Timestamp of last reconnection attempt
 	BOOL m_reconnecting;                // Flag indicating reconnection in progress
+	BOOL m_connection_was_lost;         // Set by connectionLostCleanup so the next successful
+	                                    // connect through checkConnection can log "Reconnected"
 	CString m_last_qm_name;             // Last connected QM name for reconnection
 	CString m_last_channel_name;        // Last used channel name
 	CString m_last_conn_name;           // Last used connection name
