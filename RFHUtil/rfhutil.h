@@ -208,6 +208,8 @@ public:
 	CString initSecData;
 	CString initSecExit;
 	CString initLocalAddress;
+	CString initSSLPeerName;
+	BOOL    initFipsRequired;
 	BOOL	initSSLValidateClient;
 	CWnd * m_mainWnd;
 	DataArea pDocument;

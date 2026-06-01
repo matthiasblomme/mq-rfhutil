@@ -250,6 +250,8 @@ DataArea::DataArea()
 	m_ssl_validate = FALSE;
 	m_ssl_reset_count = 0;
 	m_ssl_cipher.Empty();
+	m_ssl_peer.Empty();
+	m_fips_required = FALSE;
 	m_local_address.Empty();
 
 	// switch to ignore an error trying to get the default QMgr
@@ -10888,6 +10890,25 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 			// set the ssl reset count in the sco
 			sco.KeyResetCount = m_ssl_reset_count;
 
+			// P3.9: optional server certificate DN pin (SSLPeerName).
+			// Pointer must remain valid through MQCONNX — m_ssl_peer is a
+			// member CString, so its buffer survives the call.
+			if (m_ssl_peer.GetLength() > 0)
+			{
+				cd.SSLPeerNamePtr = (MQPTR)(LPCTSTR)m_ssl_peer;
+				cd.SSLPeerNameLength = (MQLONG)m_ssl_peer.GetLength();
+			}
+
+			// P3.9: FIPS-only cipher enforcement. SCO must be at least
+			// version 2 to honor FipsRequired.
+			if (m_fips_required)
+			{
+				if (sco.Version < MQSCO_VERSION_2) {
+					sco.Version = MQSCO_VERSION_2;
+				}
+				sco.FipsRequired = MQSSL_FIPS_YES;
+			}
+
 			// set the pointer to the mqsco control block
 			cno.SSLConfigPtr = &sco;
 
@@ -10905,7 +10926,7 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 			if (traceEnabled)
 			{
 				// create the trace line
-				sprintf(traceInfo, "DataArea::connect2QM() m_ssl_cipher=%s m_ssl_validate=%d m_ssl_keyr=%s m_ssl_reset_count=%d", (LPCTSTR)m_ssl_cipher, m_ssl_validate, (LPCTSTR)m_ssl_keyr, m_ssl_reset_count);
+				sprintf(traceInfo, "DataArea::connect2QM() m_ssl_cipher=%s m_ssl_validate=%d m_ssl_keyr=%s m_ssl_reset_count=%d m_ssl_peer=%s m_fips_required=%d", (LPCTSTR)m_ssl_cipher, m_ssl_validate, (LPCTSTR)m_ssl_keyr, m_ssl_reset_count, (LPCTSTR)m_ssl_peer, m_fips_required);
 
 				// log the data to the trace file
 				logTraceEntry(traceInfo);
@@ -11192,6 +11213,8 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 	app->initSSLCipherSpec = m_ssl_cipher;
 	app->initSSLKeyR = m_ssl_keyr;
 	app->initSSLResetCount = m_ssl_reset_count;
+	app->initSSLPeerName = m_ssl_peer;
+	app->initFipsRequired = m_fips_required;
 
 	// remember the local address that was used
 	app->initLocalAddress = m_local_address;
@@ -11694,7 +11717,7 @@ bool DataArea::performHealthCheck()
 			}
 		}
 
-		appendError("Connection lost \xE2\x80\x94 detected by health monitor");
+		appendError("Connection lost - detected by health monitor");
 		updateMsgText();
 		return false;
 	}

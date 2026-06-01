@@ -45,6 +45,8 @@ CConnUser::CConnUser(CWnd* pParent /*=NULL*/)
 	m_security_exit = _T("");
 	m_security_data = _T("");
 	m_local_address = _T("");
+	m_ssl_peer = _T("");
+	m_fips_required = FALSE;
 	m_hAccel = NULL;
 	//}}AFX_DATA_INIT
 }
@@ -72,6 +74,9 @@ void CConnUser::DoDataExchange(CDataExchange* pDX)
 	DDV_MaxChars(pDX, m_security_data, 32);
 	DDX_Text(pDX, IDC_CONN_LOCAL_ADDRESS, m_local_address);
 	DDV_MaxChars(pDX, m_local_address, 48);
+	DDX_Text(pDX, IDC_CONN_SSL_PEER, m_ssl_peer);
+	DDV_MaxChars(pDX, m_ssl_peer, 1024);
+	DDX_Check(pDX, IDC_CONN_FIPS_REQUIRED, m_fips_required);
 	//}}AFX_DATA_MAP
 }
 
@@ -143,9 +148,11 @@ void CConnUser::OnConnReset()
 	m_security_exit.Empty();
 	m_security_data.Empty();
 	m_local_address.Empty();
+	m_ssl_peer.Empty();
+	m_fips_required = FALSE;
 
 	// Update the controls
-	UpdateData (FALSE);	
+	UpdateData (FALSE);
 }
 
 BOOL CConnUser::OnInitDialog() 
@@ -231,40 +238,43 @@ void CConnUser::OnDropdownConnSslCipher()
 	// MQ V9.2 extended for TLS13
 	((CComboBox *)GetDlgItem(IDC_CONN_SSL_CIPHER))->ResetContent();
 
-	// insert items into the drop down list - they go in the order listed here, not alphabetic
+	// Items appear in the dropdown in the order added (CBS_DROPDOWN, not sorted).
+	// Strongest / most-modern options first; legacy TLS_RSA_* variants (no forward
+	// secrecy) intentionally last so users gravitate to safer choices.
 
-	// Empty string to select no TLS
+	// Empty string = no TLS
 	dlgItemAddString(IDC_CONN_SSL_CIPHER, " ");
 
-	// Negotiated
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ANY_TLS12_OR_HIGHER");
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ANY_TLS12");
+	// Negotiated — let MQ pick the strongest mutually-supported cipher
 	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ANY_TLS13_OR_HIGHER");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ANY_TLS12_OR_HIGHER");
 	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ANY_TLS13");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ANY_TLS12");
 	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ANY");
 
-	// TLS 1.3
+	// TLS 1.3 — AEAD only, forward secrecy by design
 	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_AES_256_GCM_SHA384");
 	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_AES_128_GCM_SHA256");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_CHACHA20_POLY1305_SHA256");
 	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_AES_128_CCM_SHA256");
 	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_AES_128_CCM_8_SHA256");
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_CHACHA20_POLY1305_SHA256");
 
-	// TLS 1.2
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_RSA_WITH_AES_128_CBC_SHA256");
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_RSA_WITH_AES_256_CBC_SHA256");
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_RSA_WITH_AES_128_GCM_SHA256");
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_RSA_WITH_AES_256_GCM_SHA384");
-
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_ECDSA_AES_128_CBC_SHA256");
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_ECDSA_AES_256_CBC_SHA384");
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_RSA_AES_128_CBC_SHA256");
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_RSA_AES_256_CBC_SHA384");
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_ECDSA_AES_128_GCM_SHA256");
+	// TLS 1.2 with forward secrecy (ECDHE key exchange)
 	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_ECDSA_AES_256_GCM_SHA384");
-	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_RSA_AES_128_GCM_SHA256");
 	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_RSA_AES_256_GCM_SHA384");
-	
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_ECDSA_AES_128_GCM_SHA256");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_RSA_AES_128_GCM_SHA256");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_ECDSA_AES_256_CBC_SHA384");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_RSA_AES_256_CBC_SHA384");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_ECDSA_AES_128_CBC_SHA256");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "ECDHE_RSA_AES_128_CBC_SHA256");
+
+	// TLS 1.2 legacy (RSA key exchange — no forward secrecy, keep for
+	// compatibility with older queue managers)
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_RSA_WITH_AES_256_GCM_SHA384");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_RSA_WITH_AES_128_GCM_SHA256");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_RSA_WITH_AES_256_CBC_SHA256");
+	dlgItemAddString(IDC_CONN_SSL_CIPHER, "TLS_RSA_WITH_AES_128_CBC_SHA256");
 }
 
 
