@@ -3497,8 +3497,12 @@ void CRfhutilView::OnTimer(UINT_PTR nIDEvent)
 					m_conn_settings.UpdatePageData();
 				}
 
-				// Refresh General page if connection was lost
-				if (!pDoc->connected && PAGE_MAIN == currentSelection)
+				// Refresh General page after every health check tick when it's
+				// the active tab. The probe (or its reconnection side effect)
+				// may have appended to m_msg_text — both the disconnect and the
+				// recovery messages need to surface without waiting for the
+				// next user action.
+				if (PAGE_MAIN == currentSelection)
 				{
 					m_general.UpdatePageData();
 				}
