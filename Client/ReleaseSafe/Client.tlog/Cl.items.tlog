@@ -20,6 +20,7 @@ D:\GIT\mq-rfhutil\RFHUtil\MainFrm.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\MainF
 D:\GIT\mq-rfhutil\RFHUtil\MoveQ.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\MoveQ.obj
 D:\GIT\mq-rfhutil\RFHUtil\MQMDPAGE.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\MQMDPAGE.obj
 D:\GIT\mq-rfhutil\RFHUtil\mqerror.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\mqerror.obj
+D:\GIT\mq-rfhutil\RFHUtil\MQConnection.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\MQConnection.obj
 D:\GIT\mq-rfhutil\RFHUtil\mqsubs.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\mqsubs.obj
 D:\GIT\mq-rfhutil\RFHUtil\MSGDATA.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\MSGDATA.obj
 D:\GIT\mq-rfhutil\RFHUtil\MyComboBox.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\MyComboBox.obj

@@ -91,6 +91,9 @@
     <ClInclude Include="mqerror.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MQConnection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="mqsubs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -220,6 +223,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mqerror.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MQConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mqsubs.cpp">

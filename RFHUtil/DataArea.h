@@ -29,6 +29,7 @@ Jim MacNair - Initial Contribution
 #include "Names.h"
 #include "cmqc.h"
 #include "cmqcfc.h"
+#include "MQConnection.h"
 
 // Defined constants
 #define MAX_RFH_LENGTH		16 * 1024
@@ -665,7 +666,12 @@ public:
 						 const int indent,
 						 const int checkData);
 	void setErrorMsg(MQLONG cc, MQLONG rc, const char * operation);
-	bool				connected;
+	// P4.1 PR A: `connected` is now a reference into m_connection.m_connected
+	// (initialized in DataArea's constructor). Behavior is identical — call
+	// sites that read/write `connected` go through the reference to the
+	// underlying storage in MQConnection. This stays a reference for PRs A-C;
+	// PR D removes it and migrates call sites to `m_connection.isActive()`.
+	bool&				connected;
 	MQLONG				characterSet;
 	
 	// P0.2: Automatic reconnection methods
@@ -784,7 +790,12 @@ private:
 	TCHAR szPrinterName[104];
 	char currentFilter[MQ_SELECTOR_LENGTH];
 	char QueueManagerRealName[MQ_Q_MGR_NAME_LENGTH + 8];
-	MQHCONN		qm;
+	// P4.1 PR A: passive holder for the queue-manager connection. PRs B-D
+	// progressively move settings, lifecycle methods, and call sites onto it.
+	MQConnection m_connection;
+	// Reference alias — points to m_connection.m_qm. Same zero-call-site-impact
+	// trick as `connected` above; removed in PR D.
+	MQHCONN&	qm;
 	MQHOBJ		q;
 	MQHOBJ		hReplyQ;				// handle to reply queue for PCF messages
 	MQHOBJ		hAdminQ;				// handle to put PCF messages to Admin queue
