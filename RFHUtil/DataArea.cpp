@@ -131,7 +131,12 @@ typedef struct {
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 DataArea::DataArea()
-
+	// P4.1 PR A: m_connection owns the underlying MQHCONN handle and
+	// `connected` flag. The references below alias into it so all existing
+	// code that reads/writes `qm` and `connected` keeps working unchanged.
+	: m_connection()
+	, qm(m_connection.m_qm)
+	, connected(m_connection.m_connected)
 {
 	// initialize traceEnabled to false
 	// this will be changed to true during the initinstance method in the application class
@@ -139,6 +144,9 @@ DataArea::DataArea()
 	traceEnabled = FALSE;
 
 	// initialize the q and qm pointers
+	// (qm and connected are aliases to m_connection's storage; the assignments
+	// below write through the references — kept for clarity, redundant with
+	// MQConnection's own constructor.)
 	q = MQHO_NONE;
 	qm = MQHO_NONE;
 	hReplyQ = MQHO_NONE;

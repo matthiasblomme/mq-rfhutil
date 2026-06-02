@@ -232,6 +232,7 @@
     <ClInclude Include="MoveQ.h" />
     <ClInclude Include="MQMDPAGE.h" />
     <ClInclude Include="mqerror.h" />
+    <ClInclude Include="MQConnection.h" />
     <ClInclude Include="mqsubs.h" />
     <ClInclude Include="MSGDATA.h" />
     <ClInclude Include="MyComboBox.h" />
@@ -279,6 +280,7 @@
     <ClCompile Include="MoveQ.cpp" />
     <ClCompile Include="MQMDPAGE.cpp" />
     <ClCompile Include="mqerror.cpp" />
+    <ClCompile Include="MQConnection.cpp" />
     <ClCompile Include="mqsubs.cpp" />
     <ClCompile Include="MSGDATA.cpp" />
     <ClCompile Include="MyComboBox.cpp" />
