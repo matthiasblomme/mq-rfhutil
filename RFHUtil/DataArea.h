@@ -419,9 +419,9 @@ public:
 	CString m_reply_queue;
 	CString m_reply_qm;
 	CString	currentQ;
-	CString	currentQM;
+	CString& currentQM;       // alias → m_connection.current.qm_name (PR C)
 	CString	currentRemoteQM;
-	CString	currentUserid;
+	CString& currentUserid;   // alias → m_connection.current.userid (PR C)
 	CString m_ps_broker_qm;
 	CString m_filter;
 	CString m_prop_delim;
@@ -497,15 +497,15 @@ public:
 	int&  m_reconnect_backoff_multiplier;// Backoff multiplier (1 = no backoff, 2 = double)
 	int&  m_reconnect_max_interval;      // Maximum interval between attempts (seconds)
 	
-	// P0.2: Reconnection state tracking
-	int m_reconnect_attempt_count;      // Current reconnection attempt number
-	DWORD m_last_reconnect_time;        // Timestamp of last reconnection attempt
-	BOOL m_reconnecting;                // Flag indicating reconnection in progress
-	BOOL m_connection_was_lost;         // Set by connectionLostCleanup so the next successful
-	                                    // connect through checkConnection can log "Reconnected"
-	CString m_last_qm_name;             // Last connected QM name for reconnection
-	CString m_last_channel_name;        // Last used channel name
-	CString m_last_conn_name;           // Last used connection name
+	// P0.2: Reconnection state tracking — aliases into m_connection.reconnect (PR C).
+	int&     m_reconnect_attempt_count;  // Current reconnection attempt number
+	DWORD&   m_last_reconnect_time;      // Timestamp of last reconnection attempt
+	BOOL&    m_reconnecting;             // Flag indicating reconnection in progress
+	BOOL&    m_connection_was_lost;      // Set by connectionLostCleanup so the next successful
+	                                     // connect through checkConnection can log "Reconnected"
+	CString& m_last_qm_name;             // Last connected QM name for reconnection
+	CString& m_last_channel_name;        // Last used channel name
+	CString& m_last_conn_name;           // Last used connection name
 	
 	// P0.2: Browse operation state for seamless reconnection
 	CString m_browse_queue_name;        // Queue name for active browse operation
@@ -516,23 +516,23 @@ public:
 	BOOL& m_health_monitor_enabled;      // Enable/disable health monitoring
 	int&  m_health_check_interval;       // Check interval in seconds (default 30)
 
-	// P2.1: Connection Health Monitor — runtime state
-	BOOL m_health_check_active;          // Is the monitor currently running
-	MQHOBJ m_hHealthCheckObj;            // Cached QM object handle for MQINQ probes
-	DWORD m_connection_start_time;       // GetTickCount() when connection established
-	DWORD m_last_health_check_time;      // GetTickCount() of last successful check
-	int m_health_check_count;            // Total checks since connect
-	int m_health_check_failures;         // Failed checks since connect
-	int m_total_reconnections;           // Total reconnections since app start
-	int m_health_status;                 // 0=disconnected, 1=healthy, 2=degraded, 3=reconnecting
+	// P2.1: Connection Health Monitor — runtime state (aliases into m_connection.health, PR C).
+	BOOL&   m_health_check_active;       // Is the monitor currently running
+	MQHOBJ& m_hHealthCheckObj;           // Cached QM object handle for MQINQ probes
+	DWORD&  m_connection_start_time;     // GetTickCount() when connection established
+	DWORD&  m_last_health_check_time;    // GetTickCount() of last successful check
+	int&    m_health_check_count;        // Total checks since connect
+	int&    m_health_check_failures;     // Failed checks since connect
+	int&    m_total_reconnections;       // Total reconnections since app start
+	int&    m_health_status;             // 0=disconnected, 1=healthy, 2=degraded, 3=reconnecting
 
 	// P2.1: Operation guard — prevents health check during user MQ operations
 	BOOL m_mq_operation_active;
 
 	MQLONG			m_q_depth;			// depth of the last queue that was accessed
-	MQLONG			level;				// queue manager level
-	MQLONG			platform;			// queue manager platform type
-	MQLONG			MQCcsid;			// ccsid of queue manager
+	MQLONG&			level;				// alias → m_connection.current.level (PR C)
+	MQLONG&			platform;			// alias → m_connection.current.platform (PR C)
+	MQLONG&			MQCcsid;			// alias → m_connection.current.ccsid (PR C)
 	unsigned char * m_data_ascii;
 	unsigned char * m_data_hex;
 	unsigned char * m_data_both;
