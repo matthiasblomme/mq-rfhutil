@@ -131,12 +131,44 @@ typedef struct {
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 DataArea::DataArea()
-	// P4.1 PR A: m_connection owns the underlying MQHCONN handle and
-	// `connected` flag. The references below alias into it so all existing
-	// code that reads/writes `qm` and `connected` keeps working unchanged.
+	// P4.1 PR A + PR B: m_connection owns the MQHCONN handle, the connected
+	// flag, and all connection settings sub-structs (TLS, credentials,
+	// heartbeat/keepalive, reconnect, health monitor). The references below
+	// alias into it so all existing code in DataArea / General / View /
+	// ConnSettings keeps reading/writing the old `m_*` names while the real
+	// storage lives in m_connection. PR D removes these aliases and migrates
+	// call sites onto `m_connection.X.Y` directly.
 	: m_connection()
 	, qm(m_connection.m_qm)
 	, connected(m_connection.m_connected)
+	// TLS settings (PR B → m_connection.tls)
+	, m_use_ssl(m_connection.tls.use_ssl)
+	, m_ssl_validate(m_connection.tls.validate_client)
+	, m_ssl_cipher(m_connection.tls.cipher)
+	, m_ssl_keyr(m_connection.tls.keyr)
+	, m_ssl_peer(m_connection.tls.peer)
+	, m_fips_required(m_connection.tls.fips_required)
+	, m_ssl_reset_count(m_connection.tls.reset_count)
+	// Credentials (PR B → m_connection.credentials)
+	, m_conn_userid(m_connection.credentials.userid)
+	, m_conn_password(m_connection.credentials.password)
+	, m_security_exit(m_connection.credentials.security_exit)
+	, m_security_data(m_connection.credentials.security_data)
+	, m_local_address(m_connection.credentials.local_address)
+	// HeartBeat / KeepAlive (PR B → m_connection.heartbeat)
+	, m_heartbeat_enabled(m_connection.heartbeat.heartbeat_enabled)
+	, m_heartbeat_interval(m_connection.heartbeat.heartbeat_interval)
+	, m_keepalive_enabled(m_connection.heartbeat.keepalive_enabled)
+	, m_keepalive_interval(m_connection.heartbeat.keepalive_interval)
+	// Auto-reconnect settings (PR B → m_connection.reconnect)
+	, m_auto_reconnect(m_connection.reconnect.auto_reconnect)
+	, m_reconnect_max_attempts(m_connection.reconnect.max_attempts)
+	, m_reconnect_interval(m_connection.reconnect.interval)
+	, m_reconnect_backoff_multiplier(m_connection.reconnect.backoff_multiplier)
+	, m_reconnect_max_interval(m_connection.reconnect.max_interval)
+	// Health monitor settings (PR B → m_connection.health)
+	, m_health_monitor_enabled(m_connection.health.enabled)
+	, m_health_check_interval(m_connection.health.check_interval)
 {
 	// initialize traceEnabled to false
 	// this will be changed to true during the initinstance method in the application class

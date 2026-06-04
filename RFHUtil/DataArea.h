@@ -395,15 +395,20 @@ public:
 
 	CString m_error_msg;
 	CString m_copybook_file_name;
-	CString	m_security_exit;
-	CString	m_security_data;
-	CString m_ssl_keyr;
-	CString m_ssl_cipher;
-	CString m_ssl_peer;
-	BOOL    m_fips_required;
-	CString m_conn_password;
-	CString m_conn_userid;
-	CString m_local_address;
+	// P4.1 PR B: references into m_connection's settings sub-structs.
+	// See MQConnection.h for the typed sub-struct layout. These aliases
+	// keep existing read/write code in DataArea.cpp / General.cpp /
+	// rfhutilView.cpp / ConnSettings.cpp compiling unchanged; the
+	// underlying storage now lives in m_connection. PR D removes them.
+	CString& m_security_exit;
+	CString& m_security_data;
+	CString& m_ssl_keyr;
+	CString& m_ssl_cipher;
+	CString& m_ssl_peer;
+	BOOL&    m_fips_required;
+	CString& m_conn_password;
+	CString& m_conn_userid;
+	CString& m_local_address;
 	CString m_msg_text;
 	CString m_queue_type;
 	CString m_remote_QM;
@@ -424,8 +429,8 @@ public:
 	BOOL pubsubSupported;
 	BOOL propertiesSupported;
 	BOOL m_ps_remove;
-	BOOL m_ssl_validate;
-	BOOL m_use_ssl;
+	BOOL& m_ssl_validate;     // alias → m_connection.tls.validate_client
+	BOOL& m_use_ssl;          // alias → m_connection.tls.use_ssl
 	BOOL traceEnabled;
 	BOOL m_alt_userid;
 	BOOL m_complete_msg;
@@ -462,7 +467,7 @@ public:
 	int m_report_cod;					// report options - Confirm on Arrival
 	int m_report_except;				// report options - Exception when message processed
 	int m_report_expire;				// report options - Message expired
-	int m_ssl_reset_count;				// number of bytes transferred before SSL key is reset
+	int& m_ssl_reset_count;				// alias → m_connection.tls.reset_count (number of bytes before SSL key is reset)
 	int m_char_format;					// format of data in buffer (ASCII, EBCDIC, Chinese/Korean/Japanese)
 	int m_pd_numeric_format;			// encoding of decimal data
 	int m_float_numeric_format;			// encoding of floating point data
@@ -479,18 +484,18 @@ public:
 	int m_close_option;
 	int m_file_codepage;				// code page of data within a file
 	
-	// P0.1: HeartBeat and KeepAlive settings
-	BOOL m_heartbeat_enabled;           // Enable/disable HeartBeat
-	int m_heartbeat_interval;           // HeartBeat interval in seconds (0 = use QM default)
-	BOOL m_keepalive_enabled;           // Enable/disable KeepAlive
-	int m_keepalive_interval;           // KeepAlive interval (MQKAI_AUTO or seconds)
+	// P0.1: HeartBeat and KeepAlive settings — aliases into m_connection.heartbeat (PR B).
+	BOOL& m_heartbeat_enabled;           // Enable/disable HeartBeat
+	int&  m_heartbeat_interval;          // HeartBeat interval in seconds (0 = use QM default)
+	BOOL& m_keepalive_enabled;           // Enable/disable KeepAlive
+	int&  m_keepalive_interval;          // KeepAlive interval (MQKAI_AUTO or seconds)
 	
-	// P0.2: Automatic reconnection settings
-	BOOL m_auto_reconnect;              // Enable/disable auto-reconnect
-	int m_reconnect_max_attempts;       // Maximum reconnection attempts (0 = infinite)
-	int m_reconnect_interval;           // Seconds between reconnection attempts
-	int m_reconnect_backoff_multiplier; // Backoff multiplier (1 = no backoff, 2 = double)
-	int m_reconnect_max_interval;       // Maximum interval between attempts (seconds)
+	// P0.2: Automatic reconnection settings — aliases into m_connection.reconnect (PR B).
+	BOOL& m_auto_reconnect;              // Enable/disable auto-reconnect
+	int&  m_reconnect_max_attempts;      // Maximum reconnection attempts (0 = infinite)
+	int&  m_reconnect_interval;          // Seconds between reconnection attempts
+	int&  m_reconnect_backoff_multiplier;// Backoff multiplier (1 = no backoff, 2 = double)
+	int&  m_reconnect_max_interval;      // Maximum interval between attempts (seconds)
 	
 	// P0.2: Reconnection state tracking
 	int m_reconnect_attempt_count;      // Current reconnection attempt number
@@ -507,9 +512,9 @@ public:
 	BOOL m_browse_active;               // Flag indicating browse operation in progress
 	BOOL m_browse_restart_pending;      // Flag indicating browse needs restart after reconnection
 
-	// P2.1: Connection Health Monitor — settings
-	BOOL m_health_monitor_enabled;       // Enable/disable health monitoring
-	int m_health_check_interval;         // Check interval in seconds (default 30)
+	// P2.1: Connection Health Monitor — settings (aliases into m_connection.health, PR B).
+	BOOL& m_health_monitor_enabled;      // Enable/disable health monitoring
+	int&  m_health_check_interval;       // Check interval in seconds (default 30)
 
 	// P2.1: Connection Health Monitor — runtime state
 	BOOL m_health_check_active;          // Is the monitor currently running
