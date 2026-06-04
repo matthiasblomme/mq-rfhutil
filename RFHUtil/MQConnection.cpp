@@ -8,6 +8,7 @@
 MQConnection::MQConnection()
     : m_qm(MQHO_NONE)
     , m_connected(false)
+    , m_api(NULL)  // PR D: set by DataArea ctor body
 {
     // TLS settings — off / empty by default.
     tls.use_ssl         = FALSE;

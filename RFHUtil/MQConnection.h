@@ -2,6 +2,8 @@
 
 #include "cmqc.h"
 
+struct MqApi;  // see MqApi.h — forward-declared to avoid circular include
+
 // P4.1 — passive holder for the queue-manager connection.
 //
 // PR B added the settings sub-structs (TLS, credentials, heartbeat,
@@ -34,6 +36,12 @@ public:
     // The handle and connected flag (PR A).
     MQHCONN m_qm;
     bool    m_connected;
+
+    // PR D: pointer to the dynamically-loaded MQ API. Set by DataArea's
+    // constructor (m_connection.m_api = &m_api). Stays null in any
+    // tests/contexts that construct a bare MQConnection without an
+    // api; PR E's method-body migration adds null-guards if needed.
+    MqApi* m_api;
 
     // TLS configuration (P3.9).
     struct TlsSettings {

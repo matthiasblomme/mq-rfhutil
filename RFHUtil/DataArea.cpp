@@ -192,11 +192,38 @@ DataArea::DataArea()
 	, level(m_connection.current.level)
 	, platform(m_connection.current.platform)
 	, MQCcsid(m_connection.current.ccsid)
+	// MQ dynamic entry points (PR D → m_api). The individual XMQ* aliases
+	// keep existing call sites in DataArea.cpp compiling unchanged; PR E
+	// migrates them onto m_api.XMQConnX(...) directly.
+	, m_api()
+	, mqmdll(m_api.mqmdll)
+	, XMQConnX(m_api.XMQConnX)
+	, XMQDisc(m_api.XMQDisc)
+	, XMQBegin(m_api.XMQBegin)
+	, XMQCmit(m_api.XMQCmit)
+	, XMQBack(m_api.XMQBack)
+	, XMQOpen(m_api.XMQOpen)
+	, XMQClose(m_api.XMQClose)
+	, XMQGet(m_api.XMQGet)
+	, XMQPut(m_api.XMQPut)
+	, XMQInq(m_api.XMQInq)
+	, XMQSub(m_api.XMQSub)
+	, XMQSubRq(m_api.XMQSubRq)
+	, XMQCrtMh(m_api.XMQCrtMh)
+	, XMQDltMh(m_api.XMQDltMh)
+	, XMQInqMp(m_api.XMQInqMp)
+	, XMQSetMp(m_api.XMQSetMp)
 {
 	// initialize traceEnabled to false
 	// this will be changed to true during the initinstance method in the application class
 	// if the trace environment variable is found and the trace file is opened.
 	traceEnabled = FALSE;
+
+	// PR D: hand the connection a pointer to the dynamic MQ API so its
+	// future methods (PR E) can call XMQConnX/XMQDisc/etc. without going
+	// back through DataArea. The MqApi struct itself is owned by DataArea
+	// (m_api); loadMQdll() populates its function pointers at startup.
+	m_connection.m_api = &m_api;
 
 	// initialize the q and qm pointers
 	// (qm and connected are aliases to m_connection's storage; the assignments

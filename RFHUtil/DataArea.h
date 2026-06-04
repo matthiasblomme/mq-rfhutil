@@ -29,6 +29,7 @@ Jim MacNair - Initial Contribution
 #include "Names.h"
 #include "cmqc.h"
 #include "cmqcfc.h"
+#include "MqApi.h"
 #include "MQConnection.h"
 
 // Defined constants
@@ -887,225 +888,34 @@ private:
 	void convertStrListHeader(MQCFSL *pPCFString, MQLONG ccsid, MQLONG encoding);
 	void convertByteStringHeader(MQCFBS * pPCFByteString, int ccsid, int encoding);
 
-	// MQI replacement functions
+	// MQI dynamic-entrypoint typedefs and the MqApi struct that holds them
+	// are declared in MqApi.h (included above). The members below alias into
+	// m_api for backward compatibility — see comment block on m_api.
 
-//////////////////////////////////////////////////////////////////
-//  MQCONNX Function -- Connect to Queue Manager
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQCONNX) (
-	PMQCHAR		pQMgrName,		// Name of queue manager
-	PMQCNO		pConnectOpts,	// Options that control the action of MQCONNX
-	PMQHCONN	pHconn,			// Connection handle
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQDISC Function -- Disconnect Queue Manager
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQDISC) (
-   PMQHCONN		pHconn,		// Connection handle
-	PMQLONG		pCompCode,	// Completion code
-	PMQLONG		pReason);	// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQBACK Function -- Back Out Changes
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQBACK) (
-	MQHCONN		Hconn,		// Connection handle
-	PMQLONG		pCompCode,	// Completion code
-	PMQLONG		pReason);	// Reason code qualifying CompCode
-
-
-//////////////////////////////////////////////////////////////////
-//  MQBEGIN Function -- Begin Unit of Work
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQBEGIN) (
-	MQHCONN		Hconn,			// Connection handle
-	PMQVOID		pBeginOptions,	// Options that control the action of MQBEGIN
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQCMIT Function -- Commit Changes
-//////////////////////////////////////////////////////////////////
-
-
-typedef void (MQENTRY* XMQCMIT) (
-	MQHCONN		Hconn,		// Connection handle
-	PMQLONG		pCompCode,	// Completion code
-	PMQLONG		pReason);	// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQOPEN Function -- Open Object
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQOPEN) (
-	MQHCONN		Hconn,			// Connection handle
-	PMQVOID		pObjDesc,		// Object descriptor
-	MQLONG		Options,		// Options that control the action of MQOPEN
-	PMQHOBJ		pHobj,			// Object handle
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQCLOSE Function -- Close Object
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQCLOSE) (
-	MQHCONN		Hconn,		// Connection handle
-	PMQHOBJ		pHobj,		// Object handle
-	MQLONG		Options,	// Options that control the action of MQCLOSE
-	PMQLONG		pCompCode,	// Completion code
-	PMQLONG		pReason);	// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQGET Function -- Get Message
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQGET) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHOBJ		Hobj,			// Object handle
-	PMQVOID		pMsgDesc,		// Message descriptor
-	PMQVOID		pGetMsgOpts,	// Options that control the action of MQGET
-	MQLONG		BufferLength,	// Length in bytes of the Buffer area
-	PMQVOID		pBuffer,		// Area to contain the message data
-	PMQLONG		pDataLength,	// Length of the message
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-
-//////////////////////////////////////////////////////////////////
-//  MQPUT Function -- Put Message
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQPUT) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHOBJ		Hobj,			// Object handle
-	PMQVOID		pMsgDesc,		// Message descriptor
-	PMQVOID		pPutMsgOpts,	// Options that control the action of MQPUT
-	MQLONG		BufferLength,	// Length of the message in Buffer
-	PMQVOID		pBuffer,		// Message data
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQINQ Function -- Inquire Object Attributes
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQINQ) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHOBJ		Hobj,			// Object handle
-	MQLONG		SelectorCount,	// Count of selectors
-	PMQLONG		pSelectors,		// Array of attribute selectors
-	MQLONG		IntAttrCount,	// Count of integer attributes
-	PMQLONG		pIntAttrs,		// Array of integer attributes
-	MQLONG		CharAttrLength,	// Length of character attributes buffer
-	PMQCHAR		pCharAttrs,		// Character attributes
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQSUB Function -- Subscribe to topic
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQSUB) (
-	MQHCONN		Hconn,			// Connection handle
-	PMQVOID		pSubDesc,		// Subscription descriptor
-	PMQHOBJ		pHobj,			// Object handle for queue
-	PMQHOBJ		pHsub,			// Subscription object handle
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQSUBRQ Function -- Subscription Request
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQSUBRQ) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHOBJ		Hsub,			// Subscription handle
-	MQLONG		Action,			// Action requested on the subscription
-	PMQVOID		pSubRqOpts,		// Subscription Request Options
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQCRTMH Function -- Create Message Handle
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQCRTMH) (
-	MQHCONN		Hconn,			// Connection handle
-	PMQVOID		pCrtMsgHOpts,	// Options that control the action of MQCRTMH
-	PMQHMSG		pHmsg,			// Message handle
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQDLTMH Function -- Delete Message Handle
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQDLTMH) (
-	MQHCONN		Hconn,			// Connection handle
-	PMQHMSG		pHmsg,			// Message handle
-	PMQVOID		pDltMsgHOpts,	// Options that control the action of MQDLTMH
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQINQMP Function -- Inquire Message Property
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQINQMP) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHMSG		Hmsg,			// Message handle
-	PMQVOID		pInqPropOpts,	// Options that control the action of MQINQMP
-	PMQVOID		pName,			// Property name
-	PMQVOID		pPropDesc,		// Property descriptor
-	PMQLONG		pType,			// Property data type
-	MQLONG		ValueLength,	// Length in bytes of the Value area
-	PMQVOID		pValue,			// Property value
-	PMQLONG		pDataLength,	// Length of the property value
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQSETMP Function -- Set Message Property
-//////////////////////////////////////////////////////////////////
-
-
-typedef void (MQENTRY* XMQSETMP) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHMSG		Hmsg,			// Message handle
-	PMQVOID		pSetPropOpts,	// Options that control the action of MQSETMP
-	PMQVOID		pName,			// Property name
-	PMQVOID		pPropDesc,		// Property descriptor
-	MQLONG		Type,			// Property data type
-	MQLONG		ValueLength,	// Length of the Value area
-	PMQVOID		pValue,			// Property value
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-	// MQ entrypoints
-	HINSTANCE	mqmdll;
-	XMQCONNX	XMQConnX;
-	XMQDISC		XMQDisc;
-	XMQBEGIN	XMQBegin;
-	XMQCMIT		XMQCmit;
-	XMQBACK		XMQBack;
-	XMQOPEN		XMQOpen;
-	XMQCLOSE	XMQClose;
-	XMQGET		XMQGet;
-	XMQPUT		XMQPut;
-	XMQINQ		XMQInq;
-	XMQSUB		XMQSub;
-	XMQSUBRQ	XMQSubRq;
-	XMQCRTMH	XMQCrtMh;
-	XMQDLTMH	XMQDltMh;
-	XMQINQMP	XMQInqMp;
-	XMQSETMP	XMQSetMp;
+	// MQ entrypoints — PR D: the underlying pointers now live in m_api
+	// (an MqApi struct). The members below are reference aliases bound
+	// in DataArea's constructor so existing call sites in DataArea.cpp
+	// (XMQConnX(...), XMQOpen(...), ...) keep compiling unchanged.
+	// PR E migrates call sites onto m_api.XMQConnX(...) directly and
+	// retires these aliases.
+	MqApi       m_api;
+	HINSTANCE&  mqmdll;
+	XMQCONNX&   XMQConnX;
+	XMQDISC&    XMQDisc;
+	XMQBEGIN&   XMQBegin;
+	XMQCMIT&    XMQCmit;
+	XMQBACK&    XMQBack;
+	XMQOPEN&    XMQOpen;
+	XMQCLOSE&   XMQClose;
+	XMQGET&     XMQGet;
+	XMQPUT&     XMQPut;
+	XMQINQ&     XMQInq;
+	XMQSUB&     XMQSub;
+	XMQSUBRQ&   XMQSubRq;
+	XMQCRTMH&   XMQCrtMh;
+	XMQDLTMH&   XMQDltMh;
+	XMQINQMP&   XMQInqMp;
+	XMQSETMP&   XMQSetMp;
 };
 
 #endif // !defined(AFX_DATAAREA_H__6861C316_DF2F_4594_BB91_8743A5E7E765__INCLUDED_)

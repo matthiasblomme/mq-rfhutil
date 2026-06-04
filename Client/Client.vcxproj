@@ -327,6 +327,7 @@
     <ClInclude Include="..\RFHUtil\MoveQ.h" />
     <ClInclude Include="..\RFHUtil\MQMDPAGE.h" />
     <ClInclude Include="..\RFHUtil\mqerror.h" />
+    <ClInclude Include="..\RFHUtil\MqApi.h" />
     <ClInclude Include="..\RFHUtil\MQConnection.h" />
     <ClInclude Include="..\RFHUtil\mqsubs.h" />
     <ClInclude Include="..\RFHUtil\MSGDATA.h" />
