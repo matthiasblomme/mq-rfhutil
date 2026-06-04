@@ -232,6 +232,7 @@
     <ClInclude Include="MoveQ.h" />
     <ClInclude Include="MQMDPAGE.h" />
     <ClInclude Include="mqerror.h" />
+    <ClInclude Include="MqApi.h" />
     <ClInclude Include="MQConnection.h" />
     <ClInclude Include="mqsubs.h" />
     <ClInclude Include="MSGDATA.h" />

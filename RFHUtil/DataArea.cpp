@@ -169,11 +169,61 @@ DataArea::DataArea()
 	// Health monitor settings (PR B → m_connection.health)
 	, m_health_monitor_enabled(m_connection.health.enabled)
 	, m_health_check_interval(m_connection.health.check_interval)
+	// Reconnect runtime state (PR C → m_connection.reconnect)
+	, m_reconnect_attempt_count(m_connection.reconnect.attempt_count)
+	, m_last_reconnect_time(m_connection.reconnect.last_attempt_time)
+	, m_reconnecting(m_connection.reconnect.in_progress)
+	, m_connection_was_lost(m_connection.reconnect.connection_was_lost)
+	, m_last_qm_name(m_connection.reconnect.last_qm_name)
+	, m_last_channel_name(m_connection.reconnect.last_channel_name)
+	, m_last_conn_name(m_connection.reconnect.last_conn_name)
+	// Health monitor runtime state (PR C → m_connection.health)
+	, m_health_check_active(m_connection.health.check_active)
+	, m_hHealthCheckObj(m_connection.health.check_handle)
+	, m_connection_start_time(m_connection.health.connection_start_time)
+	, m_last_health_check_time(m_connection.health.last_check_time)
+	, m_health_check_count(m_connection.health.check_count)
+	, m_health_check_failures(m_connection.health.check_failures)
+	, m_total_reconnections(m_connection.health.total_reconnections)
+	, m_health_status(m_connection.health.status)
+	// Current connection identification (PR C → m_connection.current)
+	, currentQM(m_connection.current.qm_name)
+	, currentUserid(m_connection.current.userid)
+	, level(m_connection.current.level)
+	, platform(m_connection.current.platform)
+	, MQCcsid(m_connection.current.ccsid)
+	// MQ dynamic entry points (PR D → m_api). The individual XMQ* aliases
+	// keep existing call sites in DataArea.cpp compiling unchanged; PR E
+	// migrates them onto m_api.XMQConnX(...) directly.
+	, m_api()
+	, mqmdll(m_api.mqmdll)
+	, XMQConnX(m_api.XMQConnX)
+	, XMQDisc(m_api.XMQDisc)
+	, XMQBegin(m_api.XMQBegin)
+	, XMQCmit(m_api.XMQCmit)
+	, XMQBack(m_api.XMQBack)
+	, XMQOpen(m_api.XMQOpen)
+	, XMQClose(m_api.XMQClose)
+	, XMQGet(m_api.XMQGet)
+	, XMQPut(m_api.XMQPut)
+	, XMQInq(m_api.XMQInq)
+	, XMQSub(m_api.XMQSub)
+	, XMQSubRq(m_api.XMQSubRq)
+	, XMQCrtMh(m_api.XMQCrtMh)
+	, XMQDltMh(m_api.XMQDltMh)
+	, XMQInqMp(m_api.XMQInqMp)
+	, XMQSetMp(m_api.XMQSetMp)
 {
 	// initialize traceEnabled to false
 	// this will be changed to true during the initinstance method in the application class
 	// if the trace environment variable is found and the trace file is opened.
 	traceEnabled = FALSE;
+
+	// PR D: hand the connection a pointer to the dynamic MQ API so its
+	// future methods (PR E) can call XMQConnX/XMQDisc/etc. without going
+	// back through DataArea. The MqApi struct itself is owned by DataArea
+	// (m_api); loadMQdll() populates its function pointers at startup.
+	m_connection.m_api = &m_api;
 
 	// initialize the q and qm pointers
 	// (qm and connected are aliases to m_connection's storage; the assignments

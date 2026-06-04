@@ -29,6 +29,7 @@ Jim MacNair - Initial Contribution
 #include "Names.h"
 #include "cmqc.h"
 #include "cmqcfc.h"
+#include "MqApi.h"
 #include "MQConnection.h"
 
 // Defined constants
@@ -419,9 +420,9 @@ public:
 	CString m_reply_queue;
 	CString m_reply_qm;
 	CString	currentQ;
-	CString	currentQM;
+	CString& currentQM;       // alias → m_connection.current.qm_name (PR C)
 	CString	currentRemoteQM;
-	CString	currentUserid;
+	CString& currentUserid;   // alias → m_connection.current.userid (PR C)
 	CString m_ps_broker_qm;
 	CString m_filter;
 	CString m_prop_delim;
@@ -497,15 +498,15 @@ public:
 	int&  m_reconnect_backoff_multiplier;// Backoff multiplier (1 = no backoff, 2 = double)
 	int&  m_reconnect_max_interval;      // Maximum interval between attempts (seconds)
 	
-	// P0.2: Reconnection state tracking
-	int m_reconnect_attempt_count;      // Current reconnection attempt number
-	DWORD m_last_reconnect_time;        // Timestamp of last reconnection attempt
-	BOOL m_reconnecting;                // Flag indicating reconnection in progress
-	BOOL m_connection_was_lost;         // Set by connectionLostCleanup so the next successful
-	                                    // connect through checkConnection can log "Reconnected"
-	CString m_last_qm_name;             // Last connected QM name for reconnection
-	CString m_last_channel_name;        // Last used channel name
-	CString m_last_conn_name;           // Last used connection name
+	// P0.2: Reconnection state tracking — aliases into m_connection.reconnect (PR C).
+	int&     m_reconnect_attempt_count;  // Current reconnection attempt number
+	DWORD&   m_last_reconnect_time;      // Timestamp of last reconnection attempt
+	BOOL&    m_reconnecting;             // Flag indicating reconnection in progress
+	BOOL&    m_connection_was_lost;      // Set by connectionLostCleanup so the next successful
+	                                     // connect through checkConnection can log "Reconnected"
+	CString& m_last_qm_name;             // Last connected QM name for reconnection
+	CString& m_last_channel_name;        // Last used channel name
+	CString& m_last_conn_name;           // Last used connection name
 	
 	// P0.2: Browse operation state for seamless reconnection
 	CString m_browse_queue_name;        // Queue name for active browse operation
@@ -516,23 +517,23 @@ public:
 	BOOL& m_health_monitor_enabled;      // Enable/disable health monitoring
 	int&  m_health_check_interval;       // Check interval in seconds (default 30)
 
-	// P2.1: Connection Health Monitor — runtime state
-	BOOL m_health_check_active;          // Is the monitor currently running
-	MQHOBJ m_hHealthCheckObj;            // Cached QM object handle for MQINQ probes
-	DWORD m_connection_start_time;       // GetTickCount() when connection established
-	DWORD m_last_health_check_time;      // GetTickCount() of last successful check
-	int m_health_check_count;            // Total checks since connect
-	int m_health_check_failures;         // Failed checks since connect
-	int m_total_reconnections;           // Total reconnections since app start
-	int m_health_status;                 // 0=disconnected, 1=healthy, 2=degraded, 3=reconnecting
+	// P2.1: Connection Health Monitor — runtime state (aliases into m_connection.health, PR C).
+	BOOL&   m_health_check_active;       // Is the monitor currently running
+	MQHOBJ& m_hHealthCheckObj;           // Cached QM object handle for MQINQ probes
+	DWORD&  m_connection_start_time;     // GetTickCount() when connection established
+	DWORD&  m_last_health_check_time;    // GetTickCount() of last successful check
+	int&    m_health_check_count;        // Total checks since connect
+	int&    m_health_check_failures;     // Failed checks since connect
+	int&    m_total_reconnections;       // Total reconnections since app start
+	int&    m_health_status;             // 0=disconnected, 1=healthy, 2=degraded, 3=reconnecting
 
 	// P2.1: Operation guard — prevents health check during user MQ operations
 	BOOL m_mq_operation_active;
 
 	MQLONG			m_q_depth;			// depth of the last queue that was accessed
-	MQLONG			level;				// queue manager level
-	MQLONG			platform;			// queue manager platform type
-	MQLONG			MQCcsid;			// ccsid of queue manager
+	MQLONG&			level;				// alias → m_connection.current.level (PR C)
+	MQLONG&			platform;			// alias → m_connection.current.platform (PR C)
+	MQLONG&			MQCcsid;			// alias → m_connection.current.ccsid (PR C)
 	unsigned char * m_data_ascii;
 	unsigned char * m_data_hex;
 	unsigned char * m_data_both;
@@ -887,225 +888,34 @@ private:
 	void convertStrListHeader(MQCFSL *pPCFString, MQLONG ccsid, MQLONG encoding);
 	void convertByteStringHeader(MQCFBS * pPCFByteString, int ccsid, int encoding);
 
-	// MQI replacement functions
+	// MQI dynamic-entrypoint typedefs and the MqApi struct that holds them
+	// are declared in MqApi.h (included above). The members below alias into
+	// m_api for backward compatibility — see comment block on m_api.
 
-//////////////////////////////////////////////////////////////////
-//  MQCONNX Function -- Connect to Queue Manager
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQCONNX) (
-	PMQCHAR		pQMgrName,		// Name of queue manager
-	PMQCNO		pConnectOpts,	// Options that control the action of MQCONNX
-	PMQHCONN	pHconn,			// Connection handle
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQDISC Function -- Disconnect Queue Manager
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQDISC) (
-   PMQHCONN		pHconn,		// Connection handle
-	PMQLONG		pCompCode,	// Completion code
-	PMQLONG		pReason);	// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQBACK Function -- Back Out Changes
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQBACK) (
-	MQHCONN		Hconn,		// Connection handle
-	PMQLONG		pCompCode,	// Completion code
-	PMQLONG		pReason);	// Reason code qualifying CompCode
-
-
-//////////////////////////////////////////////////////////////////
-//  MQBEGIN Function -- Begin Unit of Work
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQBEGIN) (
-	MQHCONN		Hconn,			// Connection handle
-	PMQVOID		pBeginOptions,	// Options that control the action of MQBEGIN
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQCMIT Function -- Commit Changes
-//////////////////////////////////////////////////////////////////
-
-
-typedef void (MQENTRY* XMQCMIT) (
-	MQHCONN		Hconn,		// Connection handle
-	PMQLONG		pCompCode,	// Completion code
-	PMQLONG		pReason);	// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQOPEN Function -- Open Object
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQOPEN) (
-	MQHCONN		Hconn,			// Connection handle
-	PMQVOID		pObjDesc,		// Object descriptor
-	MQLONG		Options,		// Options that control the action of MQOPEN
-	PMQHOBJ		pHobj,			// Object handle
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQCLOSE Function -- Close Object
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQCLOSE) (
-	MQHCONN		Hconn,		// Connection handle
-	PMQHOBJ		pHobj,		// Object handle
-	MQLONG		Options,	// Options that control the action of MQCLOSE
-	PMQLONG		pCompCode,	// Completion code
-	PMQLONG		pReason);	// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQGET Function -- Get Message
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQGET) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHOBJ		Hobj,			// Object handle
-	PMQVOID		pMsgDesc,		// Message descriptor
-	PMQVOID		pGetMsgOpts,	// Options that control the action of MQGET
-	MQLONG		BufferLength,	// Length in bytes of the Buffer area
-	PMQVOID		pBuffer,		// Area to contain the message data
-	PMQLONG		pDataLength,	// Length of the message
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-
-//////////////////////////////////////////////////////////////////
-//  MQPUT Function -- Put Message
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQPUT) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHOBJ		Hobj,			// Object handle
-	PMQVOID		pMsgDesc,		// Message descriptor
-	PMQVOID		pPutMsgOpts,	// Options that control the action of MQPUT
-	MQLONG		BufferLength,	// Length of the message in Buffer
-	PMQVOID		pBuffer,		// Message data
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQINQ Function -- Inquire Object Attributes
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQINQ) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHOBJ		Hobj,			// Object handle
-	MQLONG		SelectorCount,	// Count of selectors
-	PMQLONG		pSelectors,		// Array of attribute selectors
-	MQLONG		IntAttrCount,	// Count of integer attributes
-	PMQLONG		pIntAttrs,		// Array of integer attributes
-	MQLONG		CharAttrLength,	// Length of character attributes buffer
-	PMQCHAR		pCharAttrs,		// Character attributes
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQSUB Function -- Subscribe to topic
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQSUB) (
-	MQHCONN		Hconn,			// Connection handle
-	PMQVOID		pSubDesc,		// Subscription descriptor
-	PMQHOBJ		pHobj,			// Object handle for queue
-	PMQHOBJ		pHsub,			// Subscription object handle
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQSUBRQ Function -- Subscription Request
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQSUBRQ) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHOBJ		Hsub,			// Subscription handle
-	MQLONG		Action,			// Action requested on the subscription
-	PMQVOID		pSubRqOpts,		// Subscription Request Options
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQCRTMH Function -- Create Message Handle
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQCRTMH) (
-	MQHCONN		Hconn,			// Connection handle
-	PMQVOID		pCrtMsgHOpts,	// Options that control the action of MQCRTMH
-	PMQHMSG		pHmsg,			// Message handle
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQDLTMH Function -- Delete Message Handle
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQDLTMH) (
-	MQHCONN		Hconn,			// Connection handle
-	PMQHMSG		pHmsg,			// Message handle
-	PMQVOID		pDltMsgHOpts,	// Options that control the action of MQDLTMH
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQINQMP Function -- Inquire Message Property
-//////////////////////////////////////////////////////////////////
-
-typedef void (MQENTRY* XMQINQMP) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHMSG		Hmsg,			// Message handle
-	PMQVOID		pInqPropOpts,	// Options that control the action of MQINQMP
-	PMQVOID		pName,			// Property name
-	PMQVOID		pPropDesc,		// Property descriptor
-	PMQLONG		pType,			// Property data type
-	MQLONG		ValueLength,	// Length in bytes of the Value area
-	PMQVOID		pValue,			// Property value
-	PMQLONG		pDataLength,	// Length of the property value
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-//////////////////////////////////////////////////////////////////
-//  MQSETMP Function -- Set Message Property
-//////////////////////////////////////////////////////////////////
-
-
-typedef void (MQENTRY* XMQSETMP) (
-	MQHCONN		Hconn,			// Connection handle
-	MQHMSG		Hmsg,			// Message handle
-	PMQVOID		pSetPropOpts,	// Options that control the action of MQSETMP
-	PMQVOID		pName,			// Property name
-	PMQVOID		pPropDesc,		// Property descriptor
-	MQLONG		Type,			// Property data type
-	MQLONG		ValueLength,	// Length of the Value area
-	PMQVOID		pValue,			// Property value
-	PMQLONG		pCompCode,		// Completion code
-	PMQLONG		pReason);		// Reason code qualifying CompCode
-
-	// MQ entrypoints
-	HINSTANCE	mqmdll;
-	XMQCONNX	XMQConnX;
-	XMQDISC		XMQDisc;
-	XMQBEGIN	XMQBegin;
-	XMQCMIT		XMQCmit;
-	XMQBACK		XMQBack;
-	XMQOPEN		XMQOpen;
-	XMQCLOSE	XMQClose;
-	XMQGET		XMQGet;
-	XMQPUT		XMQPut;
-	XMQINQ		XMQInq;
-	XMQSUB		XMQSub;
-	XMQSUBRQ	XMQSubRq;
-	XMQCRTMH	XMQCrtMh;
-	XMQDLTMH	XMQDltMh;
-	XMQINQMP	XMQInqMp;
-	XMQSETMP	XMQSetMp;
+	// MQ entrypoints — PR D: the underlying pointers now live in m_api
+	// (an MqApi struct). The members below are reference aliases bound
+	// in DataArea's constructor so existing call sites in DataArea.cpp
+	// (XMQConnX(...), XMQOpen(...), ...) keep compiling unchanged.
+	// PR E migrates call sites onto m_api.XMQConnX(...) directly and
+	// retires these aliases.
+	MqApi       m_api;
+	HINSTANCE&  mqmdll;
+	XMQCONNX&   XMQConnX;
+	XMQDISC&    XMQDisc;
+	XMQBEGIN&   XMQBegin;
+	XMQCMIT&    XMQCmit;
+	XMQBACK&    XMQBack;
+	XMQOPEN&    XMQOpen;
+	XMQCLOSE&   XMQClose;
+	XMQGET&     XMQGet;
+	XMQPUT&     XMQPut;
+	XMQINQ&     XMQInq;
+	XMQSUB&     XMQSub;
+	XMQSUBRQ&   XMQSubRq;
+	XMQCRTMH&   XMQCrtMh;
+	XMQDLTMH&   XMQDltMh;
+	XMQINQMP&   XMQInqMp;
+	XMQSETMP&   XMQSetMp;
 };
 
 #endif // !defined(AFX_DATAAREA_H__6861C316_DF2F_4594_BB91_8743A5E7E765__INCLUDED_)

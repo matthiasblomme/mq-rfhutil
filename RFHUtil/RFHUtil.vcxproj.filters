@@ -91,6 +91,9 @@
     <ClInclude Include="mqerror.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MqApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="MQConnection.h">
       <Filter>Header Files</Filter>
     </ClInclude>

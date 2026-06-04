@@ -89,6 +89,9 @@
     <ClInclude Include="..\RFHUtil\mqerror.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\RFHUtil\MqApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\RFHUtil\MQConnection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
