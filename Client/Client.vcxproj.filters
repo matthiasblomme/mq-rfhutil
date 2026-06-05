@@ -86,6 +86,9 @@
     <ClInclude Include="..\RFHUtil\MQMDPAGE.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\RFHUtil\FileHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\RFHUtil\mqerror.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -226,6 +229,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\RFHUtil\MQMDPAGE.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\RFHUtil\FileHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\RFHUtil\mqerror.cpp">

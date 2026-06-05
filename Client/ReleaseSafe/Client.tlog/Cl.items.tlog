@@ -19,6 +19,7 @@ D:\GIT\mq-rfhutil\RFHUtil\LoadQ.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\LoadQ.o
 D:\GIT\mq-rfhutil\RFHUtil\MainFrm.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\MainFrm.obj
 D:\GIT\mq-rfhutil\RFHUtil\MoveQ.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\MoveQ.obj
 D:\GIT\mq-rfhutil\RFHUtil\MQMDPAGE.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\MQMDPAGE.obj
+D:\GIT\mq-rfhutil\RFHUtil\FileHandler.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\FileHandler.obj
 D:\GIT\mq-rfhutil\RFHUtil\mqerror.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\mqerror.obj
 D:\GIT\mq-rfhutil\RFHUtil\MQConnection.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\MQConnection.obj
 D:\GIT\mq-rfhutil\RFHUtil\mqsubs.cpp;D:\GIT\mq-rfhutil\Client\ReleaseSafe\mqsubs.obj

@@ -326,6 +326,7 @@
     <ClInclude Include="..\RFHUtil\MainFrm.h" />
     <ClInclude Include="..\RFHUtil\MoveQ.h" />
     <ClInclude Include="..\RFHUtil\MQMDPAGE.h" />
+    <ClInclude Include="..\RFHUtil\FileHandler.h" />
     <ClInclude Include="..\RFHUtil\mqerror.h" />
     <ClInclude Include="..\RFHUtil\MqApi.h" />
     <ClInclude Include="..\RFHUtil\MQConnection.h" />
@@ -378,6 +379,7 @@
     <ClCompile Include="..\RFHUtil\MainFrm.cpp" />
     <ClCompile Include="..\RFHUtil\MoveQ.cpp" />
     <ClCompile Include="..\RFHUtil\MQMDPAGE.cpp" />
+    <ClCompile Include="..\RFHUtil\FileHandler.cpp" />
     <ClCompile Include="..\RFHUtil\mqerror.cpp" />
     <ClCompile Include="..\RFHUtil\MQConnection.cpp" />
     <ClCompile Include="..\RFHUtil\mqsubs.cpp" />

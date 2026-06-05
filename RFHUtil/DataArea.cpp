@@ -213,6 +213,15 @@ DataArea::DataArea()
 	, XMQDltMh(m_api.XMQDltMh)
 	, XMQInqMp(m_api.XMQInqMp)
 	, XMQSetMp(m_api.XMQSetMp)
+	// P4.4 PR A: current "file under work" lives on m_file (FileHandler).
+	// The aliases keep existing code compiling unchanged.
+	, m_file()
+	, fileName(m_file.fileName)
+	, lastFileRead(m_file.lastFileRead)
+	, fileSize(m_file.fileSize)
+	, fileCcsid(m_file.fileCcsid)
+	, fileData(m_file.fileData)
+	, fileSource(m_file.fileSource)
 {
 	// initialize traceEnabled to false
 	// this will be changed to true during the initinstance method in the application class

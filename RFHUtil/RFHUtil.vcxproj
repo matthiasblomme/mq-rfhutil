@@ -231,6 +231,7 @@
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MoveQ.h" />
     <ClInclude Include="MQMDPAGE.h" />
+    <ClInclude Include="FileHandler.h" />
     <ClInclude Include="mqerror.h" />
     <ClInclude Include="MqApi.h" />
     <ClInclude Include="MQConnection.h" />
@@ -280,6 +281,7 @@
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MoveQ.cpp" />
     <ClCompile Include="MQMDPAGE.cpp" />
+    <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="mqerror.cpp" />
     <ClCompile Include="MQConnection.cpp" />
     <ClCompile Include="mqsubs.cpp" />
