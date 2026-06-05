@@ -138,4 +138,50 @@ public:
         MQLONG  platform;               // queue manager platform type
         MQLONG  ccsid;                  // queue manager ccsid (was MQCcsid)
     } current;
+
+    // ─── PR F: disconnect + health-monitor lifecycle ──────────────────────
+    // These methods use m_api->XMQ* and touch connection-only state. They
+    // do NOT touch DataArea's queue handles, browse state, log/trace
+    // surface, or setErrorMsg — the DataArea wrappers (discQM,
+    // explicitDiscQM, connectionLostCleanup, startHealthMonitor,
+    // stopHealthMonitor) handle those concerns before/after delegating.
+
+    // P2.1 — opens the cached QM handle for MQINQ probes. Returns true
+    // if the monitor became active. Sets health.status = 1 on success;
+    // leaves it at 0 on MQOPEN failure. No-op (returns false) when
+    // !m_connected, already active, or m_api null. cc/rc out-params let
+    // the wrapper trace the MQOPEN result.
+    bool startHealthMonitor(MQLONG& cc, MQLONG& rc);
+
+    // P2.1 — closes the cached handle if open, clears check_active/status.
+    // Best-effort: errors from XMQClose are reported via cc/rc but
+    // otherwise ignored.
+    void stopHealthMonitor(MQLONG& cc, MQLONG& rc);
+
+    // Disconnect portion of the old discQM(): calls stopHealthMonitor
+    // internally, then m_api->XMQDisc if m_connected, then clears
+    // connection state (m_qm, m_connected, current.qm_name). The
+    // DataArea wrapper still closes any open queue first (queue handles
+    // aren't part of MQConnection). cc/rc reflect XMQDisc's result.
+    void disconnect(MQLONG& cc, MQLONG& rc);
+
+    // Connection-state portion of the old connectionLostCleanup(): clears
+    // m_qm, m_connected, current state, the health monitor's cached
+    // handle/counters/status, and marks reconnect.connection_was_lost
+    // = TRUE so the next successful connect logs "Reconnected ...". The
+    // DataArea wrapper handles queue/browse-state cleanup before calling
+    // this.
+    void notifyConnectionLost();
+
+    // RAII (folds in deferred P3.7): if still connected when destroyed,
+    // attempts XMQDisc to release the handle cleanly. Best-effort —
+    // shutdown errors are swallowed since there's no one to surface them
+    // to at this point.
+    ~MQConnection();
+
+private:
+    // No copies / moves — DataArea owns one for its lifetime; copying
+    // the handle would lead to double-disconnect on destruction.
+    MQConnection(const MQConnection&);
+    MQConnection& operator=(const MQConnection&);
 };
