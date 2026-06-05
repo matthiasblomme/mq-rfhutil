@@ -1747,66 +1747,18 @@ void DataArea::WriteDataFile()
 //
 /////////////////////////////////////////////////////////////////////////////
 
+// PR C: wrapper. File-open logic + error message formatting live on
+// FileHandler. The wrapper adds the trace log entry on failure if the
+// caller passed an errMsg buffer and tracing is enabled.
 FILE * DataArea::openOutputFile(LPCTSTR fname, LPTSTR errMsg)
-
 {
-	FILE			*outputFile;
+	FILE *outputFile = FileHandler::openOutputFile(fname, errMsg);
 
-	// set the error message to a null string
-	if (errMsg != NULL)
+	if (outputFile == NULL && errMsg != NULL && errMsg[0] != 0 && traceEnabled)
 	{
-		// set error message to zero length string
-		errMsg[0] = 0;
+		logTraceEntry(errMsg);
 	}
 
-	// try to open the output file
-	outputFile = fopen(fname, "wb");
-
-	if ((outputFile == NULL) && (errMsg != NULL))
-	{
-		// try to get the last error
-		DWORD errCode = GetLastError();
-
-		// check for a sharing violation
-		if (32 == errCode)
-		{
-			// provide a descriptive error message
-			strcpy(errMsg, "Unable to open output file - sharing violation");
-		}
-		else if (33 == errCode)
-		{
-			// provide a descriptive error message
-			strcpy(errMsg, "Unable to open output file - file locked");
-		}
-		else if (39 == errCode)
-		{
-			// provide a descriptive error message
-			strcpy(errMsg, "Unable to open output file - disk full");
-		}
-		else if (3 == errCode)
-		{
-			// provide a descriptive error message
-			strcpy(errMsg, "Unable to open output file - path not found");
-		}
-		else if (5 == errCode)
-		{
-			// provide a descriptive error message
-			strcpy(errMsg, "Unable to open output file - access denied");
-		}
-		else
-		{
-			// build the error message
-			sprintf(errMsg, "Unable to open output file - Error %d", errCode);
-		}
-
-		if (traceEnabled)
-		{
-			// trace results of WriteFile
-			logTraceEntry(errMsg);
-		}
-	}
-
-	// return the file handle
 	return outputFile;
 }
 
@@ -10608,52 +10560,8 @@ void DataArea::checkForEBCDIC()
 }
 
 
-void DataArea::changeUnixFile()
-
-{
-	unsigned char *		newArea;
-	unsigned int		i;
-	unsigned int		j;
-
-	if (fileSize > 0)
-	{
-		newArea = (unsigned char *)rfhMalloc(fileSize * 2 + 2, "UNIXDATA");
-
-		i = 0;
-		j = 0;
-		while (i < fileSize)
-		{
-			// check for a \r\n combination
-			if (('\r' == fileData[i]) && ('\n' == fileData[i + 1]))
-			{
-				// copy both characters
-				newArea[j++] = fileData[i++];
-				newArea[j++] = fileData[i++];
-			}
-			else
-			{
-				// check for just a \n by itself
-				if ('\n' == fileData[i])
-				{
-					// insert a carriage return
-					newArea[j++] = '\r';
-				}
-
-				// copy the data character
-				newArea[j++] = fileData[i++];
-			}
-		}
-
-		// terminate the string
-		newArea[j] = 0;
-		newArea[j+1] = 0;
-
-		// change the file data area to use the new area and free the old one
-		rfhFree (fileData);
-		fileData = newArea;
-		fileSize = j;
-	}
-}
+// PR C: forwarder. Body lives on FileHandler.
+void DataArea::changeUnixFile() { m_file.changeUnixFile(); }
 
 ////////////////////////////////////////////////////////
 //

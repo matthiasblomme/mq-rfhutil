@@ -42,4 +42,23 @@ public:
         // Encoding
         int  codepage;             // CCSID of the file's data
     } settings;
+
+    // ─── PR C: clean file-buffer / file-system primitives ─────────────────
+    // These don't touch DataArea's trace surface, error formatting, or
+    // header-parsing state. The DataArea wrappers (changeUnixFile,
+    // openOutputFile) keep their thin orchestration role; the bigger
+    // orchestrators (ReadFileData, WriteFile, ReadDataFile, WriteDataFile)
+    // stay on DataArea because they're entangled with MQ-header building
+    // and MFC file-dialog UI — same call we made on connect2QM in P4.1.
+
+    // Was DataArea::changeUnixFile — converts the in-memory buffer from
+    // mixed/LF newlines to CRLF in place (with reallocation). Uses
+    // rfhMalloc / rfhFree for buffer management.
+    void changeUnixFile();
+
+    // Was DataArea::openOutputFile — opens fname for binary write, fills
+    // errMsg (if non-NULL) with a descriptive message on failure. Static
+    // because the operation doesn't touch FileHandler instance state.
+    // Trace logging stays in the DataArea wrapper.
+    static FILE* openOutputFile(LPCTSTR fname, LPTSTR errMsg);
 };
