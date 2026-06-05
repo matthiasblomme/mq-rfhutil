@@ -43,6 +43,31 @@ public:
     // api; PR E's method-body migration adds null-guards if needed.
     MqApi* m_api;
 
+    // ─── PR E: small read-only / pure-state methods migrated from DataArea ──
+    // These don't touch m_api or the host's log/trace surface, so they're
+    // the safest first round of method moves. The bigger methods (connect2QM,
+    // discQM, attemptReconnection, performHealthCheck) follow in PR F using
+    // onLog/onTrace callbacks and m_api->XMQ*.
+
+    // Was DataArea::isConnectionActive — true while m_connected.
+    bool isActive() const;
+
+    // Was DataArea::shouldAttemptReconnect — pure switch on rc.
+    bool shouldAttemptReconnect(MQLONG rc) const;
+
+    // Was DataArea::calculateReconnectDelay — exponential backoff math.
+    int calculateReconnectDelay() const;
+
+    // Was DataArea::resetReconnectionState — zeroes attempt_count,
+    // last_attempt_time, in_progress.
+    void resetReconnectionState();
+
+    // Was DataArea::getHealthStatusText / getUptimeText / getLastCheckText —
+    // display strings for the Conn-tab health-monitor section.
+    CString getHealthStatusText() const;
+    CString getUptimeText() const;
+    CString getLastCheckText() const;
+
     // TLS configuration (P3.9).
     struct TlsSettings {
         BOOL    use_ssl;

@@ -54,3 +54,106 @@ MQConnection::MQConnection()
     current.platform = 0;
     current.ccsid    = 0;
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// PR E: small methods migrated from DataArea. Bodies are byte-identical to
+// the pre-move versions except they read from the typed sub-structs
+// (reconnect.*, health.*, m_connected) instead of the aliased m_* names.
+// DataArea retains forwarder methods so external callers compile unchanged.
+// ─────────────────────────────────────────────────────────────────────────
+
+bool MQConnection::isActive() const
+{
+    return m_connected;
+}
+
+bool MQConnection::shouldAttemptReconnect(MQLONG rc) const
+{
+    // Only attempt reconnection for connection-related errors.
+    switch (rc)
+    {
+    case MQRC_CONNECTION_BROKEN:
+    case MQRC_Q_MGR_NOT_AVAILABLE:
+    case MQRC_CONNECTION_QUIESCING:
+    case MQRC_CONNECTION_STOPPED:
+    case MQRC_HCONN_ERROR:
+    case MQRC_Q_MGR_STOPPING:
+        return true;
+    default:
+        return false;
+    }
+}
+
+int MQConnection::calculateReconnectDelay() const
+{
+    int delay = reconnect.interval;
+
+    // Exponential backoff, capped at max_interval.
+    if (reconnect.backoff_multiplier > 1 && reconnect.attempt_count > 0)
+    {
+        for (int i = 1; i < reconnect.attempt_count; i++)
+        {
+            delay *= reconnect.backoff_multiplier;
+            if (delay > reconnect.max_interval)
+            {
+                delay = reconnect.max_interval;
+                break;
+            }
+        }
+    }
+
+    return delay;
+}
+
+void MQConnection::resetReconnectionState()
+{
+    reconnect.attempt_count     = 0;
+    reconnect.last_attempt_time = 0;
+    reconnect.in_progress       = FALSE;
+}
+
+CString MQConnection::getHealthStatusText() const
+{
+    switch (health.status)
+    {
+    case 1: return "Connected (healthy)";
+    case 2: return "Connection degraded";
+    case 3: return "Reconnecting...";
+    default: return "Not connected";
+    }
+}
+
+CString MQConnection::getUptimeText() const
+{
+    if (!m_connected || health.connection_start_time == 0)
+        return "-";
+
+    DWORD elapsed = (GetTickCount() - health.connection_start_time) / 1000;
+    int hours   = elapsed / 3600;
+    int minutes = (elapsed % 3600) / 60;
+    int seconds = elapsed % 60;
+
+    CString text;
+    if (hours > 0)
+        text.Format("%dh %dm %ds", hours, minutes, seconds);
+    else if (minutes > 0)
+        text.Format("%dm %ds", minutes, seconds);
+    else
+        text.Format("%ds", seconds);
+    return text;
+}
+
+CString MQConnection::getLastCheckText() const
+{
+    if (!health.check_active || health.last_check_time == 0)
+        return "-";
+
+    DWORD elapsed = (GetTickCount() - health.last_check_time) / 1000;
+
+    CString text;
+    if (elapsed < 2)
+        text = "Just now";
+    else
+        text.Format("%d seconds ago", elapsed);
+    return text;
+}

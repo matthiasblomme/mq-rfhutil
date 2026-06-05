@@ -11625,64 +11625,12 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 //
 ///////////////////////////////////////////////////////
 
-int DataArea::calculateReconnectDelay()
-{
-	int delay = m_reconnect_interval;
-	
-	// Apply exponential backoff
-	if (m_reconnect_backoff_multiplier > 1 && m_reconnect_attempt_count > 0)
-	{
-		for (int i = 1; i < m_reconnect_attempt_count; i++)
-		{
-			delay *= m_reconnect_backoff_multiplier;
-			
-			// Cap at maximum interval
-			if (delay > m_reconnect_max_interval)
-			{
-				delay = m_reconnect_max_interval;
-				break;
-			}
-		}
-	}
-	
-	return delay;
-}
-
-///////////////////////////////////////////////////////
-//
-// P0.2: Reset reconnection state
-//
-///////////////////////////////////////////////////////
-
-void DataArea::resetReconnectionState()
-{
-	m_reconnect_attempt_count = 0;
-	m_last_reconnect_time = 0;
-	m_reconnecting = false;
-}
-
-///////////////////////////////////////////////////////
-//
-// P0.2: Check if reconnection should be attempted for this error
-//
-///////////////////////////////////////////////////////
-
-bool DataArea::shouldAttemptReconnect(MQLONG rc)
-{
-	// Only attempt reconnection for connection-related errors
-	switch (rc)
-	{
-	case MQRC_CONNECTION_BROKEN:
-	case MQRC_Q_MGR_NOT_AVAILABLE:
-	case MQRC_CONNECTION_QUIESCING:
-	case MQRC_CONNECTION_STOPPED:
-	case MQRC_HCONN_ERROR:
-	case MQRC_Q_MGR_STOPPING:
-		return true;
-	default:
-		return false;
-	}
-}
+// PR E: forwarders — bodies live on MQConnection. Kept here so callers
+// inside DataArea.cpp (attemptReconnection still owns these helpers)
+// keep compiling.
+int  DataArea::calculateReconnectDelay()        { return m_connection.calculateReconnectDelay(); }
+void DataArea::resetReconnectionState()         { m_connection.resetReconnectionState(); }
+bool DataArea::shouldAttemptReconnect(MQLONG rc){ return m_connection.shouldAttemptReconnect(rc); }
 
 ///////////////////////////////////////////////////////
 //
@@ -11826,51 +11774,10 @@ bool DataArea::performHealthCheck()
 	return true;	// non-fatal error, keep monitoring
 }
 
-CString DataArea::getHealthStatusText()
-{
-	switch (m_health_status)
-	{
-	case 1: return "Connected (healthy)";
-	case 2: return "Connection degraded";
-	case 3: return "Reconnecting...";
-	default: return "Not connected";
-	}
-}
-
-CString DataArea::getUptimeText()
-{
-	if (!connected || m_connection_start_time == 0)
-		return "-";
-
-	DWORD elapsed = (GetTickCount() - m_connection_start_time) / 1000;
-	int hours = elapsed / 3600;
-	int minutes = (elapsed % 3600) / 60;
-	int seconds = elapsed % 60;
-
-	CString text;
-	if (hours > 0)
-		text.Format("%dh %dm %ds", hours, minutes, seconds);
-	else if (minutes > 0)
-		text.Format("%dm %ds", minutes, seconds);
-	else
-		text.Format("%ds", seconds);
-	return text;
-}
-
-CString DataArea::getLastCheckText()
-{
-	if (!m_health_check_active || m_last_health_check_time == 0)
-		return "-";
-
-	DWORD elapsed = (GetTickCount() - m_last_health_check_time) / 1000;
-
-	CString text;
-	if (elapsed < 2)
-		text = "Just now";
-	else
-		text.Format("%d seconds ago", elapsed);
-	return text;
-}
+// PR E: forwarders for the Conn-tab health-monitor display strings.
+CString DataArea::getHealthStatusText() { return m_connection.getHealthStatusText(); }
+CString DataArea::getUptimeText()       { return m_connection.getUptimeText(); }
+CString DataArea::getLastCheckText()    { return m_connection.getLastCheckText(); }
 
 ///////////////////////////////////////////
 //
@@ -11883,10 +11790,9 @@ CString DataArea::getLastCheckText()
 ///////////////////////////////////////////
 
 BOOL DataArea::isConnectionActive()
-
 {
-	// return the current connection status
-	return connected;
+	// PR E: forwarder to MQConnection::isActive (which reads m_connected).
+	return m_connection.isActive() ? TRUE : FALSE;
 }
 
 /////////////////////////////////////////////
