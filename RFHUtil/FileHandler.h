@@ -27,4 +27,19 @@ public:
     int            fileCcsid;
     unsigned char* fileData;
     CString        fileSource;
+
+    // PR B: file-format read/write settings — knobs that control how the
+    // buffer above is interpreted on disk.
+    struct Settings {
+        // Read options
+        BOOL readfile_ascii;       // treat file as ASCII (no binary conversion)
+        BOOL read_nocrlf;          // skip CRLF normalization
+        BOOL read_unix;            // file written in Unix newline format
+        BOOL read_ignore_header;   // skip any MQ header in the file on read
+        // Write options
+        BOOL dataonly;             // write just the user data, no headers
+        BOOL save_rfh;             // include RFH header in the saved file
+        // Encoding
+        int  codepage;             // CCSID of the file's data
+    } settings;
 };

@@ -222,6 +222,14 @@ DataArea::DataArea()
 	, fileCcsid(m_file.fileCcsid)
 	, fileData(m_file.fileData)
 	, fileSource(m_file.fileSource)
+	// PR B: file-format settings (m_file.settings)
+	, m_readfile_ascii(m_file.settings.readfile_ascii)
+	, m_read_nocrlf(m_file.settings.read_nocrlf)
+	, m_read_unix(m_file.settings.read_unix)
+	, m_read_ignore_header(m_file.settings.read_ignore_header)
+	, m_dataonly(m_file.settings.dataonly)
+	, m_save_rfh(m_file.settings.save_rfh)
+	, m_file_codepage(m_file.settings.codepage)
 {
 	// initialize traceEnabled to false
 	// this will be changed to true during the initinstance method in the application class
