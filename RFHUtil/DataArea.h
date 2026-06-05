@@ -449,12 +449,13 @@ public:
 	BOOL m_get_by_correlid;
 	BOOL m_get_by_groupid;
 	BOOL m_show_cluster_queues;
-	BOOL m_readfile_ascii;
-	BOOL m_read_nocrlf;
-	BOOL m_read_unix;
-	BOOL m_read_ignore_header;
-	BOOL m_dataonly;
-	BOOL m_save_rfh;
+	// P4.4 PR B: aliases into m_file.settings.
+	BOOL& m_readfile_ascii;       // alias → m_file.settings.readfile_ascii
+	BOOL& m_read_nocrlf;          // alias → m_file.settings.read_nocrlf
+	BOOL& m_read_unix;            // alias → m_file.settings.read_unix
+	BOOL& m_read_ignore_header;   // alias → m_file.settings.read_ignore_header
+	BOOL& m_dataonly;             // alias → m_file.settings.dataonly
+	BOOL& m_save_rfh;             // alias → m_file.settings.save_rfh
 	BOOL m_all_avail;
 	BOOL m_show_system_queues;
 	BOOL m_logical_order;
@@ -488,7 +489,7 @@ public:
 	int browseCount;					// number of messages browsed in current operation
 	int m_mq_props;
 	int m_close_option;
-	int m_file_codepage;				// code page of data within a file
+	int& m_file_codepage;				// alias → m_file.settings.codepage (code page of data within a file)
 	
 	// P0.1: HeartBeat and KeepAlive settings — aliases into m_connection.heartbeat (PR B).
 	BOOL& m_heartbeat_enabled;           // Enable/disable HeartBeat
