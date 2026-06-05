@@ -31,6 +31,7 @@ Jim MacNair - Initial Contribution
 #include "cmqcfc.h"
 #include "MqApi.h"
 #include "MQConnection.h"
+#include "FileHandler.h"
 
 // Defined constants
 #define MAX_RFH_LENGTH		16 * 1024
@@ -386,13 +387,17 @@ public:
 // Attributes
 public:
 
-	// Variables related to the current file/message data
-	char			fileName[512];
-	char			lastFileRead[512];
-	UINT			fileSize;
-	int				fileCcsid;
-	unsigned char	*fileData;
-	CString			fileSource;
+	// Variables related to the current file/message data.
+	// P4.4 PR A: storage lives on m_file (FileHandler). The members below
+	// are reference aliases bound in DataArea's ctor — same pattern as
+	// MQConnection. PR D removes them and migrates call sites.
+	FileHandler      m_file;
+	char           (&fileName)[512];      // alias → m_file.fileName
+	char           (&lastFileRead)[512];  // alias → m_file.lastFileRead
+	UINT&            fileSize;            // alias → m_file.fileSize
+	int&             fileCcsid;           // alias → m_file.fileCcsid
+	unsigned char*&  fileData;            // alias → m_file.fileData
+	CString&         fileSource;          // alias → m_file.fileSource
 
 	CString m_error_msg;
 	CString m_copybook_file_name;
