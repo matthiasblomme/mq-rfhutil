@@ -9277,65 +9277,38 @@ void DataArea::setOfs(CString &currentData, const int currentLevel)
 //
 //////////////////////////////////////////////
 
+// PR F: wrapper. Connection-state cleanup (qm, connected, current.*,
+// health-monitor handle, connection_was_lost flag) moved to
+// MQConnection::notifyConnectionLost; queue and browse cleanup stays here.
 void DataArea::connectionLostCleanup()
-
 {
-	// clear the queue related fields
-	q = NULL;							// queue handle
-	Qopen = Q_OPEN_NOT;					// open type
-	m_save_set_all_setting = FALSE;
+	// Queue-related state (queue handles aren't on MQConnection until P4.2).
+	q = NULL;
+	Qopen = Q_OPEN_NOT;
+	m_save_set_all_setting  = FALSE;
 	m_save_set_user_setting = FALSE;
-	currentQ.Empty();					// name of the queue
-	currentRemoteQM.Empty();			// name of remote QM where queue resides
-	transmissionQueue.Empty();			// name of the transmission queue
-	currentUserid.Empty();				// user id that queue was opened under
-
-	// set the admin queue to NULL
+	currentQ.Empty();
+	currentRemoteQM.Empty();
+	transmissionQueue.Empty();
 	hAdminQ = NULL;
-
-	// make sure hte reply Q handle is NULL
 	hReplyQ = NULL;
+	hSub    = MQHO_NONE;
+	subQ    = MQHO_NONE;
 
-	// clear the subscription handle
-	hSub = MQHO_NONE;
+	// Connection identity, health-monitor state, and connection_was_lost
+	// flag — owned by MQConnection.
+	m_connection.notifyConnectionLost();
 
-	// clear the subscription queue handle
-	subQ = MQHO_NONE;
-
-	// indicate that the QM connection is gone
-	// remember the connection is no longer active
-	connected = false;
-	qm = NULL;
-
-	// Mark involuntary loss so the next successful connect (via checkConnection
-	// or attemptReconnection) emits a "Reconnected" line in the message log.
-	m_connection_was_lost = TRUE;
-
-	// P2.1: Clear health monitor state (handle is now invalid)
-	m_hHealthCheckObj = MQHO_NONE;
-	m_health_check_active = FALSE;
-	m_health_status = 0;
-
-	// P0.2: Preserve browse state for potential reconnection
-	// Only clear browseActive if browse wasn't active or if we shouldn't preserve it
-	// Save the current browse state before clearing
+	// P0.2: preserve browse state for potential reconnection.
 	BOOL wasBrowseActive = browseActive;
-	
-	// reset the browse indicators
-	browseActive = 0;
+	browseActive     = 0;
 	browsePrevActive = 0;
-	
-	// P0.2: If browse was active, preserve the state for reconnection
 	if (wasBrowseActive && m_browse_active && !m_browse_queue_name.IsEmpty())
 	{
-		// Keep browseActive set so the UI "Browse Next" button remains enabled
+		// Keep browseActive set so the UI "Browse Next" button remains enabled.
 		browseActive = 1;
 	}
 
-	// get rid of the queue manager name that the connection is made to
-	currentQM.Empty();
-
-	// reset the unit of work indicator
 	unitOfWorkActive = false;
 }
 
@@ -11641,68 +11614,43 @@ bool DataArea::shouldAttemptReconnect(MQLONG rc){ return m_connection.shouldAtte
 //
 ///////////////////////////////////////////////////////
 
+// PR F: wrapper. Body lives on MQConnection; trace logging stays here.
 void DataArea::startHealthMonitor()
 {
-	MQLONG cc, rc;
-	MQOD od = {MQOD_DEFAULT};
-	char traceInfo[512];
-
-	// Guard: nothing to do if not connected or already active
-	if (!connected || m_health_check_active)
-		return;
-
-	// Open the QM object for inquire — used as a lightweight health probe
-	od.ObjectType = MQOT_Q_MGR;
-	XMQOpen(qm, &od, MQOO_INQUIRE | MQOO_FAIL_IF_QUIESCING,
-			&m_hHealthCheckObj, &cc, &rc);
-
-	if (cc == MQCC_OK)
-	{
-		m_health_check_active = TRUE;
-		m_health_status = 1;	// healthy
-		m_connection_start_time = GetTickCount();
-		m_last_health_check_time = GetTickCount();
-		m_health_check_count = 0;
-		m_health_check_failures = 0;
-
-		if (traceEnabled)
-		{
-			sprintf(traceInfo, "Health monitor started (interval=%ds)", m_health_check_interval);
-			logTraceEntry(traceInfo);
-		}
-	}
-	else
-	{
-		// Open failed — monitor won't run but connection is still usable
-		m_hHealthCheckObj = MQHO_NONE;
-		m_health_check_active = FALSE;
-
-		if (traceEnabled)
-		{
-			sprintf(traceInfo, "Health monitor MQOPEN failed cc=%d rc=%d", cc, rc);
-			logTraceEntry(traceInfo);
-		}
-	}
-}
-
-void DataArea::stopHealthMonitor()
-{
-	MQLONG cc, rc;
-	char traceInfo[512];
-
-	if (m_hHealthCheckObj != MQHO_NONE && connected)
-	{
-		XMQClose(qm, &m_hHealthCheckObj, MQCO_NONE, &cc, &rc);
-	}
-
-	m_hHealthCheckObj = MQHO_NONE;
-	m_health_check_active = FALSE;
-	m_health_status = 0;	// disconnected
+	MQLONG cc = MQCC_OK;
+	MQLONG rc = MQRC_NONE;
+	bool   started = m_connection.startHealthMonitor(cc, rc);
 
 	if (traceEnabled)
 	{
-		sprintf(traceInfo, "Health monitor stopped");
+		char traceInfo[512];
+		if (started)
+		{
+			sprintf(traceInfo, "Health monitor started (interval=%ds)", m_health_check_interval);
+		}
+		else if (connected && cc != MQCC_OK)
+		{
+			sprintf(traceInfo, "Health monitor MQOPEN failed cc=%d rc=%d", cc, rc);
+		}
+		else
+		{
+			// Skipped because !connected or already active — no log.
+			return;
+		}
 		logTraceEntry(traceInfo);
+	}
+}
+
+// PR F: wrapper. Body lives on MQConnection; trace logging stays here.
+void DataArea::stopHealthMonitor()
+{
+	MQLONG cc = MQCC_OK;
+	MQLONG rc = MQRC_NONE;
+	m_connection.stopHealthMonitor(cc, rc);
+
+	if (traceEnabled)
+	{
+		logTraceEntry("Health monitor stopped");
 	}
 }
 
@@ -11803,69 +11751,45 @@ BOOL DataArea::isConnectionActive()
 //
 /////////////////////////////////////////////
 
+// PR F: wrapper. Queue cleanup + trace stay here; the actual XMQDisc and
+// connection-state clearing live on MQConnection::disconnect. The Health
+// monitor stop happens inside m_connection.disconnect, not here, so the
+// old separate stopHealthMonitor() call is gone.
 void DataArea::discQM()
-
 {
-	MQLONG		cc=MQCC_OK;
-	MQLONG		rc=MQRC_NONE;
-	char		traceInfo[512];		// work variable to build trace message
+	MQLONG cc = MQCC_OK;
+	MQLONG rc = MQRC_NONE;
+	char   traceInfo[512];
 
 	if (traceEnabled)
 	{
-		// create the trace line
-		sprintf(traceInfo, "Entering DataArea::discQM() connected=%d Qopen=%d currentQM=%s",  connected, Qopen, (LPCTSTR)currentQM);
-
-		// trace entry to discQM
+		sprintf(traceInfo, "Entering DataArea::discQM() connected=%d Qopen=%d currentQM=%s",
+				connected, Qopen, (LPCTSTR)currentQM);
 		logTraceEntry(traceInfo);
 	}
 
-	// P2.1: Stop health monitor before disconnecting
-	stopHealthMonitor();
-
-	// disconnect from the current queue manager
-	if (qm != NULL)
+	// Close any open queue before disconnecting (queue handles aren't part
+	// of MQConnection — that's P4.2 work).
+	if (qm != NULL && q != NULL)
 	{
-		// check if we have any queues open
-		if (q != NULL)
-		{
-			// close the open queue before we try to disconnect
-			closeQ(Q_CLOSE_NONE);
-		}
-
-		if (connected)
-		{
-			// attempt to disconnect from the current queue manager
-			XMQDisc(&qm, &cc, &rc);
-
-			// check if it worked
-			if (cc != MQCC_OK)
-			{
-				// error reported, get the completion and reason codes
-				setErrorMsg(cc, rc, "Disc");
-			}
-		}
+		closeQ(Q_CLOSE_NONE);
 	}
 
-	// remember the connection is no longer active
-	connected = false;
-	qm = NULL;
+	m_connection.disconnect(cc, rc);
+	if (cc != MQCC_OK)
+	{
+		setErrorMsg(cc, rc, "Disc");
+	}
 
-	// reset the browse indicators
-	browseActive = 0;
-	browsePrevActive = 0;
-
-	// get rid of the queue manager name that the connection is made to
-	currentQM.Empty();
-
-	// reset the unit of work indicator
-	unitOfWorkActive = false;
+	// DataArea-side post-disconnect cleanup that MQConnection doesn't own.
+	browseActive       = 0;
+	browsePrevActive   = 0;
+	unitOfWorkActive   = false;
 
 	if (traceEnabled)
 	{
-		// create the trace line
-		sprintf(traceInfo, "Exiting DataArea::discQM() cc=%d rc=%d initQMname=%s", cc, rc, (LPCTSTR)((CRfhutilApp *)AfxGetApp())->initQMname);
-
-		// trace exit from discQM
+		sprintf(traceInfo, "Exiting DataArea::discQM() cc=%d rc=%d initQMname=%s",
+				cc, rc, (LPCTSTR)((CRfhutilApp *)AfxGetApp())->initQMname);
 		logTraceEntry(traceInfo);
 	}
 }

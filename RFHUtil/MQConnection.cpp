@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "MQConnection.h"
+#include "MqApi.h"  // PR F: need the full MqApi definition for m_api->XMQ*
 
 // P4.1 PR B + PR C: defaults for settings (PR B) and runtime state (PR C).
 // Values match what DataArea's ctor and ConnSettings's reset paths used.
@@ -156,4 +157,114 @@ CString MQConnection::getLastCheckText() const
     else
         text.Format("%d seconds ago", elapsed);
     return text;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// PR F: disconnect and health monitor lifecycle methods. Bodies are mostly
+// byte-identical to the pre-move versions in DataArea, except:
+//   • field names use the typed sub-structs (health.* instead of m_health_*)
+//   • MQ API calls go through m_api->XMQ* (PR D infrastructure)
+//   • trace logging stays in the DataArea wrappers — no callback needed
+//   • setErrorMsg also stays in the DataArea wrappers (cc/rc returned)
+// ─────────────────────────────────────────────────────────────────────────
+
+bool MQConnection::startHealthMonitor(MQLONG& cc, MQLONG& rc)
+{
+    cc = MQCC_OK;
+    rc = MQRC_NONE;
+
+    // Guard: nothing to do if not connected, already active, or no api.
+    if (!m_connected || health.check_active || m_api == NULL)
+        return false;
+
+    // Open the QM object for inquire — used as a lightweight health probe.
+    MQOD od = {MQOD_DEFAULT};
+    od.ObjectType = MQOT_Q_MGR;
+    m_api->XMQOpen(m_qm, &od, MQOO_INQUIRE | MQOO_FAIL_IF_QUIESCING,
+                   &health.check_handle, &cc, &rc);
+
+    if (cc == MQCC_OK)
+    {
+        health.check_active          = TRUE;
+        health.status                = 1;  // healthy
+        DWORD now                    = GetTickCount();
+        health.connection_start_time = now;
+        health.last_check_time       = now;
+        health.check_count           = 0;
+        health.check_failures        = 0;
+        return true;
+    }
+
+    // Open failed — monitor won't run but connection is still usable.
+    health.check_handle = MQHO_NONE;
+    health.check_active = FALSE;
+    return false;
+}
+
+void MQConnection::stopHealthMonitor(MQLONG& cc, MQLONG& rc)
+{
+    cc = MQCC_OK;
+    rc = MQRC_NONE;
+
+    if (health.check_handle != MQHO_NONE && m_connected && m_api != NULL)
+    {
+        m_api->XMQClose(m_qm, &health.check_handle, MQCO_NONE, &cc, &rc);
+    }
+
+    health.check_handle = MQHO_NONE;
+    health.check_active = FALSE;
+    health.status       = 0;  // disconnected
+}
+
+void MQConnection::disconnect(MQLONG& cc, MQLONG& rc)
+{
+    cc = MQCC_OK;
+    rc = MQRC_NONE;
+
+    // Best-effort stop of the health monitor before tearing down the
+    // connection — its cached handle lives off this MQHCONN.
+    MQLONG dummyCc, dummyRc;
+    stopHealthMonitor(dummyCc, dummyRc);
+
+    if (m_qm != MQHO_NONE && m_api != NULL && m_connected)
+    {
+        m_api->XMQDisc(&m_qm, &cc, &rc);
+    }
+
+    m_connected = false;
+    m_qm        = MQHO_NONE;
+    current.qm_name.Empty();
+}
+
+void MQConnection::notifyConnectionLost()
+{
+    // Connection identity gone.
+    m_connected = false;
+    m_qm        = MQHO_NONE;
+    current.qm_name.Empty();
+    current.userid.Empty();
+
+    // Mark involuntary loss so the next successful connect (via
+    // checkConnection or attemptReconnection) emits a "Reconnected" line
+    // in the message log.
+    reconnect.connection_was_lost = TRUE;
+
+    // Health monitor state — handle is now invalid.
+    health.check_handle = MQHO_NONE;
+    health.check_active = FALSE;
+    health.status       = 0;
+}
+
+MQConnection::~MQConnection()
+{
+    // RAII: if still connected at destruction (e.g., app shutdown that
+    // skipped explicitDiscQM), make a best-effort XMQDisc call so the
+    // handle doesn't leak. Errors are swallowed — no one to surface them
+    // to at this point.
+    if (m_qm != MQHO_NONE && m_connected && m_api != NULL)
+    {
+        MQLONG cc = MQCC_OK;
+        MQLONG rc = MQRC_NONE;
+        m_api->XMQDisc(&m_qm, &cc, &rc);
+    }
 }
