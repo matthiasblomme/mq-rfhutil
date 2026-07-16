@@ -52,3 +52,10 @@ tests/UnitTests/obj/
 tests/IntegrationTests/bin/
 tests/IntegrationTests/obj/
 images/
+docs/DARK_MODE_SYSTEM_CONTROLS_SOLUTION.md
+docs/IDPWOS_AUTHENTICATION_ISSUE.md
+docs/IDPWOS_FIX_CHANGES.md
+docs/IDPWOS_FIX_IMPLEMENTATION_PLAN.md
+docs/IDPWOS_ISSUE.md
+docs/IDPWOS_TESTING_GUIDE.md
+docs/P1_3_64BIT_IMPLEMENTATION.md
