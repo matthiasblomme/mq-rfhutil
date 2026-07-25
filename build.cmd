@@ -5,6 +5,56 @@ REM Supports both Win32 (32-bit) and x64 (64-bit) builds
 
 set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
 
+REM ---------------------------------------------------------------------
+REM Locate the IBM MQ SDK.
+REM
+REM MSBuild reads $(MQ_HOME) from Directory.Build.props to find the MQ
+REM headers and libraries. If MQ_HOME isn't already set in the environment
+REM we probe a few common install locations; when one contains the SDK
+REM headers (tools\c\include\cmqc.h) we use it. That way the script works
+REM out of the box on a stock IBM MQ install without every contributor
+REM having to set the env var by hand.
+REM ---------------------------------------------------------------------
+if defined MQ_HOME (
+    if not exist "%MQ_HOME%\tools\c\include\cmqc.h" (
+        echo ERROR: MQ_HOME is set to "%MQ_HOME%" but tools\c\include\cmqc.h
+        echo        is not there. Check the path or unset MQ_HOME and let this
+        echo        script probe for it.
+        exit /b 1
+    )
+    goto mq_found
+)
+
+for %%P in (
+    "C:\Program Files\IBM\MQ"
+    "C:\IBM\MQ"
+    "D:\Apps\MQ"
+    "D:\IBM\MQ"
+    "E:\Apps\MQ"
+    "E:\IBM\MQ"
+) do (
+    if exist %%P\tools\c\include\cmqc.h (
+        set "MQ_HOME=%%~P"
+        goto mq_found
+    )
+)
+
+echo ERROR: IBM MQ SDK not found.
+echo.
+echo Set the MQ_HOME environment variable to the root of your IBM MQ
+echo installation (the directory that contains tools\c\include\cmqc.h).
+echo.
+echo Examples:
+echo     setx MQ_HOME "C:\Program Files\IBM\MQ"          (persistent)
+echo     set  MQ_HOME=D:\Apps\MQ                         (this shell only)
+echo.
+echo Then re-run this script.
+exit /b 1
+
+:mq_found
+echo Using IBM MQ SDK at: %MQ_HOME%
+echo.
+
 if "%1"=="" goto usage
 if "%1"=="rfhutil" goto rfhutil
 if "%1"=="rfhutil-x64" goto rfhutil_x64
@@ -19,42 +69,42 @@ goto usage
 
 :rfhutil
 echo Building RFHUtil (server mode, Win32)...
-%MSBUILD% RFHUtil.sln /t:RFHUtil:Rebuild /p:Configuration=Release /p:Platform=Win32 /v:minimal
+%MSBUILD% RFHUtil.sln /t:RFHUtil:Rebuild /p:Configuration=Release /p:Platform=Win32 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 goto end
 
 :rfhutil_x64
 echo Building RFHUtil (server mode, x64)...
-%MSBUILD% RFHUtil.sln /t:RFHUtil:Rebuild /p:Configuration=Release /p:Platform=x64 /v:minimal
+%MSBUILD% RFHUtil.sln /t:RFHUtil:Rebuild /p:Configuration=Release /p:Platform=x64 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 goto end
 
 :client
 echo Building Client (rfhutilc, Win32)...
-%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=Release /p:Platform=Win32 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=Release /p:Platform=Win32 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 goto end
 
 :client_x64
 echo Building Client (rfhutilc, x64)...
-%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=Release /p:Platform=x64 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=Release /p:Platform=x64 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 goto end
 
 :safe
 echo Building Client Safe Mode (rfhutilc-safe, Win32)...
-%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=Win32 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=Win32 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 goto end
 
 :safe_x64
 echo Building Client Safe Mode (rfhutilc-safe, x64)...
-%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=x64 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=x64 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 goto end
 
 :all
 echo Building all projects (Win32)...
-%MSBUILD% RFHUtil.sln /t:Rebuild /p:Configuration=Release /p:Platform=Win32 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Rebuild /p:Configuration=Release /p:Platform=Win32 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 goto end
 
 :all_x64
 echo Building all projects (x64)...
-%MSBUILD% RFHUtil.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 goto end
 
 :all_both
@@ -63,22 +113,22 @@ echo Building All Configurations
 echo =====================================
 echo.
 echo Building Win32 RFHUtil...
-%MSBUILD% RFHUtil.sln /t:RFHUtil:Rebuild /p:Configuration=Release /p:Platform=Win32 /v:minimal
+%MSBUILD% RFHUtil.sln /t:RFHUtil:Rebuild /p:Configuration=Release /p:Platform=Win32 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 echo.
 echo Building Win32 Client...
-%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=Release /p:Platform=Win32 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=Release /p:Platform=Win32 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 echo.
 echo Building Win32 Client Safe Mode...
-%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=Win32 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=Win32 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 echo.
 echo Building x64 RFHUtil...
-%MSBUILD% RFHUtil.sln /t:RFHUtil:Rebuild /p:Configuration=Release /p:Platform=x64 /v:minimal
+%MSBUILD% RFHUtil.sln /t:RFHUtil:Rebuild /p:Configuration=Release /p:Platform=x64 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 echo.
 echo Building x64 Client...
-%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=Release /p:Platform=x64 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=Release /p:Platform=x64 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 echo.
 echo Building x64 Client Safe Mode...
-%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=x64 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=x64 /p:MQ_HOME="%MQ_HOME%" /v:minimal
 echo.
 echo =====================================
 echo Build Complete!
@@ -113,6 +163,12 @@ echo   build.cmd rfhutil-x64    (Build 64-bit server version)
 echo   build.cmd client         (Build 32-bit client version)
 echo   build.cmd client-x64     (Build 64-bit client version)
 echo   build.cmd all-both       (Build everything)
+echo.
+echo MQ_HOME:
+echo   If MQ_HOME is set in the environment it is used as-is (after a
+echo   sanity check that cmqc.h exists under it). Otherwise the script
+echo   probes a few common install locations. If none contain the SDK
+echo   the script exits with an error message.
 goto end
 
 :end
