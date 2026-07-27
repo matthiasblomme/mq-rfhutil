@@ -147,8 +147,10 @@ BEGIN
         MENUITEM "MQ&Conn",                     IDM_MQ_MQCONN
         MENUITEM "MQ&Disc",                     IDM_MQ_MQDISC
         MENUITEM SEPARATOR
+#ifndef SAFE_MODE
         MENUITEM "MQOpen (&Get)",               IDM_MQ_MQOPEN_GET
         MENUITEM "MQOpen (&Put)",               IDM_MQ_MQOPEN_PUT
+#endif
         MENUITEM "MQOpen (Browse)",             IDM_MQ_MQOPEN_BROWSE
         MENUITEM "MQClos&e",                    IDM_MQ_MQCLOSE
         MENUITEM SEPARATOR

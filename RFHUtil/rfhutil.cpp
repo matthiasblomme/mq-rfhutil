@@ -1712,8 +1712,8 @@ void CRfhutilApp::GetLastUsedQNames()
 			logTraceEntry(traceInfo);
 		}
 #endif
-		// create trace entry
-		sprintf(traceInfo, "Exiting CRfhutilApp::GetLastUsedQNames() initQMname=%s, initQname=%s initRemoteQMname=%s initConnUser=%s initConnPW=%s", (LPCTSTR)initQMname, (LPCTSTR)initQname, (LPCTSTR)initRemoteQMname, (LPCTSTR)initConnUser, (LPCTSTR)initConnPW);
+		// create trace entry - don't trace password!
+		sprintf(traceInfo, "Exiting CRfhutilApp::GetLastUsedQNames() initQMname=%s, initQname=%s initRemoteQMname=%s initConnUser=%s ", (LPCTSTR)initQMname, (LPCTSTR)initQname, (LPCTSTR)initRemoteQMname, (LPCTSTR)initConnUser);
 
 		// trace exit from GetLastUsedQNames
 		logTraceEntry(traceInfo);
