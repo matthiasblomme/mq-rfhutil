@@ -1,5 +1,7 @@
 @echo off
 
+setlocal
+
 rem Run the RFHUTILC program with an MQ environment setting and
 rem the trace options set - both this program, and MQ
 

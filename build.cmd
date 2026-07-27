@@ -4,6 +4,10 @@ setlocal
 REM Quick build script for mq-rfhutil
 REM This script provides easy access to MSBuild commands
 REM Supports both Win32 (32-bit) and x64 (64-bit) builds
+REM
+REM The 64-bit build produces too many errors/warnings, and the output does not
+REM work. So those options have been removed tom the usage text. But left as
+REM callable if you know they are there, for future development.
 
 REM Allow the user to specify the compiler location
 REM For example: "E:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
@@ -110,7 +114,6 @@ echo =====================================
 echo.
 echo Output locations:
 echo   Win32: bin\Release\
-echo   x64:   bin\Release\x64\
 goto end
 
 :usage
@@ -122,21 +125,10 @@ echo   client       - Build rfhutilc.exe (client mode, Win32)
 echo   safe         - Build rfhutilc-safe.exe (browse-only mode, Win32)
 echo   all          - Build all projects (Win32)
 echo.
-echo x64 (64-bit) Commands:
-echo   rfhutil-x64  - Build rfhutil.exe (server mode, x64)
-echo   client-x64   - Build rfhutilc.exe (client mode, x64)
-echo   safe-x64     - Build rfhutilc-safe.exe (browse-only mode, x64)
-echo   all-x64      - Build all projects (x64)
-echo.
-echo Combined Commands:
-echo   all-both     - Build all projects for both Win32 and x64
-echo.
 echo Examples:
 echo   build.cmd rfhutil        (Build 32-bit server version)
-echo   build.cmd rfhutil-x64    (Build 64-bit server version)
 echo   build.cmd client         (Build 32-bit client version)
-echo   build.cmd client-x64     (Build 64-bit client version)
-echo   build.cmd all-both       (Build everything)
+echo   build.cmd all            (Build everything)
 goto end
 
 :end

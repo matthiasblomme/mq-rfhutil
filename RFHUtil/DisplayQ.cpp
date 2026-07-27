@@ -111,7 +111,7 @@ BOOL CDisplayQ::OnInitDialog()
 
 	this->SetWindowText(strTitle);
 
-#ifdef SAFEMODE
+#ifdef SAFE_MODE
 	((CButton *)GetDlgItem(IDC_DISPLAYQ_READQ))->EnableWindow(FALSE);
 	((CButton *)GetDlgItem(IDC_DISPLAYQ_READQ))->ShowWindow(SW_HIDE);
 #endif

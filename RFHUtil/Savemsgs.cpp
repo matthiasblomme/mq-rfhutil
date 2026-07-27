@@ -232,7 +232,7 @@ BOOL CSavemsgs::OnInitDialog()
 	// tool tips are provided for this dialog and must be initialized
 	EnableToolTips(TRUE);
 
-#ifdef SAFEMODE
+#ifdef SAFE_MODE
 	((CButton *)GetDlgItem(IDC_SAVEMSGS_REM_YES))->EnableWindow(FALSE);
 #endif
 
