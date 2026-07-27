@@ -545,7 +545,7 @@ void General::UpdatePageData()
 		((CButton *)GetDlgItem(ID_READ_FILE))->EnableWindow(FALSE);
 		((CButton *)GetDlgItem(IDC_CLEAR_DATA))->EnableWindow(FALSE);
 		((CButton *)GetDlgItem(IDC_CLEAR_ALL))->EnableWindow(FALSE);
-#ifndef SAFEMODE
+#ifndef SAFE_MODE
 		((CButton *)GetDlgItem(IDC_READQ))->EnableWindow(FALSE);
 		((CButton *)GetDlgItem(IDC_PURGE))->EnableWindow(FALSE);
 #endif
@@ -585,7 +585,7 @@ void General::UpdatePageData()
 		((CButton *)GetDlgItem(ID_READ_FILE))->EnableWindow(TRUE);
 		((CButton *)GetDlgItem(IDC_CLEAR_DATA))->EnableWindow(TRUE);
 		((CButton *)GetDlgItem(IDC_CLEAR_ALL))->EnableWindow(TRUE);
-#ifndef SAFEMODE
+#ifndef SAFE_MODE
 		((CButton *)GetDlgItem(IDC_READQ))->EnableWindow(TRUE);
 		((CButton *)GetDlgItem(IDC_PURGE))->EnableWindow(TRUE);
 #endif
@@ -1950,7 +1950,7 @@ void General::OnMainSaveq()
 				parms.includeMQMD = true;
 			}
 
-#ifndef SAFEMODE
+#ifndef SAFE_MODE
 			// Are the messages to be removed from the queue
 			if (SAVE_REMOVE_MSGS_YES == dlg.m_remove)
 			{

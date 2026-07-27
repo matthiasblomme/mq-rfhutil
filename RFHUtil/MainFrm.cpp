@@ -95,7 +95,9 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 			app->getRevision(),
 			app->getBuild());
 	
-#ifdef MQCLIENT
+#if defined(SAFE_MODE)
+    strcat(strTitle, " (Client - Readonly)");
+#elif defined(MQCLIENT)
 	strcat(strTitle, " (Client)");
 #endif
 

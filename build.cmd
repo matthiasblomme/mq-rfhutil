@@ -1,9 +1,29 @@
 @echo off
+setlocal
+
 REM Quick build script for mq-rfhutil
 REM This script provides easy access to MSBuild commands
 REM Supports both Win32 (32-bit) and x64 (64-bit) builds
 
+REM Allow the user to specify the compiler location
+REM For example: "E:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+if XX%MSBUILD% == "XX" goto buildercommon
+if exist %MSBUILD% goto builderset
+
+REM Otherwise, try the default locations for a VS 2022 compiler.
+
+:buildercommon
+set MSBUILD="C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"
+if exist %MSBUILD% goto builderset
+
 set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+if exist %MSBUILD% goto builderset
+
+echo Need to edit script to find compiler
+goto end
+
+:builderset
+echo Using compiler from %MSBUILD%
 
 if "%1"=="" goto usage
 if "%1"=="rfhutil" goto rfhutil
@@ -50,11 +70,15 @@ goto end
 :all
 echo Building all projects (Win32)...
 %MSBUILD% RFHUtil.sln /t:Rebuild /p:Configuration=Release /p:Platform=Win32 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=Win32 /v:minimal
+
 goto end
 
 :all_x64
 echo Building all projects (x64)...
 %MSBUILD% RFHUtil.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64 /v:minimal
+%MSBUILD% RFHUtil.sln /t:Client:Rebuild /p:Configuration=ReleaseSafe /p:Platform=x64 /v:minimal
+
 goto end
 
 :all_both

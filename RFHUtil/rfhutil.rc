@@ -287,7 +287,7 @@ CAPTION "About rfhutil"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "Copyright (C) IBM Corporation 2000-2021",IDC_STATIC,39,31,158,8
+    LTEXT           "Copyright (C) IBM Corporation 2000-2026",IDC_STATIC,39,31,158,8
     DEFPUSHBUTTON   "OK",IDOK,205,34,50,14,WS_GROUP
     LTEXT           "",IDC_ABOUT_VERSION,38,9,211,8
 END
@@ -1294,8 +1294,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 9,4,0,0
- PRODUCTVERSION 9,4,0,0
+ FILEVERSION 10,0,0,0
+ PRODUCTVERSION 10,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1312,12 +1312,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "IBM Corporation"
             VALUE "FileDescription", "RFHUtil: IBM MQ Message test and display utility"
-            VALUE "FileVersion", "9.4.0.0"
-            VALUE "InternalName", "rfhutil V9.4.0"
+            VALUE "FileVersion", "10.0.0.0"
+            VALUE "InternalName", "rfhutil V10.0.0"
             VALUE "LegalCopyright", "Copyright (C) IBM Corporation 2000-2026"
             VALUE "OriginalFilename", "rfhutil.exe"
             VALUE "ProductName", "IBM MQ Message Test and Display Utility"
-            VALUE "ProductVersion", "9.4.0.0"
+            VALUE "ProductVersion", "10.0.0.0"
         END
     END
     BLOCK "VarFileInfo"

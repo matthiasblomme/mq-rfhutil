@@ -8830,7 +8830,7 @@ int DataArea::findPrevMsgId(const char * Qname)
 
 		// switch to a browse next operation after the first get
 		gmo.Options = MQGMO_FAIL_IF_QUIESCING | MQGMO_BROWSE_NEXT | MQGMO_ACCEPT_TRUNCATED_MSG | options;
-	} 	while ((MQCC_OK == cc) & (memcmp(msg_id, curr_id, sizeof(msg_id)) != 0));
+	} 	while ((MQCC_OK == cc) && (memcmp(msg_id, curr_id, sizeof(msg_id)) != 0));
 
 	// close the queue
 	closeQ(Q_CLOSE_NONE);
@@ -8877,7 +8877,7 @@ int DataArea::browsePrev()
 	MQLONG		rc=MQRC_NONE;				// MQ reason code
 	MQLONG		cc2=MQCC_OK;				// MQ completion code
 	MQLONG		rc2=MQRC_NONE;				// MQ reason code
-	MQLONG		msgLen;						// length of the message data
+	MQLONG		msgLen = 0;					// length of the message data
 	MQHMSG		hMsg=MQHM_UNUSABLE_HMSG;	// message handle used to get message properties
 	MQCMHO		opts={MQCMHO_DEFAULT};		// options used to create message handle
 	MQDMHO		dOpts={MQDMHO_DEFAULT};		// options used to delete message handle
@@ -8991,10 +8991,10 @@ int DataArea::browsePrev()
 
 		// switch to a browse next operation after the first get
 		gmo.Options = MQGMO_FAIL_IF_QUIESCING | MQGMO_BROWSE_NEXT | MQGMO_ACCEPT_TRUNCATED_MSG | options;
-	} 	while ((MQCC_OK == cc) & (memcmp(msg_id, curr_id, sizeof(msg_id)) != 0));
+	} 	while ((MQCC_OK == cc) && (memcmp(msg_id, curr_id, sizeof(msg_id)) != 0));
 
 	// did we find the message we were looking for?
-	if ((MQCC_OK == cc) & (memcmp(msg_id, curr_id, sizeof(msg_id)) == 0))
+	if ((MQCC_OK == cc) && (memcmp(msg_id, curr_id, sizeof(msg_id)) == 0))
 	{
 		// found the message we were looking for and know how long it is
 		// it must now be read again matching on message id to get the data
@@ -11420,7 +11420,7 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 	
 	// Check if enough time has passed since last attempt
 	DWORD currentTime = GetTickCount();
-	DWORD timeSinceLastAttempt = currentTime - m_last_reconnect_time;
+	DWORD timeSinceLastAttempt = (DWORD)(currentTime - m_last_reconnect_time);
 	
 	if (timeSinceLastAttempt < (DWORD)(delay * 1000))
 	{
@@ -11581,7 +11581,7 @@ void DataArea::stopHealthMonitor()
 
 bool DataArea::performHealthCheck()
 {
-	MQLONG cc, rc;
+	MQLONG cc = MQCC_OK, rc = MQRC_NONE;
 	MQLONG selector = MQIA_COMMAND_LEVEL;
 	MQLONG value = 0;
 	char traceInfo[512];
@@ -11639,7 +11639,7 @@ bool DataArea::performHealthCheck()
 			}
 		}
 
-		appendError("Connection lost - detected by health monitor");
+		appendError("Connection loss detected by health monitor");
 		updateMsgText();
 		return false;
 	}

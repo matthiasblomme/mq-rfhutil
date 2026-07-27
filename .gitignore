@@ -31,12 +31,14 @@ bin/linux
 *.obj
 *.aps
 *.lastcodeanalysis*
+*.res
 
 # NuGet-restored debug symbols are needed by the package's .targets
 # (gtestd.pdb / gtest_maind.pdb are referenced in ReferenceCopyLocalPaths)
 !packages/**/*.pdb
 
 *.tlog/*
+*.recipe
 
 # My tracking of status
 archive

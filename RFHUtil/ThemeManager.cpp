@@ -386,9 +386,12 @@ void ThemeManager::DrawThemedButton(CDC* pDC, CRect rect, LPCTSTR text, UINT sta
 				max(0, GetGValue(bgColor) - 15),
 				max(0, GetBValue(bgColor) - 15)
 			);
+			textColor = RGB(0, 0, 0); // the background goes near-white so make the text black
 		} else if (state & ODS_FOCUS) {
 			// Button has focus - use highlight color for border
 			borderColor = GetHighlightColor();
+			textColor = RGB(0, 0, 0);
+
 		}
 	} else {
 		// Light mode button colors - standard Windows button appearance
