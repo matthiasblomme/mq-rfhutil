@@ -8,6 +8,9 @@ Test messages are stored as files, which are then read by the application and wr
 
 ## 🎉 What's New in Version 10.0.0.0
 
+This version was primarily designed and implemented by Matthias Blomme. Many thanks to him for contributing the changes
+via a Pull Request.
+
 **Released:** July 2026
 **Build:** 240
 
@@ -273,7 +276,7 @@ The **rfhutil** program was conceived, created and developed by **Jim MacNair**.
 | Version | Build | Release Date | Key Features | Status |
 |---------|-------|--------------|--------------|--------|
 | **10.0.0.0** | 240 | Jul |Merge of Pull Request for build 234 + fixes| ✅ Current |
-| **9.4.0.0** | 234 | Feb 2026 | Dark Mode, Connection Reliability, Auto-Reconnect, 64-bit Support | |
+| 9.4.0.0 | 234 | Feb 2026 | Dark Mode, Connection Reliability, Auto-Reconnect, 64-bit Support | |
 | 9.1.6 | 233 | Oct 2021 | TLS cipher updates, CSP improvements | Stable |
 | 9.1.5 | 232 | Apr 2021 | MQDLH fixes, trace improvements | Stable |
 | 9.1.4 | 231 | Apr 2021 | TLS 1.3 support, MQMD fixes | Stable |
@@ -302,17 +305,14 @@ The **rfhutil** program was conceived, created and developed by **Jim MacNair**.
 - Theme persistence via registry
 - System theme detection (Windows 10+)
 
-### This Fork
-This fork adds Safe Mode (browse-only) functionality to provide a production-safe version of rfhutilc for environments where read-only access is required.
-
-**Original Repository**: [ibm-messaging/mq-rfhutil](https://github.com/ibm-messaging/mq-rfhutil)
 
 ### Documentation
 See [CHANGELOG.md](CHANGELOG.md) for detailed change history.
 
 ## Health Warning
 
-This package is provided as-is with no guarantees of support or updates.
+This package is provided as-is with no guarantees of support or updates. You cannot use IBM formal support channels
+(Cases/PMRs) for assistance with material in this repository.
 
 ## Community
 
@@ -322,9 +322,8 @@ Join the Discord server to ask questions, request support, or discuss RFHUtil:
 
 ## Issues and Contributions
 
-For issues relating to the **original rfhutil**, please use the [IBM Messaging issue tracker](https://github.com/ibm-messaging/mq-rfhutil/issues).
+Please use the [IBM Messaging issue tracker](https://github.com/ibm-messaging/mq-rfhutil/issues).
 
-For issues relating to the **Safe Mode feature** in this fork, please use this repository's issue tracker.
-
-Contributions to the original package can be accepted under the terms of the
-IBM Contributor License Agreement, found in the file [CLA.md](CLA.md) of this repository.
+Contributions to this package can be accepted under the terms of the Developer's Certificate of Origin, found in the
+[DCO file](DCO1.1.txt) of this repository. When submitting a pull request, you must include a statement stating you
+accept the terms in the DCO.
