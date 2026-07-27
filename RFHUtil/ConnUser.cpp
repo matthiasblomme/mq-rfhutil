@@ -293,7 +293,8 @@ void CConnUser::OnConnBrowse()
 	if (rc == IDOK)
 	{
 		// get a copy of the file name
-		strcpy(fileName, fd.GetPathName());
+		strncpy(fileName, fd.GetPathName(), sizeof(fileName) - 1);
+		fileName[sizeof(fileName) - 1] = 0;
 
 		// check for a bad file path
 		if (fileName[0] != -35)

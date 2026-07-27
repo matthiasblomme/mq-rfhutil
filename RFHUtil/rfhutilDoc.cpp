@@ -287,7 +287,8 @@ BOOL CRfhutilDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	char			fileName[512];
 	char			traceInfo[512];
 
-	strcpy(fileName, lpszPathName);
+	strncpy(fileName, lpszPathName, sizeof(fileName) - 1);
+	fileName[sizeof(fileName) - 1] = 0;
 
 	app = (CRfhutilApp *)AfxGetApp();
 	if (app->isTraceEnabled())
@@ -401,7 +402,8 @@ void CRfhutilDoc::OnFileMruFile1()
 	{
 		if (strlen(app->pDocument.lastFileRead) > 0)
 		{
-			strcpy(fileName, app->pDocument.lastFileRead);
+			strncpy(fileName, app->pDocument.lastFileRead, sizeof(fileName) - 1);
+			fileName[sizeof(fileName) - 1] = 0;
 			if (app->isTraceEnabled())
 			{
 				sprintf(traceInfo, "Using app->pDocument.lastFileRead %s", fileName);

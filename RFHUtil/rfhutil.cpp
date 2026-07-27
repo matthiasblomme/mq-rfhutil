@@ -1754,7 +1754,8 @@ CDocument* CRfhutilApp::OpenDocumentFile(LPCTSTR lpszFileName)
 	}
 
 	// drive the document file processing
-	strcpy(fileName, lpszFileName);
+	strncpy(fileName, lpszFileName, sizeof(fileName) - 1);
+	fileName[sizeof(fileName) - 1] = 0;
 	pDocument.ReadFileData(fileName);
 
 	// we need to update the page being viewed, since we have read new data

@@ -1051,7 +1051,8 @@ void DataArea::ReadFileData(LPCTSTR fname)
 		m_error_msg += fname;
 
 		// this file name will be first in the recent files list, so remember it
-		strcpy(lastFileRead, fname);
+		strncpy(lastFileRead, fname, sizeof(lastFileRead) - 1);
+		lastFileRead[sizeof(lastFileRead) - 1] = 0;
 
 		if (traceEnabled)
 		{
@@ -1165,8 +1166,10 @@ void DataArea::ReadFileData(LPCTSTR fname)
 		fclose(inputFile);
 
 		// update the current file name as the last file read from
-		strcpy(fileName, fname);
-		strcpy(lastFileRead, fileName);
+		strncpy(fileName, fname, sizeof(fileName) - 1);
+		fileName[sizeof(fileName) - 1] = 0;
+		strncpy(lastFileRead, fileName, sizeof(lastFileRead) - 1);
+		lastFileRead[sizeof(lastFileRead) - 1] = 0;
 
 		// add the file to the most recent file list
 		AfxGetApp()->AddToRecentFileList(fileName);
@@ -1725,7 +1728,8 @@ void DataArea::WriteDataFile()
 	if ((rc == IDOK) && (strlen(fd.GetPathName()) > 0) && (strlen(fd.GetPathName()) < sizeof(name) - 1))
 	{
 		// get the file name from the dialog
-		strcpy(name, fd.GetPathName( ));
+		strncpy(name, fd.GetPathName(), sizeof(name) - 1);
+		name[sizeof(name) - 1] = 0;
 
 		// drive the document file processing
 		app->BeginWaitCursor();
@@ -1790,7 +1794,7 @@ void DataArea::WriteFile(LPCTSTR fname)
 	FILE			*outputFile;
 	MQMD2			mqmd={MQMD2_DEFAULT};
 	char			traceInfo[512];		// work variable to build trace message
-	char			tempRFHMsg[128];
+	char			tempRFHMsg[256];
 	char			tempMsg[128];
 
 	if (traceEnabled)
@@ -1904,54 +1908,39 @@ void DataArea::WriteFile(LPCTSTR fname)
 		if ((curOfs + mqmdLen) > 0)
 		{
 			// found something other than data
-			// report the individual lengths
-			// start with the data length
-			sprintf(tempRFHMsg, " (data %d ", fileSize);
-
-			// write an MQMD?
+			// report the individual lengths in a single bounded call
+			_snprintf_s(tempRFHMsg, sizeof(tempRFHMsg), _TRUNCATE, " (data %d", fileSize);
 			if (mqmdLen > 0)
 			{
-				sprintf(tempMsg, " mqmd %d", mqmdLen);
-				strcat(tempRFHMsg, tempMsg);
+				_snprintf_s(tempMsg, sizeof(tempMsg), _TRUNCATE, " mqmd %d", mqmdLen);
+				strncat_s(tempRFHMsg, sizeof(tempRFHMsg), tempMsg, _TRUNCATE);
 			}
-
-			// write an RFH1 header?
 			if (rfh1Len > 0)
 			{
-				sprintf(tempMsg, " rfh1 %d", rfh1Len);
-				strcat(tempRFHMsg, tempMsg);
+				_snprintf_s(tempMsg, sizeof(tempMsg), _TRUNCATE, " rfh1 %d", rfh1Len);
+				strncat_s(tempRFHMsg, sizeof(tempRFHMsg), tempMsg, _TRUNCATE);
 			}
-
-			// write an RFH2 header?
 			if (rfh2Len > 0)
 			{
-				sprintf(tempMsg, " rfh2 %d", rfh2Len);
-				strcat(tempRFHMsg, tempMsg);
+				_snprintf_s(tempMsg, sizeof(tempMsg), _TRUNCATE, " rfh2 %d", rfh2Len);
+				strncat_s(tempRFHMsg, sizeof(tempRFHMsg), tempMsg, _TRUNCATE);
 			}
-
-			// write a DLQ header?
 			if (dlqLen > 0)
 			{
-				sprintf(tempMsg, " dlq %d", dlqLen);
-				strcat(tempRFHMsg, tempMsg);
+				_snprintf_s(tempMsg, sizeof(tempMsg), _TRUNCATE, " dlq %d", dlqLen);
+				strncat_s(tempRFHMsg, sizeof(tempRFHMsg), tempMsg, _TRUNCATE);
 			}
-
-			// write a CICS header?
 			if (cicsLen > 0)
 			{
-				sprintf(tempMsg, " cics %d", cicsLen);
-				strcat(tempRFHMsg, tempMsg);
+				_snprintf_s(tempMsg, sizeof(tempMsg), _TRUNCATE, " cics %d", cicsLen);
+				strncat_s(tempRFHMsg, sizeof(tempRFHMsg), tempMsg, _TRUNCATE);
 			}
-
-			// write a IMS header?
 			if (imsLen > 0)
 			{
-				sprintf(tempMsg, " ims %d", imsLen);
-				strcat(tempRFHMsg, tempMsg);
+				_snprintf_s(tempMsg, sizeof(tempMsg), _TRUNCATE, " ims %d", imsLen);
+				strncat_s(tempRFHMsg, sizeof(tempRFHMsg), tempMsg, _TRUNCATE);
 			}
-
-			// add the final parentheses to replace the final blank
-			strcat(tempRFHMsg, ")");
+			strncat_s(tempRFHMsg, sizeof(tempRFHMsg), ")", _TRUNCATE);
 		}
 		else
 		{
@@ -2469,7 +2458,7 @@ void DataArea::getCharDataUcs(const int charFormat, const int crlf, const int ed
 		}
 
 		// add the offset to the beginning of the line
-		swprintf(asciiStr, L"%8.8d ", location);
+		swprintf_s(asciiStr, 10, L"%8.8d ", location);
 
 		// check for an EDI message
 		if ((edimsg) && (delim != 0))
@@ -5255,7 +5244,9 @@ void DataArea::getNameValueData(const unsigned char * input, int inputLen, unsig
 							if (rc > 0)
 							{
 								// append an error message
-								sprintf((char *) parsed_data + i, "***** RFHUtil format error - end name does not match %s %s\r\n", xmlVarName, tempVarName);
+								_snprintf_s((char *) parsed_data + i, maxLength - i, _TRUNCATE,
+									"***** RFHUtil format error - end name does not match %.256s %.256s\r\n",
+									xmlVarName, tempVarName);
 								i += strlen((char *) parsed_data + i);
 							}
 						}
@@ -5321,11 +5312,26 @@ void DataArea::getNameValueData(const unsigned char * input, int inputLen, unsig
 					// higher level variables
 					if (xmlVarName[0] != 0)
 					{
-						strcat(xmlVarName, ".");
+						// guard: need room for "." + tempVarName + NUL
+						if (strlen(xmlVarName) + 1 + strlen(tempVarName) < sizeof(xmlVarName))
+						{
+							strcat(xmlVarName, ".");
+						}
+						else
+						{
+							break;
+						}
 					}
-
-					// append the latest variable name
-					strcat(xmlVarName, tempVarName);
+	
+					// append the latest variable name (guard: must still fit + NUL)
+					if (strlen(xmlVarName) + strlen(tempVarName) < sizeof(xmlVarName))
+					{
+						strcat(xmlVarName, tempVarName);
+					}
+					else
+					{
+						break;
+					}
 
 					// At this point, we want to find the rest of the line,
 					// starting with any data for this variable
@@ -5852,7 +5858,9 @@ void DataArea::getParsedData(const int charFormat)
 							if (rc > 0)
 							{
 								// append an error message
-								sprintf((char *) m_data_parsed + i, "***** RFHUtil format error - end name does not match %s %s\r\n", xmlVarName, tempVarName);
+								_snprintf_s((char *) m_data_parsed + i, len - i, _TRUNCATE,
+									"***** RFHUtil format error - end name does not match %.256s %.256s\r\n",
+									xmlVarName, tempVarName);
 								i += strlen((char *) m_data_parsed + i);
 							}
 						}
@@ -5917,11 +5925,26 @@ void DataArea::getParsedData(const int charFormat)
 					// higher level variables
 					if (xmlVarName[0] != 0)
 					{
-						strcat(xmlVarName, ".");
+						// guard: need room for "." + tempVarName + NUL
+						if (strlen(xmlVarName) + 1 + strlen(tempVarName) < sizeof(xmlVarName))
+						{
+							strcat(xmlVarName, ".");
+						}
+						else
+						{
+							break;
+						}
 					}
-
-					// append the latest variable name
-					strcat(xmlVarName, tempVarName);
+	
+					// append the latest variable name (guard: must still fit + NUL)
+					if (strlen(xmlVarName) + strlen(tempVarName) < sizeof(xmlVarName))
+					{
+						strcat(xmlVarName, tempVarName);
+					}
+					else
+					{
+						break;
+					}
 
 					// At this point, we want to find the rest of the line,
 					// starting with any data for this variable
@@ -25002,7 +25025,7 @@ int DataArea::processLocalQMgrs()
 	}
 
 	// Read output from the child process, and write to parent's STDOUT.
-	if( !ReadFile( hChildStdoutRdDup, buffer, sizeof(buffer) - 1, &dwRead, NULL))
+	if( !ReadFile( hChildStdoutRdDup, buffer, 128 * 1024 - 1, &dwRead, NULL))
 	{
 		dwRead = 0;
 	}
