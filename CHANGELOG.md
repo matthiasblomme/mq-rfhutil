@@ -1,5 +1,17 @@
 # Changelog
 Newest updates are at the top of this file
+
+## Build 240 (V10.0.0.0 build 240) July 2026
+* Merge the large PR from Matthias
+* Fixes beyond that include:
+  * Remove the 64-bit build.cmd options as too many warnings
+  * Several "SAFEMODE" references that should be "SAFE_MODE"
+  * Remove some toolbar options when in SAFE_MODE
+  * Various potential buffer overflows avoided
+  * Copyright/Version updated
+  * Dark theme - when button selected, text needs to be black
+  * build.cmd - to handle VS Professional directory
+
 ## Build 234 (V9.4.0.0 build 234) February 2026
 
 ### 🔌 Connection Reliability Improvements (P0)
@@ -152,7 +164,7 @@ Newest updates are at the top of this file
 
 
 ## Build 233 (V9.1.6 build 233) Oct 11 2021
-* Remove references to "Use CSP" in doc as now used always     
+* Remove references to "Use CSP" in doc as now used always
 * Update TLS ciphers for currency - only list supported TLS 1.2 and 1.3
 
 ## Build 232 (V9.1.5 build 232) Apr 12 2021

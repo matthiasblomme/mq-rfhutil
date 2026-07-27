@@ -1,16 +1,15 @@
 # mq-rfhutil
 
-This is a fork of the **rfhutil** program, originally released in SupportPac IH03 and maintained by IBM Messaging.
-
-**Original Repository**: [ibm-messaging/mq-rfhutil](https://github.com/ibm-messaging/mq-rfhutil)
+The **rfhutil** program, was originally released in SupportPac IH03.
 
 This program can be useful for the development and testing of IBM MQ and
 IBM Integration Bus aka WebSphere Message Broker aka App Connect Enterprise applications.
 Test messages are stored as files, which are then read by the application and written to an MQ queue. The program is GUI based.
-## 🎉 What's New in Version 9.4.0.0
 
-**Released:** February 2026  
-**Build:** 234
+## 🎉 What's New in Version 10.0.0.0
+
+**Released:** July 2026
+**Build:** 240
 
 ### Major Improvements
 
@@ -29,7 +28,6 @@ Test messages are stored as files, which are then read by the application and wr
 #### 🔧 Build System Updates (P1.1 & P1.3)
 - **Visual Studio 2022** - Upgraded to VS 2022 Build Tools (v143 toolset)
 - **IBM MQ 9.4** - Updated for IBM MQ 9.4.5 compatibility
-- **64-bit Support** - Full x64 platform support alongside Win32 builds
 
 ### Quick Start with New Features
 
@@ -147,7 +145,7 @@ sequenceDiagram
     participant User
     participant RFHUtil
     participant QM as Queue Manager
-    
+
     User->>RFHUtil: Click "Read Q"
     RFHUtil->>QM: MQGET request
     Note over QM: Connection Lost!
@@ -168,7 +166,7 @@ sequenceDiagram
     participant User
     participant RFHUtil
     participant QM as Queue Manager
-    
+
     User->>RFHUtil: Click "Start Browse"
     RFHUtil->>QM: Open queue for browse
     QM-->>RFHUtil: First message
@@ -251,14 +249,6 @@ build.cmd client     # Build Client (Win32)
 build.cmd safe       # Build Safe Mode (Win32)
 build.cmd all        # Build all Win32 projects
 
-# x64 builds
-build.cmd rfhutil-x64  # Build RFHUtil (x64)
-build.cmd client-x64   # Build Client (x64)
-build.cmd safe-x64     # Build Safe Mode (x64)
-build.cmd all-x64      # Build all x64 projects
-
-# Build both platforms
-build.cmd all-both   # Build all projects for both Win32 and x64
 ```
 
 Running the programs may require that you run `setmqenv` to set a suitable environment for the programs to locate the MQ
@@ -282,7 +272,8 @@ The **rfhutil** program was conceived, created and developed by **Jim MacNair**.
 
 | Version | Build | Release Date | Key Features | Status |
 |---------|-------|--------------|--------------|--------|
-| **9.4.0.0** | 234 | Feb 2026 | Dark Mode, Connection Reliability, Auto-Reconnect, 64-bit Support | ✅ Current |
+| **10.0.0.0** | 240 | Jul |Merge of Pull Request for build 234 + fixes| ✅ Current |
+| **9.4.0.0** | 234 | Feb 2026 | Dark Mode, Connection Reliability, Auto-Reconnect, 64-bit Support | |
 | 9.1.6 | 233 | Oct 2021 | TLS cipher updates, CSP improvements | Stable |
 | 9.1.5 | 232 | Apr 2021 | MQDLH fixes, trace improvements | Stable |
 | 9.1.4 | 231 | Apr 2021 | TLS 1.3 support, MQMD fixes | Stable |
