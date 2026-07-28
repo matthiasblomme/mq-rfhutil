@@ -55,7 +55,7 @@ public:
 #endif
 
 private:
-	char strTitle[32];
+	char strTitle[64];
 //	CTabCtrl	m_tabs;
 //	static UINT findMsg;
 //	static UINT gotoMsg;

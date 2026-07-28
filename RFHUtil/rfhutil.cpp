@@ -138,7 +138,7 @@ CRfhutilApp::CRfhutilApp()
 	RECT	rect;
 	int		defFontSize;
 	int		i;
-	char	traceInfo[256];
+	char	traceInfo[1024];
 	LOGFONT	lf;
 
 	// Place all significant initialization in InitInstance
@@ -363,7 +363,7 @@ CRfhutilApp::CRfhutilApp()
 	lf.lfPitchAndFamily = FF_MODERN | FIXED_PITCH;
 	lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 	lf.lfQuality = DEFAULT_QUALITY;
-	strcpy(lf.lfFaceName, "Courier New");
+	strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), "Courier New");
 
 	// create the default fixed font for ANSI character sets
 	i = m_fixed_font.CreateFontIndirectA(&lf);
@@ -372,7 +372,7 @@ CRfhutilApp::CRfhutilApp()
 	lf.lfHeight = (5 *defFontSize) / 4;
 	lf.lfCharSet = GB2312_CHARSET;
 	lf.lfQuality = DRAFT_QUALITY;
-	strcpy(lf.lfFaceName, (LPCTSTR)simpChFontface);
+	strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), (LPCTSTR)simpChFontface);
 
 	// create a font for display of simplified Chinese characters
 	i = m_china_font.CreateFontIndirectA(&lf);
@@ -380,7 +380,7 @@ CRfhutilApp::CRfhutilApp()
 	if (0 == i)
 	{
 		// try a different typeface
-		strcpy(lf.lfFaceName, _T("gb2312"));
+		strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), _T("gb2312"));
 		i = m_china_font.CreateFontIndirectA(&lf);
 	}
 
@@ -392,7 +392,7 @@ CRfhutilApp::CRfhutilApp()
 	// change LOGFONT for Korean
 	lf.lfHeight = (5 * defFontSize) / 4;
 	lf.lfCharSet = HANGEUL_CHARSET;
-	strcpy(lf.lfFaceName, (LPCTSTR)koreaFontface);
+	strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), (LPCTSTR)koreaFontface);
 
 	// create a font for display of Korean characters
 	i = m_korea_font.CreateFontIndirectA(&lf);
@@ -400,7 +400,7 @@ CRfhutilApp::CRfhutilApp()
 	if (0 == i)
 	{
 		// try a different typeface
-		strcpy(lf.lfFaceName, _T("korean"));
+		strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), _T("korean"));
 		i = m_korea_font.CreateFontIndirectA(&lf);
 	}
 
@@ -412,7 +412,7 @@ CRfhutilApp::CRfhutilApp()
 	// change LOGFONT for Japanese
 	lf.lfHeight = (5 * defFontSize) / 4;
 	lf.lfCharSet = SHIFTJIS_CHARSET;
-	strcpy(lf.lfFaceName, (LPCTSTR)japanFontface);
+	strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), (LPCTSTR)japanFontface);
 
 	// create a font for display of Japanese characters
 	i = m_japan_font.CreateFontIndirectA(&lf);
@@ -420,7 +420,7 @@ CRfhutilApp::CRfhutilApp()
 	if (0 == i)
 	{
 		// try a different typeface
-		strcpy(lf.lfFaceName, _T("shiftjis"));
+		strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), _T("shiftjis"));
 		i = m_japan_font.CreateFontIndirectA(&lf);
 	}
 
@@ -432,7 +432,7 @@ CRfhutilApp::CRfhutilApp()
 	// change LOGFONT for Traditional Chinese
 	lf.lfHeight = (5 * defFontSize) / 4;
 	lf.lfCharSet = CHINESEBIG5_CHARSET;
-	strcpy(lf.lfFaceName, (LPCTSTR)tradChFontface);
+	strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), (LPCTSTR)tradChFontface);
 
 	// create a font for display of Traditional Chinese characters
 	i = m_big5_font.CreateFontIndirectA(&lf);
@@ -440,7 +440,7 @@ CRfhutilApp::CRfhutilApp()
 	if (0 == i)
 	{
 		// try a different typeface
-		strcpy(lf.lfFaceName, _T("big5"));
+		strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), _T("big5"));
 		i = m_big5_font.CreateFontIndirectA(&lf);
 	}
 
@@ -452,7 +452,7 @@ CRfhutilApp::CRfhutilApp()
 	// change LOGFONT for Russian
 	lf.lfHeight = defFontSize;
 	lf.lfCharSet = RUSSIAN_CHARSET;
-	strcpy(lf.lfFaceName, _T("Courier New"));
+	strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), _T("Courier New"));
 
 	// create a font for display of Russian characters
 	i = m_russian_font.CreateFontIndirectA(&lf);
@@ -465,7 +465,7 @@ CRfhutilApp::CRfhutilApp()
 	// change LOGFONT for Thai
 	lf.lfCharSet = THAI_CHARSET;
 	lf.lfHeight = 2 * defFontSize;
-	strcpy(lf.lfFaceName, (LPCTSTR)thaiFontface);
+	strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), (LPCTSTR)thaiFontface);
 
 	// create a font for display of Thai characters
 	i = m_thai_font.CreateFontIndirectA(&lf);
@@ -473,7 +473,7 @@ CRfhutilApp::CRfhutilApp()
 	if (0 == i)
 	{
 		// try a different typeface
-		strcpy(lf.lfFaceName, _T("Lucida Sans Typewriter Regular"));
+		strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), _T("Lucida Sans Typewriter Regular"));
 		lf.lfHeight = defFontSize;
 		i = m_thai_font.CreateFontIndirectA(&lf);
 	}
@@ -590,7 +590,7 @@ BOOL CRfhutilApp::InitInstance()
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
 	m_pMainWnd->DragAcceptFiles();
-	
+
 	// Apply dark title bar if in dark mode
 	ThemeManager::GetInstance().ApplyDarkTitleBar(m_pMainWnd);
 
@@ -1067,7 +1067,7 @@ int CRfhutilApp::ExitInstance()
 	// clean up for MFC
 	CoUninitialize();
 
-	return 0;  
+	return 0;
 }
 
 //////////////////////////////////////
@@ -1101,7 +1101,7 @@ int CRfhutilApp::createFixedFonts(CFont *font, const char *faceName, BYTE pitchF
 	//lf.lfPitchAndFamily = FIXED_PITCH;
 	lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 	lf.lfQuality = DEFAULT_QUALITY;
-	strcpy(lf.lfFaceName, "Courier New");
+	strcpy_s(lf.lfFaceName, sizeof(lf.lfFaceName), "Courier New");
 
 	// create the font
 	rc = font->CreateFontIndirectA(&lf);
@@ -1195,6 +1195,7 @@ int CALLBACK EnumFixedFonts(
 	const NEWTEXTMETRICEX	*tt = NULL;
 	char					fontCS[64];
 	char					traceInfo[256];
+	size_t					traceInfoLen = 0;
 	int						rc = 1;				// default to continue
 	int						dpi = 0;
 	BOOL					trueType=FALSE;
@@ -1312,8 +1313,7 @@ int CALLBACK EnumFixedFonts(
 
 			// build the trace line
 			// get the name of the font
-			strcpy(traceInfo, "faceName=");
-			strcat(traceInfo, lf->lfFaceName);
+			traceInfoLen = sprintf_s(traceInfo, sizeof(traceInfo), "faceName=%s", lf->lfFaceName);
 
 			// check for true type font
 			if ((FontType & TRUETYPE_FONTTYPE) == TRUETYPE_FONTTYPE)
@@ -1322,7 +1322,7 @@ int CALLBACK EnumFixedFonts(
 				trueType = TRUE;
 
 				// add to trace info
-				strcat(traceInfo, " TrueType");
+				traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " TrueType");
 
 				// set a point to a true type textmetric
 				tt = (NEWTEXTMETRICEX *)txtmetric;
@@ -1330,8 +1330,7 @@ int CALLBACK EnumFixedFonts(
 
 				// get the field in hex for trace
 				AsciiToHex((const unsigned char *)&(app->fontFixedCharSets), 8, (unsigned char *)fontCS);
-				strcat(traceInfo, " ");
-				strcat(traceInfo, fontCS);
+				traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " %s", fontCS);
 			}
 			else
 			{
@@ -1343,31 +1342,31 @@ int CALLBACK EnumFixedFonts(
 				if ((FontType & DEVICE_FONTTYPE) == DEVICE_FONTTYPE)
 				{
 					// add to trace info
-					strcat(traceInfo, " Device");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Device");
 				}
 
 				// check for raster font
 				if ((FontType & RASTER_FONTTYPE) == RASTER_FONTTYPE)
 				{
 					// add to trace info
-					strcat(traceInfo, " Raster");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Raster");
 				}
 
 				// get the height of the font
-				sprintf(fontCS, " height=%d, maxWidth=%d", tm->tmHeight, tm->tmMaxCharWidth);
-				strcat(traceInfo, fontCS);
+				sprintf_s(fontCS, sizeof(fontCS), " height=%d, maxWidth=%d", tm->tmHeight, tm->tmMaxCharWidth);
+				traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, "%s", fontCS);
 			}
 
 			// append information from the logfont
 			if ((pitchFam & 3) == FIXED_PITCH)
 			{
-				strcat(traceInfo, " Fixed");
+				traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Fixed");
 			}
 
 			// append information from the logfont
 			if ((pitchFam & 0x0c) == FF_MODERN)
 			{
-				strcat(traceInfo, " FF Modern");
+				traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " FF Modern");
 			}
 
 			// check supported code pages for True Type fonts
@@ -1377,63 +1376,63 @@ int CALLBACK EnumFixedFonts(
 				if (app->checkFontCharsForFont((unsigned char *)&(app->fontFixedCharSets), CP_US_437))
 				{
 					// show support
-					strcat(traceInfo, " US 437");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " US 437");
 				}
 
 				// check for Simplified Chinese code page
 				if (app->checkFontCharsForFont((unsigned char *)&(app->fontFixedCharSets), CP_SIMP_CH_936))
 				{
 					// show support
-					strcat(traceInfo, " Simp Ch");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Simp Ch");
 				}
 
 				// check for Traditional Chinese code page
 				if (app->checkFontCharsForFont((unsigned char *)&(app->fontFixedCharSets), CP_TRAD_CH_950))
 				{
 					// show support
-					strcat(traceInfo, " Trad Ch");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Trad Ch");
 				}
 
 				// check for Korean
 				if (app->checkFontCharsForFont((unsigned char *)&(app->fontFixedCharSets), CP_KOREA_949))
 				{
 					// show support
-					strcat(traceInfo, " Korea");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Korea");
 				}
 
 				// check for Korean 1361
 				if (app->checkFontCharsForFont((unsigned char *)&(app->fontFixedCharSets), CP_KOREA_1361))
 				{
 					// show support
-					strcat(traceInfo, " Korea2");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Korea2");
 				}
 
 				// check for Thai
 				if (app->checkFontCharsForFont((unsigned char *)&(app->fontFixedCharSets), CP_THAI_874))
 				{
 					// show support
-					strcat(traceInfo, " Thai");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Thai");
 				}
 
 				// check for Russia
 				if (app->checkFontCharsForFont((unsigned char *)&(app->fontFixedCharSets), CP_RUSSIA_866))
 				{
 					// show support
-					strcat(traceInfo, " Russia");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Russia");
 				}
 
 				// check for Cyrillic
 				if (app->checkFontCharsForFont((unsigned char *)&(app->fontFixedCharSets), CP_CYRILLIC_1251))
 				{
 					// show support
-					strcat(traceInfo, " Cyrillic");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Cyrillic");
 				}
 
 				// check for Japan
 				if (app->checkFontCharsForFont((unsigned char *)&(app->fontFixedCharSets), CP_JAPAN_932))
 				{
 					// show support
-					strcat(traceInfo, " Japan");
+					traceInfoLen += sprintf_s(traceInfo + traceInfoLen, sizeof(traceInfo) - traceInfoLen, " Japan");
 				}
 			}
 
@@ -1698,7 +1697,7 @@ void CRfhutilApp::GetLastUsedQNames()
 	{
 #ifdef MQCLIENT
 		// create trace entry for the SSL entries
-		sprintf(traceInfo, "Exiting CRfhutilApp::GetLastUsedQNames() initUseSSL=%d, initSSLCipherSpec=%s initSSLValidateClient=%d initSSLKeyR=%s initSSLResetCount=%d initSSLPeerName=%s initFipsRequired=%d", initUseSSL, (LPCTSTR)initSSLCipherSpec, initSSLValidateClient, (LPCTSTR)initSSLKeyR, initSSLResetCount, (LPCTSTR)initSSLPeerName, initFipsRequired);
+		sprintf_s(traceInfo, sizeof(traceInfo), "Exiting CRfhutilApp::GetLastUsedQNames() initUseSSL=%d, initSSLCipherSpec=%s initSSLValidateClient=%d initSSLKeyR=%s initSSLResetCount=%d initSSLPeerName=%s initFipsRequired=%d", initUseSSL, (LPCTSTR)initSSLCipherSpec, initSSLValidateClient, (LPCTSTR)initSSLKeyR, initSSLResetCount, (LPCTSTR)initSSLPeerName, initFipsRequired);
 
 		// write the data to the trace
 		logTraceEntry(traceInfo);
@@ -1706,14 +1705,14 @@ void CRfhutilApp::GetLastUsedQNames()
 		if ((initSecExit.GetLength() > 0) || (initSecData.GetLength() > 0))
 		{
 			// create trace entry for the security exit and data entries
-			sprintf(traceInfo, "Exiting CRfhutilApp::GetLastUsedQNames() initSecExit=%.128s, initSecData=%.32s", (LPCTSTR)initSecExit, (LPCTSTR)initSecData);
+			sprintf_s(traceInfo, sizeof(traceInfo), "Exiting CRfhutilApp::GetLastUsedQNames() initSecExit=%.128s, initSecData=%.32s", (LPCTSTR)initSecExit, (LPCTSTR)initSecData);
 
 			// write the data to the trace
 			logTraceEntry(traceInfo);
 		}
 #endif
 		// create trace entry - don't trace password!
-		sprintf(traceInfo, "Exiting CRfhutilApp::GetLastUsedQNames() initQMname=%s, initQname=%s initRemoteQMname=%s initConnUser=%s ", (LPCTSTR)initQMname, (LPCTSTR)initQname, (LPCTSTR)initRemoteQMname, (LPCTSTR)initConnUser);
+		sprintf_s(traceInfo, sizeof(traceInfo), "Exiting CRfhutilApp::GetLastUsedQNames() initQMname=%s, initQname=%s initRemoteQMname=%s initConnUser=%s ", (LPCTSTR)initQMname, (LPCTSTR)initQname, (LPCTSTR)initRemoteQMname, (LPCTSTR)initConnUser);
 
 		// trace exit from GetLastUsedQNames
 		logTraceEntry(traceInfo);

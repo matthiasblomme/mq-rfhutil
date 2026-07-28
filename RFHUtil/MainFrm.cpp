@@ -89,16 +89,16 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	cs.style &= (~FWS_ADDTOTITLE);
 	cs.style |= WS_SYSMENU;
 
-	sprintf(strTitle, "RfhUtil V%d.%d.%d.%d",
+	snprintf(strTitle, sizeof(strTitle), "RfhUtil V%d.%d.%d.%d",
 			app->getMajor(),
 			app->getMinor(),
 			app->getRevision(),
 			app->getBuild());
-	
+
 #if defined(SAFE_MODE)
-    strcat(strTitle, " (Client - Readonly)");
+	strncat(strTitle, " (Client - Readonly)", sizeof(strTitle) - strlen(strTitle) - 1);
 #elif defined(MQCLIENT)
-	strcat(strTitle, " (Client)");
+	strncat(strTitle, " (Client)", sizeof(strTitle) - strlen(strTitle) - 1);
 #endif
 
 	cs.lpszName = strTitle;
