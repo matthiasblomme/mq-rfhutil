@@ -27,7 +27,8 @@ Bob (AI Assistant) - P1.2 Dark Mode Implementation
 enum class AppTheme {
     LIGHT = 0,
     DARK = 1,
-    SYSTEM = 2  // Follow Windows system theme
+    SYSTEM = 2,  // Follow Windows system theme
+    DARK_GREY = 3  // Softer grey-toned dark theme
 };
 
 class ThemeManager {
@@ -102,6 +103,7 @@ private:
     
     ColorScheme m_lightColors;
     ColorScheme m_darkColors;
+    ColorScheme m_darkGreyColors;
     
     // Brushes for painting
     CBrush m_backgroundBrush;

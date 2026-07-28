@@ -41,9 +41,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_SIZING()
 	ON_COMMAND(ID_VIEW_THEME_LIGHT, &CMainFrame::OnViewThemeLight)
 	ON_COMMAND(ID_VIEW_THEME_DARK, &CMainFrame::OnViewThemeDark)
+	ON_COMMAND(ID_VIEW_THEME_DARK_GREY, &CMainFrame::OnViewThemeDarkGrey)
 	ON_COMMAND(ID_VIEW_THEME_SYSTEM, &CMainFrame::OnViewThemeSystem)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_THEME_LIGHT, &CMainFrame::OnUpdateViewThemeLight)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_THEME_DARK, &CMainFrame::OnUpdateViewThemeDark)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_THEME_DARK_GREY, &CMainFrame::OnUpdateViewThemeDarkGrey)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_THEME_SYSTEM, &CMainFrame::OnUpdateViewThemeSystem)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -137,6 +139,12 @@ void CMainFrame::OnViewThemeDark()
 	ThemeManager::GetInstance().SaveThemePreference();
 }
 
+void CMainFrame::OnViewThemeDarkGrey()
+{
+	ThemeManager::GetInstance().SetTheme(AppTheme::DARK_GREY);
+	ThemeManager::GetInstance().SaveThemePreference();
+}
+
 void CMainFrame::OnViewThemeSystem()
 {
 	ThemeManager::GetInstance().SetTheme(AppTheme::SYSTEM);
@@ -153,6 +161,12 @@ void CMainFrame::OnUpdateViewThemeDark(CCmdUI* pCmdUI)
 {
 	ThemeManager& tm = ThemeManager::GetInstance();
 	pCmdUI->SetCheck(tm.GetTheme() == AppTheme::DARK ? 1 : 0);
+}
+
+void CMainFrame::OnUpdateViewThemeDarkGrey(CCmdUI* pCmdUI)
+{
+	ThemeManager& tm = ThemeManager::GetInstance();
+	pCmdUI->SetCheck(tm.GetTheme() == AppTheme::DARK_GREY ? 1 : 0);
 }
 
 void CMainFrame::OnUpdateViewThemeSystem(CCmdUI* pCmdUI)

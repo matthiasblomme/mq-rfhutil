@@ -123,6 +123,7 @@ BEGIN
         BEGIN
             MENUITEM "&Light Mode",             ID_VIEW_THEME_LIGHT
             MENUITEM "&Dark Mode",              ID_VIEW_THEME_DARK
+            MENUITEM "Dark &Grey",              ID_VIEW_THEME_DARK_GREY
             MENUITEM "&System Default",         ID_VIEW_THEME_SYSTEM
         END
     END

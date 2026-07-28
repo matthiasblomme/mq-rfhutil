@@ -62,7 +62,19 @@ ThemeManager::ThemeManager()
     m_darkColors.buttonBorder = RGB(50, 85, 90);            // Lighter teal border for buttons
     m_darkColors.gradientStart = RGB(35, 35, 35);           // Slightly lighter than background
     m_darkColors.gradientEnd = RGB(25, 25, 25);             // Slightly darker than background
-    
+
+    // Initialize dark grey color scheme - Softer charcoal/slate tones
+    m_darkGreyColors.background = RGB(49, 51, 56);          // Charcoal panel background
+    m_darkGreyColors.text = RGB(220, 221, 222);             // Warm off-white text
+    m_darkGreyColors.controlBackground = RGB(64, 68, 75);   // Slate grey input/list fields
+    m_darkGreyColors.border = RGB(85, 88, 96);              // Muted grey separator
+    m_darkGreyColors.highlight = RGB(114, 118, 130);        // Neutral grey accent
+    m_darkGreyColors.disabledText = RGB(130, 134, 142);     // Muted mid-grey
+    m_darkGreyColors.buttonBackground = RGB(90, 95, 108);   // Mid-grey button (lifted for visibility)
+    m_darkGreyColors.buttonBorder = RGB(115, 120, 133);     // Lighter grey button border
+    m_darkGreyColors.gradientStart = RGB(54, 57, 63);       // Slightly lighter panel
+    m_darkGreyColors.gradientEnd = RGB(44, 47, 51);         // Slightly darker panel
+
     // Create initial brushes
     UpdateBrushes();
 }
@@ -108,12 +120,21 @@ bool ThemeManager::IsDarkMode() const
     if (m_currentTheme == AppTheme::SYSTEM) {
         return IsSystemDarkMode();
     }
-    return m_currentTheme == AppTheme::DARK;
+    return m_currentTheme == AppTheme::DARK || m_currentTheme == AppTheme::DARK_GREY;
 }
 
 const ThemeManager::ColorScheme& ThemeManager::GetCurrentColors() const
 {
-    return IsDarkMode() ? m_darkColors : m_lightColors;
+    switch (m_currentTheme) {
+        case AppTheme::DARK:
+            return m_darkColors;
+        case AppTheme::DARK_GREY:
+            return m_darkGreyColors;
+        case AppTheme::SYSTEM:
+            return IsSystemDarkMode() ? m_darkColors : m_lightColors;
+        default:
+            return m_lightColors;
+    }
 }
 
 COLORREF ThemeManager::GetBackgroundColor() const
@@ -273,7 +294,7 @@ void ThemeManager::LoadThemePreference()
     int themeValue = app->GetProfileInt("Settings", "Theme", (int)AppTheme::LIGHT);
     
     // Validate the value
-    if (themeValue < 0 || themeValue > 2) {
+    if (themeValue < 0 || themeValue > 3) {
         themeValue = (int)AppTheme::LIGHT;
     }
     
@@ -520,8 +541,12 @@ void ThemeManager::DrawThemedTab(CDC* pDC, CRect rect, LPCTSTR text, bool select
 	COLORREF borderColor = colors.border;
 	
 	if (selected) {
-		// Selected tab - use brighter background
-		bgColor = RGB(60, 60, 65);  // Lighter than control background
+		// Selected tab - use brighter background (lifted from control bg)
+		bgColor = RGB(
+			min(255, GetRValue(colors.controlBackground) + 20),
+			min(255, GetGValue(colors.controlBackground) + 20),
+			min(255, GetBValue(colors.controlBackground) + 20)
+		);
 		textColor = RGB(255, 255, 255);  // Pure white for selected
 		borderColor = colors.highlight;
 	} else if (hot) {
