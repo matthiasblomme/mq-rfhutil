@@ -784,6 +784,7 @@
 #define ID_VIEW_THEME_LIGHT             2000
 #define ID_VIEW_THEME_DARK              2001
 #define ID_VIEW_THEME_SYSTEM            2002
+#define ID_VIEW_THEME_DARK_GREY         2003
 
 // Next default values for new objects
 // 
