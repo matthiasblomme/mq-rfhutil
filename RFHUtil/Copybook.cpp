@@ -251,8 +251,8 @@ char * CCopybook::findKeyword(char *cmdline, const char *keywd)
 	char		*temptr;
 	char		*prevptr;
 	char		*endptr;
-	char		*firstquote;
-	char		*secondquote;
+	char		*firstquote = NULL;
+	char		*secondquote = NULL;
 	char		traceInfo[512];		// work variable to build trace message
 
 	temptr = cmdline;
@@ -277,7 +277,7 @@ char * CCopybook::findKeyword(char *cmdline, const char *keywd)
 
 			// Make sure that the previous and next characters are delimiters
 			if (((endptr[0] == ' ') || (endptr[0] == '.') ||
-				 (endptr[0] == '(') || (endptr[0] == '\0')) && 
+				 (endptr[0] == '(') || (endptr[0] == '\0')) &&
 				 ((prevptr[0] == ' ') || (temptr == cmdline)))
 			{
 				// Lastly, check if we are in between quotes
@@ -350,7 +350,7 @@ int CCopybook::calcOffsets(int varnum, int startOfs, int *newOfs)
 	int			offset;             // Offset within the copybook area
 	int			RC=0;
 	char		traceInfo[512];		// work variable to build trace message
-	
+
 	if (traceEnabled)
 	{
 		// create the trace line
@@ -641,7 +641,7 @@ int CCopybook::buildTree(const char * fileName)
 	int		eof;                // End of File indicator
 	int		RC=0;
 	char	traceInfo[512];		// work variable to build trace message
-	
+
  //
  // File variables and counters
  //
@@ -1192,7 +1192,7 @@ int CCopybook::buildTree(const char * fileName)
 
 			// increment the line counter for the output program
 			outCounter++;
- 				
+
 			if (traceEnabled)
 			{
 				// create the trace line
@@ -1321,7 +1321,7 @@ int CCopybook::parseCopyBook(const char * fileName)
 	lastpeer = fvar[1].VarLastChild;
 	i = lastpeer + 1;
 
-	while (i < maxvar)		
+	while (i < maxvar)
 	{
 		// add this one to the chain
 		if (0 == fvar[i].VarParent)
@@ -1363,7 +1363,7 @@ int CCopybook::parseCopyBook(const char * fileName)
 	}
 
 	// we have now parsed the entire copy book
-	// build the offsets for each level that we 
+	// build the offsets for each level that we
 	// will use when we display the data
 	// no offset for level 1
 	offsetTable[0] = 0;
@@ -1393,18 +1393,18 @@ int CCopybook::parseCopyBook(const char * fileName)
 	return RC;
 }
 
-int CCopybook::displayDat(char *printArea, 
-						  const int maxArea, 
-						  const int firstvar, 
+int CCopybook::displayDat(char *printArea,
+						  const int maxArea,
+						  const int firstvar,
 						  const int lastvar,
-						  const unsigned char *dataIn, 
-						  const unsigned char *endData, 
+						  const unsigned char *dataIn,
+						  const unsigned char *endData,
 						  const int occurCnt,
 						  const int occurOfs,
-						  const int charFormat, 
+						  const int charFormat,
 						  const int numFormat,
 						  const int pdNumFormat,
-						  const int ccsid, 
+						  const int ccsid,
 						  const int indent,
 						  const int checkData)
 
@@ -1424,7 +1424,7 @@ int CCopybook::displayDat(char *printArea,
  	if (traceEnabled)
 	{
 		// create the trace line
-		sprintf(traceInfo, "Entering CCopybook::displayDat() firstvar=%d, lastvar=%d, occurCnt=%d, occurOfs=%d firstvar=%s lastvar=%s", 
+		sprintf(traceInfo, "Entering CCopybook::displayDat() firstvar=%d, lastvar=%d, occurCnt=%d, occurOfs=%d firstvar=%s lastvar=%s",
 			firstvar, lastvar, occurCnt, occurOfs, namObj->getNameAddr(fvar[firstvar].VarName), namObj->getNameAddr(fvar[lastvar].VarName));
 
 		// trace entry to displayDat
@@ -1463,7 +1463,7 @@ int CCopybook::displayDat(char *printArea,
 			// check if we are past the end of the data area
 			if ((dataIn + fvar[i].VarOffset + fvar[i].VarLen) > endData)
 			{
-				// try to prevent runaway loops if the data is 
+				// try to prevent runaway loops if the data is
 				// past the end of the input area
 				newCount = 0;
 				occurCount = 0;
@@ -1499,7 +1499,7 @@ int CCopybook::displayDat(char *printArea,
 		}
 		else
 		{
-			// get the iteration number, which should be zero if 
+			// get the iteration number, which should be zero if
 			// the item only occurs once
 			if (occurCount > 1)
 			{
@@ -1524,8 +1524,8 @@ int CCopybook::displayDat(char *printArea,
 		j=1;
 		if (fvar[i].VarChild == 0)
 		{
-			// The occurs is on an elementary item.  No need for 
-			// anything fancy 
+			// The occurs is on an elementary item.  No need for
+			// anything fancy
 
 			while (j <= occurCount)
 			{
@@ -1538,14 +1538,14 @@ int CCopybook::displayDat(char *printArea,
 				}
 				else
 				{
-					varReportLine(printLoc, 
-								  i, 
+					varReportLine(printLoc,
+								  i,
 								  dataIn + fvar[i].VarOffset + dataOffset,
 								  endData,
-								  redefname, 
-								  iteration, 
-								  occurOfs + (j - 1) * (fvar[i].VarLen + fvar[i].VarEndSlack), 
-								  charFormat, 
+								  redefname,
+								  iteration,
+								  occurOfs + (j - 1) * (fvar[i].VarLen + fvar[i].VarEndSlack),
+								  charFormat,
 								  numFormat,
 								  pdNumFormat,
 								  ccsid,
@@ -1583,14 +1583,14 @@ int CCopybook::displayDat(char *printArea,
 			while (j <= occurCount)
 			{
 				// output the parent variable to the display
-				varReportLine(printLoc, 
-							  i, 
-							  dataIn + fvar[i].VarOffset + dataOffset, 
+				varReportLine(printLoc,
+							  i,
+							  dataIn + fvar[i].VarOffset + dataOffset,
 							  endData,
-							  redefname, 
-							  iteration, 
-							  occurOfs + (j - 1) * (fvar[i].VarLen + fvar[i].VarEndSlack), 
-							  charFormat, 
+							  redefname,
+							  iteration,
+							  occurOfs + (j - 1) * (fvar[i].VarLen + fvar[i].VarEndSlack),
+							  charFormat,
 							  numFormat,
 							  pdNumFormat,
 							  ccsid,
@@ -1615,15 +1615,15 @@ int CCopybook::displayDat(char *printArea,
 				if (occurCount > 0)
 				{
 					// now, write out the structure
-					rc = displayDat(printArea + strlen(printArea), 
-									maxArea - strlen(printArea), 
-									fvar[i].VarChild, 
-									fvar[i].VarLastChild, 
-									dataIn + dataOffset, 
+					rc = displayDat(printArea + strlen(printArea),
+									maxArea - strlen(printArea),
+									fvar[i].VarChild,
+									fvar[i].VarLastChild,
+									dataIn + dataOffset,
 									endData,
 									iteration,
 									occurOfs + dataOffset,
-									charFormat, 
+									charFormat,
 									numFormat,
 									pdNumFormat,
 									ccsid,
@@ -1695,7 +1695,7 @@ void CCopybook::increaseOffsets(const int varnum, const int extraLen)
 }
 
 void CCopybook::updateLength(const int firstVar,
-							 const unsigned char *dataIn, 
+							 const unsigned char *dataIn,
 							 const unsigned int dataLen,
 							 const int numFormat,
 							 const int pdNumFormat,
@@ -1741,14 +1741,14 @@ void CCopybook::updateLength(const int firstVar,
 			// check if the value is greater than the maximum allowed, assuming one was found
 			if ((occ > fvar[i].VarOccurMax) && (fvar[i].VarOccurMax > 0))
 			{
-				sprintf(printArea + strlen(printArea), "***** RFHUtil format error - Occurs value exceeds maximum - occurCount=%d maximum=%d\r\n", 
+				sprintf(printArea + strlen(printArea), "***** RFHUtil format error - Occurs value exceeds maximum - occurCount=%d maximum=%d\r\n",
 						occ,fvar[i].VarOccurMax);
 				occ = fvar[i].VarOccurMax;
 			}
 
 			if (occ < fvar[i].VarOccur)
 			{
-				sprintf(printArea + strlen(printArea), "***** RFHUtil format error - Occurs value below minimum - value=%d minimum=%d\r\n", 
+				sprintf(printArea + strlen(printArea), "***** RFHUtil format error - Occurs value below minimum - value=%d minimum=%d\r\n",
 						occ,fvar[i].VarOccur);
 			}
 
@@ -1804,11 +1804,11 @@ void CCopybook::updateLength(const int firstVar,
 	}
 }
 
-int CCopybook::formatData(char *printArea, 
+int CCopybook::formatData(char *printArea,
 						  const int maxArea,
-						  const unsigned char *dataIn, 
-						  const unsigned int dataLen, 
-						  const int charFormat, 
+						  const unsigned char *dataIn,
+						  const unsigned int dataLen,
+						  const int charFormat,
 						  const int numFormat,
 						  const int pdNumFormat,
 						  const int ccsid,
@@ -1819,7 +1819,7 @@ int CCopybook::formatData(char *printArea,
 	int RC=0;
 	int extra=0;	// extra amount from occurs depending on value
 	int				tempFvarLen=0;
-	COPY_STRUCT *	tempFvar;
+	COPY_STRUCT *	tempFvar = NULL;
 	char		traceInfo[512];		// work variable to build trace message
 
  	if (traceEnabled)
@@ -1842,12 +1842,12 @@ int CCopybook::formatData(char *printArea,
 		return 0;
 	}
 
-	// check if we need to fix up the copybook 
+	// check if we need to fix up the copybook
 	if (dependCount > 0)
 	{
 		// we need to fix up the copybook offsets
 		// we will use a temporary copy of the variable area
-		// first, allocate a new area to hold a copy of 
+		// first, allocate a new area to hold a copy of
 		// the original copybook structure and copy the
 		// original structure into this area
 		tempFvarLen = (maxvar + 2) * sizeof(COPY_STRUCT);
@@ -1855,7 +1855,7 @@ int CCopybook::formatData(char *printArea,
 		memset(tempFvar, 0, tempFvarLen);
 		memcpy(tempFvar, fvar, tempFvarLen);
 
-		// now fix up the variable area, so that any 
+		// now fix up the variable area, so that any
 		// occurs depending on clauses appear as normal
 		// occurs clauses
 		updateLength(1, dataIn, dataLen, numFormat, pdNumFormat, printArea);
@@ -1863,15 +1863,15 @@ int CCopybook::formatData(char *printArea,
 		copyBookSize = fvar[1].VarLen;
 	}
 
-	displayDat(printArea, 
-			   maxArea, 
-			   1, 
-			   maxvar, 
-			   dataIn, 
+	displayDat(printArea,
+			   maxArea,
+			   1,
+			   maxvar,
+			   dataIn,
 			   dataIn + dataLen,
 			   0,
 			   0,
-			   charFormat, 
+			   charFormat,
 			   numFormat,
 			   pdNumFormat,
 			   ccsid,
@@ -1879,7 +1879,7 @@ int CCopybook::formatData(char *printArea,
 			   checkData);
 
 	// append the size of the data area and the copy book
-	sprintf(printArea + strlen(printArea), "Copy book size %d, Data area size %d", 
+	sprintf(printArea + strlen(printArea), "Copy book size %d, Data area size %d",
 			copyBookSize, dataLen);
 
 	// check if the sizes match
@@ -1940,7 +1940,7 @@ int CCopybook::buildNextLine(char *line, const int maxSize, FILE *commareafile, 
 	line[0] = 0;
 
 	// loop until either a complete statement is built or
-	// end of file is reached.  
+	// end of file is reached.
 	while (1)
 	{
 		if (fgets(cobolLine, MAX_LINE_LEN, commareafile) == NULL)
@@ -2065,13 +2065,13 @@ char * CCopybook::processRedefine(char * redefines)
 		logTraceEntry(traceInfo);
 	}
 
-	// search for a delimiter after redefines 
+	// search for a delimiter after redefines
 	redefines = findBlank(redefines);
 
 	// find the variable name that is redefined
 	redefines = skipBlanks(redefines);
 
-	// find the end of the variable name 
+	// find the end of the variable name
 	nameEnd = findBlank(redefines);
 
 	// did we find anything?
@@ -2405,7 +2405,7 @@ char * CCopybook::handleElement(char *pic, char *type, int *len)
 	   }
 	   else
 	   {
-		   if (('G' == ch) || ('N' == ch) || 
+		   if (('G' == ch) || ('N' == ch) ||
 			   ('B' == ch) || ('X' == ch))
 		   {
 			   type[0] = 'X';
@@ -2802,7 +2802,7 @@ int CCopybook::checkASCII(const unsigned char *msgData, int len)
 // resulting decimal number will be 2 * length - 1
 // bytes long, plus a trailing null character.
 //
-// If the number is negative, then a minus sign 
+// If the number is negative, then a minus sign
 // will be prepended.
 //
 ////////////////////////////////////////////////
@@ -2881,17 +2881,17 @@ void CCopybook::getPackedNumber(char *dataArea, const unsigned char *dataIn, int
 //
 ///////////////////////////////////////////////////////
 
-void CCopybook::varReportLine(char *textArea, 
-							  const int varnum, 
+void CCopybook::varReportLine(char *textArea,
+							  const int varnum,
 							  const unsigned char *msgdata,
 							  const unsigned char *endData,
-							  char *redefname, 
+							  char *redefname,
 							  int iteration,
 							  int occOffset,
-							  const int charFormat, 
+							  const int charFormat,
 							  const int numFormat,
 							  const int pdNumFormat,
-							  const int ccsid, 
+							  const int ccsid,
 							  const int indent,
 							  const int checkData)
 
@@ -2912,7 +2912,7 @@ void CCopybook::varReportLine(char *textArea,
 
 	linesText++;
 
-	textArea[0] = 0;               
+	textArea[0] = 0;
 
 	// get the number of the occurs into a string
 	//if (fvar->VarOccur > 0)
@@ -2939,7 +2939,7 @@ void CCopybook::varReportLine(char *textArea,
 		{
 		case USE_DISPLAY:
 			{
-				// get the length but no more than 128 bytes 
+				// get the length but no more than 128 bytes
 				if (len > 128)
 				{
 					len = 128;
@@ -2988,7 +2988,7 @@ void CCopybook::varReportLine(char *textArea,
 						}
 					default:
 						{
-							// Picture XXX 
+							// Picture XXX
 							strcpy(type, "CHAR ");
 							break;
 						}
@@ -3111,7 +3111,7 @@ void CCopybook::varReportLine(char *textArea,
 				}
 				else
 				{
-					// check if the packed decimal data is valid 
+					// check if the packed decimal data is valid
 					if (checkPacked(msgdata, len, pdNumFormat) == 1)
 					{
 						sprintf(textArea,"***** RFHUtil format error - Invalid Packed Decimal data in next field\r\n");
@@ -3121,7 +3121,7 @@ void CCopybook::varReportLine(char *textArea,
 					{
 						getPackedNumber(dataText, msgdata, len, pdNumFormat);
 
-						// terminate the string 
+						// terminate the string
 						dataText[2 * len] = 0;
 					}
 				}
@@ -3234,7 +3234,7 @@ void CCopybook::varReportLine(char *textArea,
 
 	ptr = textArea + strlen(textArea);
 
-	// reduce the number of spaces that we need, 
+	// reduce the number of spaces that we need,
 	// since most fields do not have a redefinition name
 	if (redefname != NULL)
 	{
@@ -3291,11 +3291,11 @@ void CCopybook::varReportLine(char *textArea,
 //
 ////////////////////////////////////////////////////////////////
 
-void CCopybook::finishOcc(COPY_STRUCT *fvar, 
-						  int occuratlevel[], 
-						  int lastlevel, 
-						  const int level, 
-						  int *offset) 
+void CCopybook::finishOcc(COPY_STRUCT *fvar,
+						  int occuratlevel[],
+						  int lastlevel,
+						  const int level,
+						  int *offset)
 {
 	int		i;                  // Work variable
 	int		tempparent;         // working variable for sync clauses
@@ -3669,7 +3669,7 @@ int CCopybook::getBinaryValue(const unsigned char *dataIn, int length, int numFo
 //
 // This routine will handle the fix ups
 // that are necessary to handle multiple
-// occurs depending on clauses, either 
+// occurs depending on clauses, either
 // nested or back to back.
 //
 ////////////////////////////////////////////////
@@ -3711,7 +3711,7 @@ void CCopybook::calcExtraOffsets(unsigned char *dataIn, const int numFormat, con
 ////////////////////////////////////////////////
 //
 // This routine will calculate the value of
-// a particular variable in the buffer, 
+// a particular variable in the buffer,
 // depending on the type of the variable
 // and the buffer contents and return the
 // value as an integer.
@@ -3804,7 +3804,7 @@ int CCopybook::getMaxChildren(int varnum)
 			if (fvar[varnum].VarOccurDepend > 0)
 			{
 				// handle the case of an occurs depending on without
-				// a minimum or maximum - therefore make sure we can 
+				// a minimum or maximum - therefore make sure we can
 				// handle at least 10 occurences
 				occur = 10;
 			}

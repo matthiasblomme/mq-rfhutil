@@ -240,8 +240,8 @@ const char * CJsonParse::parseLevel(const char *ptr, const char *endPtr, int par
 
 {
 	int				name = 0;
-	const char *	namePtr;				// pointer to element name
-	const char *	endNamePtr;				// pointer to end of name
+	const char *	namePtr = NULL;				// pointer to element name
+	const char *	endNamePtr = NULL;				// pointer to end of name
 	const char *	valuePtr;				// pointer to value
 	const char *	endValuePtr;			// pointer to end of value
 	CRfhutilApp *	app;				// pointer to application object to locate trace routines
@@ -343,7 +343,7 @@ const char * CJsonParse::parseLevel(const char *ptr, const char *endPtr, int par
 						// process the array
 						ptr = processArray(ptr, endPtr, name, namePtr, endNamePtr-namePtr, parent);
 					}
-					else 
+					else
 					{
 						// remember the beginning of the value
 						valuePtr = ptr;
@@ -393,8 +393,8 @@ const char * CJsonParse::parseLevel(const char *ptr, const char *endPtr, int par
 							}
 
 							// find the end of the number
-							while ((ptr < endPtr) && 
-								   (ptr[0] > ' ') && 
+							while ((ptr < endPtr) &&
+								   (ptr[0] > ' ') &&
 								   (((ptr[0] >= '0') && (ptr[0] <= '9')) || ('.' == ptr[0]) || ('E' == ptr[0]) || ('e' == ptr[0])))
 							{
 								// move on to the next digit
@@ -403,12 +403,12 @@ const char * CJsonParse::parseLevel(const char *ptr, const char *endPtr, int par
 							// this is a value that is not enclosed in quotes, so it should be a number
 							// but just in case look for something that is whitespace or other characters
 							// find the end of the number
-							while ((ptr < endPtr) && 
-								   (ptr[0] > ' ') && 
-								   (ptr[0] != ',') && 
-								   (ptr[0] != '[') && 
-								   (ptr[0] != '}') && 
-								   (ptr[0] != '{') && 
+							while ((ptr < endPtr) &&
+								   (ptr[0] > ' ') &&
+								   (ptr[0] != ',') &&
+								   (ptr[0] != '[') &&
+								   (ptr[0] != '}') &&
+								   (ptr[0] != '{') &&
 								   (ptr[0] != ']'))
 							{
 								// move on to the next digit
@@ -1026,7 +1026,7 @@ const char * CJsonParse::processArray(const char *ptr, const char *endPtr, int n
 				ptr = skipWhiteSpace(ptr, endPtr);
 			}
 		}
-		else 
+		else
 		{
 			// hopefully this is a number
 			// remember where the string starts

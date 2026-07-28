@@ -408,7 +408,7 @@ DataArea::DataArea()
 	m_reconnect_interval = 5;                   // Start with 5 seconds
 	m_reconnect_backoff_multiplier = 2;         // Double each time
 	m_reconnect_max_interval = 60;              // Cap at 60 seconds
-	
+
 	// P0.2: Initialize reconnection state
 	m_reconnect_attempt_count = 0;
 	m_last_reconnect_time = 0;
@@ -417,7 +417,7 @@ DataArea::DataArea()
 	m_last_qm_name = "";
 	m_last_channel_name = "";
 	m_last_conn_name = "";
-	
+
 	// P0.2: Initialize browse state tracking
 	m_browse_active = FALSE;
 	m_browse_restart_pending = FALSE;
@@ -4970,7 +4970,7 @@ void DataArea::getNameValueData(const unsigned char * input, int inputLen, unsig
 	// <varname/>
 	// <varname attr=value..> or <varname attr=value.../>
 	//
-	
+
 	char	*errmsg=NULL;
 	unsigned char	*parsed_data=output;
 	unsigned char	*tempData;
@@ -5322,7 +5322,7 @@ void DataArea::getNameValueData(const unsigned char * input, int inputLen, unsig
 							break;
 						}
 					}
-	
+
 					// append the latest variable name (guard: must still fit + NUL)
 					if (strlen(xmlVarName) + strlen(tempVarName) < sizeof(xmlVarName))
 					{
@@ -5935,7 +5935,7 @@ void DataArea::getParsedData(const int charFormat)
 							break;
 						}
 					}
-	
+
 					// append the latest variable name (guard: must still fit + NUL)
 					if (strlen(xmlVarName) + strlen(tempVarName) < sizeof(xmlVarName))
 					{
@@ -7720,7 +7720,7 @@ int DataArea::processMQGet(const char * getType, MQHOBJ handle, int options, int
 				{
 					// the connection is gone - make sure everything gets cleaned up
 					discQM();
-					
+
 					// P0.2: Attempt automatic reconnection
 					if (shouldAttemptReconnect(*rc))
 					{
@@ -7810,7 +7810,7 @@ int DataArea::processMQGet(const char * getType, MQHOBJ handle, int options, int
 			{
 				// the connection is gone - make sure everything gets cleaned up
 				discQM();
-				
+
 				// P0.2: Attempt automatic reconnection
 				if (shouldAttemptReconnect(*rc))
 				{
@@ -7890,7 +7890,7 @@ int DataArea::processMQGet(const char * getType, MQHOBJ handle, int options, int
 		{
 			// the connection is gone - make sure everything gets cleaned up
 			discQM();
-			
+
 			// P0.2: Attempt automatic reconnection
 			if (shouldAttemptReconnect(*rc))
 			{
@@ -7901,18 +7901,18 @@ int DataArea::processMQGet(const char * getType, MQHOBJ handle, int options, int
 					{
 						logTraceEntry("processMQGet() - Reconnection successful (else block), returning MQCC_WARNING");
 					}
-					
+
 					// Clean up any allocated storage before returning
 					if (msgData != NULL)
 					{
 						rfhFree(msgData);
 					}
-					
+
 					return MQCC_WARNING;
 				}
 			}
 		}
-		
+
 		// check if storage was ever allocated
 		if (msgData != NULL)
 		{
@@ -8082,7 +8082,7 @@ void DataArea::getMessage(LPCTSTR QMname, LPCTSTR Queue, int reqType)
 			sprintf(traceInfo, "getMessage() - Reconnection occurred, retrying operation");
 			logTraceEntry(traceInfo);
 		}
-		
+
 		// Reconnection successful - retry the operation
 		// Need to reopen the queue first
 		if (!openQ(Queue, remoteQM, request, FALSE))
@@ -8090,7 +8090,7 @@ void DataArea::getMessage(LPCTSTR QMname, LPCTSTR Queue, int reqType)
 			// Failed to reopen queue
 			return;
 		}
-		
+
 		// Retry the get operation
 		cc = processMQGet("Get", q, options, matchOptions, 0, &mqmd, &rc);
 	}
@@ -8495,17 +8495,17 @@ int DataArea::browseNext(bool silent)
 			sprintf(traceInfo, "P0.2: Detected pending browse restart for queue '%s'", (LPCTSTR)m_browse_queue_name);
 			logTraceEntry(traceInfo);
 		}
-		
+
 		// Save queue name before clearing flag
 		CString queueToRestart = m_browse_queue_name;
 		CString qmToRestart = m_last_qm_name;
-		
+
 		// Clear the pending flag
 		m_browse_restart_pending = FALSE;
-		
+
 		// Restart browse from beginning
 		int restartResult = startBrowse(qmToRestart, queueToRestart, false, -1);
-		
+
 		if (restartResult == MQCC_OK)
 		{
 			// Browse restarted successfully - browseNext will work on next call
@@ -8517,7 +8517,7 @@ int DataArea::browseNext(bool silent)
 			return restartResult;
 		}
 	}
-	
+
 	// Now check if q is NULL (after restart check)
 	if (NULL == q)
 	{
@@ -8530,14 +8530,14 @@ int DataArea::browseNext(bool silent)
 				sprintf(traceInfo, "P0.2: Queue handle is NULL but browse was active - attempting to restart browse on '%s'", (LPCTSTR)m_browse_queue_name);
 				logTraceEntry(traceInfo);
 			}
-			
+
 			// Save queue name before attempting restart
 			CString queueToRestart = m_browse_queue_name;
 			CString qmToRestart = m_last_qm_name;
-			
+
 			// Try to restart browse (this will reconnect if needed)
 			int restartResult = startBrowse(qmToRestart, queueToRestart, false, -1);
-			
+
 			if (restartResult == MQCC_OK)
 			{
 				// Browse restarted successfully
@@ -8559,7 +8559,7 @@ int DataArea::browseNext(bool silent)
 				return restartResult;
 			}
 		}
-		
+
 		// Queue is NULL and browse wasn't active - return error
 		return -1;
 	}
@@ -8603,14 +8603,14 @@ int DataArea::browseNext(bool silent)
 			sprintf(traceInfo, "browseNext() - Reconnection occurred, restarting browse immediately");
 			logTraceEntry(traceInfo);
 		}
-		
+
 		// Reconnection successful - restart browse immediately
 		CString queueToRestart = m_browse_queue_name;
 		CString qmToRestart = m_last_qm_name;
-		
+
 		// Restart browse from beginning
 		int restartResult = startBrowse(qmToRestart, queueToRestart, false, -1);
-		
+
 		if (restartResult == MQCC_OK)
 		{
 			// Browse restarted successfully - message already displayed by startBrowse()
@@ -9515,10 +9515,10 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 	case MQRC_Q_MGR_NOT_AVAILABLE:
 		{
 			sprintf(errtxt, "2059 Queue manager not available (%s) - may not be started", operation);
-			
+
 			// Note: Reconnection is handled at the operation level
 			// not here in setErrorMsg() to avoid duplicate attempts
-			
+
 			break;
 		}
 	case MQRC_REPORT_OPTIONS_ERROR:
@@ -9629,10 +9629,10 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 	case MQRC_CONNECTION_QUIESCING:
 		{
 			strcpy(errtxt, "2202 Connection is quiescing");
-			
+
 			// Note: Reconnection is handled at the operation level
 			// not here in setErrorMsg() to avoid duplicate attempts
-			
+
 			break;
 		}
 	case MQRC_CONNECTION_STOPPING:
@@ -9818,10 +9818,10 @@ void DataArea::setErrorMsg(MQLONG cc, MQLONG rc, const char * operation)
 	case MQRC_CONNECTION_STOPPED:
 		{
 			strcpy(errtxt, "2528 Connection stopped");
-			
+
 			// Note: Reconnection is handled at the operation level
 			// not here in setErrorMsg() to avoid duplicate attempts
-			
+
 			break;
 		}
 	case MQRC_PUBSUB_INHIBITED:
@@ -10655,7 +10655,7 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 	char		*serverPtr;
 	char		*ptr;
 	char		*qmPtr;
-	char		*connName;				// pointer to the connection name part of the string
+	char		*connName = NULL;				// pointer to the connection name part of the string
 	char		mqserver[1024];
 #endif
 	MQSCO		sco={MQSCO_DEFAULT};
@@ -10721,23 +10721,23 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 	// ============================================================
 	// P0.1: Add HeartBeat and KeepAlive configuration
 	// ============================================================
-	
+
 	// Ensure we're using MQCD Version 6+ for KeepAliveInterval support
 	// HeartbeatInterval is in V3, KeepAliveInterval is in V6
 	if (cd.Version < MQCD_VERSION_6) {
 		cd.Version = MQCD_VERSION_6;
 	}
-	
+
 	// Set HeartBeat interval for fast MQ-level failure detection
 	// This detects queue manager crashes, process failures, and keeps
 	// the connection active to prevent firewall timeouts
 	cd.HeartbeatInterval = 60;  // 60 seconds (vs default 300s)
-	
+
 	// Set KeepAlive interval for network-level failure detection
 	// This detects network cable unplugs, router failures, and
 	// "half-open" TCP connections
 	cd.KeepAliveInterval = MQKAI_AUTO;  // Use OS defaults
-	
+
 	// Add trace logging
 	if (traceEnabled) {
 		sprintf(traceInfo, "P0.1: HeartBeat=%d, KeepAlive=AUTO (MQCD v%d)",
@@ -11108,7 +11108,7 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 			dumpTraceData("Userid", (unsigned char *)((LPCTSTR)m_conn_userid), m_conn_userid.GetLength());
 
 			// Do not trace passwords
-			
+
 		}
 	}
 
@@ -11154,7 +11154,7 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 				dumpTraceData("Userid", (unsigned char *)((LPCTSTR)m_conn_userid), m_conn_userid.GetLength());
 
 				// Do not trace passwords
-				
+
 			}
 		}
 
@@ -11189,7 +11189,7 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 
 	// P0.2: Save connection parameters for potential reconnection
 	m_last_qm_name = QMname;
-	
+
 	// Extract channel name from cd structure (trim trailing spaces)
 	char tempChannel[MQ_CHANNEL_NAME_LENGTH + 1];
 	memcpy(tempChannel, cd.ChannelName, MQ_CHANNEL_NAME_LENGTH);
@@ -11199,7 +11199,7 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 	{
 		m_last_channel_name = tempChannel;
 	}
-	
+
 	// Extract connection name from cd structure (trim trailing spaces)
 	char tempConnName[MQ_CONN_NAME_LENGTH + 1];
 	memcpy(tempConnName, cd.ConnectionName, MQ_CONN_NAME_LENGTH);
@@ -11209,7 +11209,7 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 	{
 		m_last_conn_name = tempConnName;
 	}
-	
+
 	// P0.2: Reset reconnection state on successful connection
 	resetReconnectionState();
 
@@ -11415,7 +11415,7 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 {
 	char traceInfo[512];
-	
+
 	// Check if auto-reconnect is enabled
 	if (!m_auto_reconnect)
 	{
@@ -11425,7 +11425,7 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 		}
 		return false;
 	}
-	
+
 	// Check if we've exceeded maximum attempts
 	if (m_reconnect_max_attempts > 0 && m_reconnect_attempt_count >= m_reconnect_max_attempts)
 	{
@@ -11437,50 +11437,50 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 		m_reconnecting = false;
 		return false;
 	}
-	
+
 	// Calculate delay with exponential backoff
 	int delay = calculateReconnectDelay();
-	
+
 	// Check if enough time has passed since last attempt
 	DWORD currentTime = GetTickCount();
 	DWORD timeSinceLastAttempt = (DWORD)(currentTime - m_last_reconnect_time);
-	
+
 	if (timeSinceLastAttempt < (DWORD)(delay * 1000))
 	{
 		// Not enough time has passed, wait
 		if (traceEnabled)
 		{
-			sprintf(traceInfo, "P0.2: Waiting %d ms before next reconnection attempt", 
+			sprintf(traceInfo, "P0.2: Waiting %d ms before next reconnection attempt",
 					(delay * 1000) - timeSinceLastAttempt);
 			logTraceEntry(traceInfo);
 		}
 		Sleep((delay * 1000) - timeSinceLastAttempt);
 	}
-	
+
 	// Increment attempt counter
 	m_reconnect_attempt_count++;
 	m_last_reconnect_time = GetTickCount();
 	m_reconnecting = true;
-	
+
 	if (traceEnabled)
 	{
-		sprintf(traceInfo, "P0.2: Reconnection attempt %d of %d (delay: %ds, reason: %d)", 
-				m_reconnect_attempt_count, 
+		sprintf(traceInfo, "P0.2: Reconnection attempt %d of %d (delay: %ds, reason: %d)",
+				m_reconnect_attempt_count,
 				m_reconnect_max_attempts > 0 ? m_reconnect_max_attempts : 999,
 				delay,
 				failureReason);
 		logTraceEntry(traceInfo);
 	}
-	
+
 	// Ensure clean state before reconnecting
 	if (connected)
 	{
 		discQM();
 	}
-	
+
 	// Attempt to reconnect
 	bool success = connect2QM(qmName);
-	
+
 	if (success)
 	{
 		if (traceEnabled)
@@ -11488,7 +11488,7 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 			sprintf(traceInfo, "P0.2: Reconnection successful after %d attempts", m_reconnect_attempt_count);
 			logTraceEntry(traceInfo);
 		}
-		
+
 		// P0.2: Save attempt count before reset (fixes "0 attempts" bug)
 		int attemptCount = m_reconnect_attempt_count;
 
@@ -11500,7 +11500,7 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 		// call doesn't append a duplicate "Reconnected to queue manager"
 		// line for the same recovery.
 		m_connection_was_lost = FALSE;
-		
+
 		// P0.2: Check if browse operation needs restart
 		if (m_browse_active && !m_browse_queue_name.IsEmpty())
 		{
@@ -11509,11 +11509,11 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 				sprintf(traceInfo, "P0.2: Setting flag to restart browse on queue '%s'", (LPCTSTR)m_browse_queue_name);
 				logTraceEntry(traceInfo);
 			}
-			
+
 			// Set flag for UI layer to restart browse - don't call startBrowse directly
 			// This ensures proper UI state updates and button enabling
 			m_browse_restart_pending = TRUE;
-			
+
 			// Log reconnection success with note about pending browse restart
 			m_error_msg.Format("Reconnected to queue manager '%s' after %d attempt(s) - Browse will restart automatically",
 							   qmName, attemptCount);
@@ -11535,7 +11535,7 @@ bool DataArea::attemptReconnection(LPCTSTR qmName, MQLONG failureReason)
 			logTraceEntry(traceInfo);
 		}
 	}
-	
+
 	m_reconnecting = false;
 	return success;
 }
@@ -20235,7 +20235,7 @@ void DataArea::getPSMessage(const char * subName, int waitTime, BOOL * isRetaine
 		{
 			// get rid of the subscription and other handles which are no longer valid
 			connectionLostCleanup();
-			
+
 			// Attempt automatic reconnection if enabled
 			if (m_auto_reconnect && !m_last_qm_name.IsEmpty())
 			{
@@ -23947,13 +23947,13 @@ int DataArea::loadMQdll()
 	BOOL	foundMQ71=FALSE;
 	const char *	libName;
 	char	mqmPath[512];
-	char	*newPath = NULL;			
+	char	*newPath = NULL;
 	int     newPathLen = 4096 * 16;      // twice the maximum size of the environment on Windows 2008
 	char	traceInfo[640];				// work variable to build trace message
 
 	// initialize the mqmPath variable
 	memset(mqmPath, 0, sizeof(mqmPath));
-	
+
 	newPath = (char *)rfhMalloc(newPathLen, "NEWPATH1");
 	if (!newPath) {
 		return -1;
@@ -25191,7 +25191,7 @@ int DataArea::processLocalQMgrs()
 		logTraceEntry(traceInfo);
 	}
 #endif
-	
+
 	return 0;
 }
 
