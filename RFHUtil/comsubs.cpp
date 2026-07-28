@@ -22,10 +22,10 @@ Jim MacNair - Initial Contribution
 #include "rfhutil.h"
 #include "comsubs.h"
 
-#define DUMP_FILE_NAME "c:\\rfhdump.txt"
 #define NUMERIC_PC		0
 
 	FILE	*df=NULL;				// debugging file
+	static char dumpFileName[MAX_PATH];		// path to debug dump file
 
 	BOOL	ccsidInstalled;			// result of checking if code page is installed
 	int		ccsidInsCheck;			// code page to search for
@@ -721,8 +721,24 @@ void setCharData(char *data, int size, LPCTSTR dataIn, int len)
 void openDumpFile()
 
 {
+	// Build the dump file path under %TEMP% so it is writable on
+	// any account (C:\ root is protected on modern Windows).
+	if (dumpFileName[0] == '\0')
+	{
+		DWORD len = GetTempPathA(MAX_PATH, dumpFileName);
+		if (len == 0 || len >= MAX_PATH)
+		{
+			// fallback — should never happen
+			strcpy(dumpFileName, "c:\\rfhdump.txt");
+		}
+		else
+		{
+			strncat(dumpFileName, "rfhdump.txt", MAX_PATH - len - 1);
+		}
+	}
+
 	// try to open the dump file for appending
-	df = fopen(DUMP_FILE_NAME, "a+");
+	df = fopen(dumpFileName, "a+");
 }
 
 void closeDumpFile()

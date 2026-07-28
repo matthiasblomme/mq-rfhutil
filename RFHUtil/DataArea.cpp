@@ -19,6 +19,7 @@ Jim MacNair - Initial Contribution
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include <new>
 #include <commdlg.h>
 #include <winspool.h>
 #include <windows.h>
@@ -10014,7 +10015,15 @@ int DataArea::readCopybookFile()
 
 		if (m_copybook == NULL)
 		{
-			m_copybook = new CCopybook();
+			try
+			{
+				m_copybook = new CCopybook();
+			}
+			catch (const std::bad_alloc &)
+			{
+				m_error_msg = "Out of memory allocating copybook";
+				return 0;
+			}
 		}
 
 		// clear the current copy book variables
@@ -11161,6 +11170,15 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 	// perform a normal connection to the queue manager
 	XMQConnX((char *)QMname, &cno, &qm, &cc, &rc);
 #endif
+
+	// Clear the password from memory now that MQCONNX has consumed it.
+	// The MQCSP pointer into the CString buffer is no longer needed and
+	// leaving the plaintext in process memory is an unnecessary exposure.
+	if (m_conn_password.GetLength() > 0)
+	{
+		SecureZeroMemory((void *)m_conn_password.GetBuffer(), m_conn_password.GetLength() * sizeof(TCHAR));
+		m_conn_password.ReleaseBuffer(0);
+	}
 
 	// check if the connection worked
 	if (cc != MQCC_OK)
@@ -23407,7 +23425,15 @@ void DataArea::resetNames(NAMESTRUCT *namePtr, const char *QMname)
 		namePtr->names = NULL;
 
 		// allocate a new names object for this queue manager
-		namePtr->names = new Names(INIT_NAME_TABLE_SIZE);
+		try
+		{
+			namePtr->names = new Names(INIT_NAME_TABLE_SIZE);
+		}
+		catch (const std::bad_alloc &)
+		{
+			namePtr->names = NULL;
+			return;
+		}
 
 		// insert the queue manager name back in the table
 		namePtr->qmName = namePtr->names->insertName(QMname);
@@ -23649,7 +23675,14 @@ NAMESTRUCT * DataArea::allocateNameStruct(const char *QMname, const char *nameTy
 		namesPtr->ccsid = MQCcsid;
 
 		// allocate a Names object
-		namesPtr->names = new Names(INIT_NAME_TABLE_SIZE);
+		try
+		{
+			namesPtr->names = new Names(INIT_NAME_TABLE_SIZE);
+		}
+		catch (const std::bad_alloc &)
+		{
+			namesPtr->names = NULL;
+		}
 
 		// check if it worked
 		if (NULL == namesPtr->names)
