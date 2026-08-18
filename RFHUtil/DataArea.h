@@ -737,7 +737,7 @@ private:
 	void processMQcomponents();
 	void processMQinstallation(HKEY regkey);
 	void insertTraceString(CComboBox *cb, const char * str);
-	FILE * openOutputFile(LPCTSTR fname, LPTSTR errMsg);
+	FILE * openOutputFile(LPCTSTR fname, LPTSTR errMsg, size_t errMsgSize = 128);
 	BOOL storageFreed;
 	int pubWriteMsgAddProps(WRITEPARMS *parms, MQHMSG hMsg);
 	int msgIdCount;

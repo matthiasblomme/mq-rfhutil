@@ -60,5 +60,5 @@ public:
     // errMsg (if non-NULL) with a descriptive message on failure. Static
     // because the operation doesn't touch FileHandler instance state.
     // Trace logging stays in the DataArea wrapper.
-    static FILE* openOutputFile(LPCTSTR fname, LPTSTR errMsg);
+    static FILE* openOutputFile(LPCTSTR fname, LPTSTR errMsg, size_t errMsgSize = 128);
 };

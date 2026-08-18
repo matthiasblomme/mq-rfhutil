@@ -63,7 +63,7 @@ void FileHandler::changeUnixFile()
     fileSize = j;
 }
 
-FILE* FileHandler::openOutputFile(LPCTSTR fname, LPTSTR errMsg)
+FILE* FileHandler::openOutputFile(LPCTSTR fname, LPTSTR errMsg, size_t errMsgSize)
 {
     if (errMsg != NULL)
         errMsg[0] = 0;
@@ -75,12 +75,12 @@ FILE* FileHandler::openOutputFile(LPCTSTR fname, LPTSTR errMsg)
         DWORD errCode = GetLastError();
         switch (errCode)
         {
-        case 32: strcpy(errMsg, "Unable to open output file - sharing violation"); break;
-        case 33: strcpy(errMsg, "Unable to open output file - file locked");        break;
-        case 39: strcpy(errMsg, "Unable to open output file - disk full");          break;
-        case 3:  strcpy(errMsg, "Unable to open output file - path not found");     break;
-        case 5:  strcpy(errMsg, "Unable to open output file - access denied");      break;
-        default: sprintf(errMsg, "Unable to open output file - Error %d", errCode); break;
+        case 32: strcpy_s(errMsg, errMsgSize, "Unable to open output file - sharing violation"); break;
+        case 33: strcpy_s(errMsg, errMsgSize, "Unable to open output file - file locked");        break;
+        case 39: strcpy_s(errMsg, errMsgSize, "Unable to open output file - disk full");          break;
+        case 3:  strcpy_s(errMsg, errMsgSize, "Unable to open output file - path not found");     break;
+        case 5:  strcpy_s(errMsg, errMsgSize, "Unable to open output file - access denied");      break;
+        default: sprintf_s(errMsg, errMsgSize, "Unable to open output file - Error %d", errCode); break;
         }
     }
 

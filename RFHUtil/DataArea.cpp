@@ -1755,9 +1755,9 @@ void DataArea::WriteDataFile()
 // PR C: wrapper. File-open logic + error message formatting live on
 // FileHandler. The wrapper adds the trace log entry on failure if the
 // caller passed an errMsg buffer and tracing is enabled.
-FILE * DataArea::openOutputFile(LPCTSTR fname, LPTSTR errMsg)
+FILE * DataArea::openOutputFile(LPCTSTR fname, LPTSTR errMsg, size_t errMsgSize)
 {
-	FILE *outputFile = FileHandler::openOutputFile(fname, errMsg);
+	FILE *outputFile = FileHandler::openOutputFile(fname, errMsg, errMsgSize);
 
 	if (outputFile == NULL && errMsg != NULL && errMsg[0] != 0 && traceEnabled)
 	{
@@ -1868,7 +1868,7 @@ void DataArea::WriteFile(LPCTSTR fname)
 	}
 
 	// try to open the output file
-	outputFile = openOutputFile(fname, tempMsg);
+	outputFile = openOutputFile(fname, tempMsg, sizeof(tempMsg));
 
 	// was the open successful
 	if (outputFile == NULL)
@@ -11171,11 +11171,22 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 	XMQConnX((char *)QMname, &cno, &qm, &cc, &rc);
 #endif
 
+	// Capture the password into the app-level "last used" cache before wiping it from
+	// this DataArea instance.  initConnPW feeds the DPAPI Save Password path in
+	// rfhutil.cpp::saveProfile() — if we zero first, the encrypted value written to
+	// the registry is always empty and the password is lost across sessions.
+	// Only update the cache on a successful connect (mirroring the pre-existing
+	// behaviour: the block below is only reached when cc == MQCC_OK).
+	app = (CRfhutilApp *)AfxGetApp();
+
 	// Clear the password from memory now that MQCONNX has consumed it.
 	// The MQCSP pointer into the CString buffer is no longer needed and
 	// leaving the plaintext in process memory is an unnecessary exposure.
 	if (m_conn_password.GetLength() > 0)
 	{
+		// Save into app cache before zeroing so DPAPI persistence still works.
+		app->initConnPW = m_conn_password;
+
 		SecureZeroMemory((void *)m_conn_password.GetBuffer(), m_conn_password.GetLength() * sizeof(TCHAR));
 		m_conn_password.ReleaseBuffer(0);
 	}
@@ -11232,10 +11243,9 @@ bool DataArea::connect2QM(LPCTSTR QMname)
 	resetReconnectionState();
 
 	// remember the last QM that we connected to as well as the user id and password that were used
-	app = (CRfhutilApp *)AfxGetApp();
 	app->initQMname = QMname;
 	app->initConnUser = m_conn_userid;
-	app->initConnPW = m_conn_password;
+	// initConnPW already captured before SecureZeroMemory above
 
 	// remember the security exit name and data that were used
 	app->initSecExit = m_security_exit;
